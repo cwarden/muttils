@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlpager.py,v 1.4 2005/02/04 16:26:04 chris Exp $
+# $Id: urlpager.py,v 1.5 2005/02/04 22:28:06 chris Exp $
 
 ###
 # Caveat:
@@ -19,7 +19,7 @@ try: from conny import pppConnect
 except ImportError: pass
 from kiosk import Kiosk
 from getbin import getBin
-from selbrowser import selBrowser
+from selbrowser import selBrowser, local_re
 
 optstring = "bd:D:f:ghilnp:k:r:tw:x"
 mailers = ('mutt', 'pine', 'elm', 'mail')
@@ -121,12 +121,15 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			bin = getBin(mailers)
 			conny = 0
 		elif self.getdir:
+			getBin(['wget'])
+			if local_re.search(url) != None:
+				Usage("wget doesn't retrieve local files")
 			bin = "wget -P '%s'" % self.getdir
 		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
 			if self.ft: ftpclients = (self.ft)
 			bin = getBin(ftpclients)
 		if not bin:
-			selBrowser(self.url, self.tb, self.xb)
+			selBrowser([self.url], self.tb, self.xb)
 		else:
 			if not self.files and not self.getdir: # program needs terminal
 				cmd = "%s '%s' < %s" % (bin, self.url, os.ctermid())
