@@ -137,10 +137,10 @@ class Kiosk:
 
 	def goGoogle(self):
 		"""Gets messages from Google Groups."""
-		### To do: 1 (the first msg?) of a list gets lost??? ###
 		print 'Going google ...'
 		try: pppConnect()
 		except NameError: pass
+		delitems = []
 		for id in self.items:
 			if not self.browse:
 				query = {'selm':id, 'output':'gplain'}
@@ -160,11 +160,12 @@ class Kiosk:
 			fp.close()
 			if msg.__getitem__('message-id'):
 				self.msgs.append(msg)
-				self.items.remove(id)
+				delitems.append(id)
 			else:
 				print msg.get_payload(decode=1)
 				sleep(5)
 				print 'Continuing ...'
+		for id in delitems: self.items.remove(id)
 	
 	def leafSearch(self):
 		print 'Searching local newsserver ...'
