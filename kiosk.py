@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# $Id: kiosk.py,v 1.5 2005/02/04 16:31:21 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -9,6 +10,7 @@ from email.Generator import Generator
 from mailbox import PortableUnixMailbox
 from time import sleep, strftime
 from Urlregex import mail_re
+from getbin import getBin
 from spl import sPl
 try: from conny import pppConnect
 except ImportError: pass
@@ -16,9 +18,10 @@ except ImportError: pass
 ggroups = 'http://groups.google.com/groups?hl=de&'
 defaultmdir = os.path.join(os.getenv('HOME'), 'Mail')
 if not os.path.isdir(defaultmdir): defaultmdir = None
-muttone = "mutt -e 'set pager_index_lines=0' " \
+mutt = getBin(('mutt', 'muttng'))
+muttone = "%s -e 'set pager_index_lines=0' " \
 	       "-e 'set quit=yes' -e 'bind pager q quit' " \
-	       "-e 'push <return>' -f '%s'"
+	       "-e 'push <return>' -f" % mutt
 #from_re = re.compile('[-._a-z9-9]+@[-._a-z0-9]+', re.IGNORECASE)
 
 def Usage(err=''):
@@ -283,8 +286,8 @@ class Kiosk:
 				msg.set_unixfrom('From %s  %s' % (From, date))
 			g.flatten(msg, unixfrom=True)
 		outfp.close()
-		if len(self.msgs) == 1: cmd = muttone % self.kiosk
-		else: cmd = "mutt -zf '%s'" % self.kiosk
+		if len(self.msgs) == 1: cmd = "%s '%s'" % (muttone, self.kiosk)
+		else: cmd = "%s -zf '%s'" % (mutt, self.kiosk)
 		if self.nt: cmd = "%s <> %s" % (cmd, os.ctermid())
 		os.system(cmd)
 		if self.tmp:
