@@ -287,7 +287,9 @@ class Kiosk:
 		else: cmd = "mutt -zf '%s'" % self.kiosk
 		if self.nt: cmd = "%s <> %s" % (cmd, os.ctermid())
 		os.system(cmd)
-		if self.tmp: os.unlink(self.kiosk)
+		if self.tmp:
+			try: os.remove(self.kiosk)
+			except OSError: pass # in case mutt already removed the file
 
 def main():
 	k = Kiosk()
