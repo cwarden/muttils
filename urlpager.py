@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlpager.py,v 1.7 2005/02/07 14:48:01 chris Exp $
+# $Id: urlpager.py,v 1.8 2005/02/08 02:18:57 chris Exp $
 
 ###
 # Caveat:
@@ -47,7 +47,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mdirs, local
 		Tpager.__init__(self, name='url') # <- items, name
 		LastExit.__init__(self)
-		self.ft = 'ftp'	   # ftpclient
+		self.ft = ''	   # ftpclient
 		self.xb = 0	   # force x-browser
 		self.tb = 0	   # use text browser
 		self.url = ''	   # selected url
@@ -124,7 +124,9 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				Usage("wget doesn't retrieve local files")
 			bin = "wget -P '%s'" % self.getdir
 		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
-			bin, self.nt = self.ft, 1
+			if not self.ft: bin = 'ftp'
+			else: bin = self.ft
+			self.nt = 1
 		if not bin: selBrowser([self.url], self.tb, self.xb)
 		else:
 			if not self.files and not self.getdir or self.nt: # program needs terminal
