@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# $Id: urlbatcher.py,v 1.4 2005/02/04 16:32:44 chris Exp $
 
 ###
 # Caveat:
@@ -9,51 +10,47 @@
 # input is checked anew for each file.
 ###
 
-import getopt, os, re, sys
-from Urlregex import Urlregex, mailCheck, ftpCheck
+import getopt, os, sys
+from Urlcollector import Urlcollector
 from LastExit import LastExit
+from Urlregex import mailCheck, ftpCheck
 try: from conny import pppConnect
 except ImportError: pass
 from kiosk import Kiosk
-from datatype import dataType
 from spl import sPl
-from getbin import getBin
-from selbrowser import finderCheck
+from selbrowser import selBrowser
 
-optstring = "d:ghik:lnr:w:"
-mackies = ('launch', 'open')
+optstring = "d:ghik:lnr:w:x"
 
 def Usage(msg=''):
 	scriptname = os.path.basename(sys.argv[0])
 	if msg: print msg
 	print 'Usage:\n' \
-	'%(sn)s [-r <pattern>][file ...]\n' \
-	'%(sn)s -i [-l][-r <pattern>][-d <mail hierarchy>[:<mail hierarchy> ...]][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -i -n [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -i -g [-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s [-x][-r <pattern>][file ...]\n' \
+	'%(sn)s -w <download dir> [-r <pattern]\n' \
+	'%(sn)s -i [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -n [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -g [-r <pattern>][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -h' \
 	% { 'sn':scriptname }
 	sys.exit(2)
 
-def parseError():
-	errmsg = '*Encountered malformed html!*\n' \
-		 'Might be unable to retrieve every url.\n' \
-		 'Continue? ([RET], No) '
-	if raw_input(errmsg) in ('n', 'N'):
-		sys.exit()
 
-class Urlbatcher(Urlregex, Kiosk, LastExit):
+class Urlbatcher(Urlcollector, Kiosk, LastExit):
 	"""
 	Parses input for either web urls or message-ids.
 	Browses all urls or creates a message tree in mutt.
 	You can specify urls/ids by a regex pattern.
 	"""
 	def __init__(self):
-		Urlregex.__init__(self, 'web') # <- proto, id, items
-		Kiosk.__init__(self) # <- nt, kiosk, mdirs, local, google
+		Urlcollector.__init__(self) # <- proto, id, items, files, pat
+		Kiosk.__init__(self)        # <- nt, kiosk, mdirs, local, google
 		LastExit.__init__(self)
-		self.files = []    # files to search
-		self.pat = None
+		self.xb = 0                 # force x-browser
+		self.getdir = ''            # download in dir via wget
+		self.proto = 'web'
 
 	def argParser(self):
 		try: opts, self.files = getopt.getopt(sys.argv[1:], optstring)
@@ -63,21 +60,27 @@ class Urlbatcher(Urlregex, Kiosk, LastExit):
 				self.id = 1
 				self.proto = 'all'
 				self.mdirs = a.split(':')
+				self.getdir = ''
 			elif o == '-h': Usage()
 			elif o == '-g': # go to google directly for message-ids
 				self.proto = 'all'
 				self.id, self.google, self.mdirs = 1, 1, []
+				self.getdir = ''
 			elif o == '-i': # look for message-ids
 				self.proto = 'all'
 				self.id = 1
+				self.getdir = ''
 			elif o == '-k': # mailbox to store retrieved messages
 				self.proto = 'all'
 				self.id, self.kiosk = 1, a
+				self.getdir = ''
 			elif o == '-l': # only local search for message-ids
 				self.id, self.local = 1, 1
+				self.getdir = ''
 			elif o == '-n': # don't search local mailboxes
 				self.proto = 'all'
 				self.id, self.mdirs = 1, []
+				self.getdir = ''
 			elif o == '-r':
 				self.pat = a
 			elif o == '-w': # download dir for wget
@@ -86,49 +89,34 @@ class Urlbatcher(Urlregex, Kiosk, LastExit):
 				self.getdir = os.path.abspath(os.path.expanduser(getdir))
 				if not os.path.isdir(self.getdir):
 					Usage('%s: not a directory' % self.getdir)
+			elif o == '-x': # xbrowser
+				self.xb, self.id, self.getdir = 1, 0, ''
 
 	def urlGo(self):
 		conny = 0
+		bin = ''
 		for url in self.items:
 			if not url.startswith('file://'):
-				conny = 1
+				try: pppConnect()
+				except NameError: pass
 				break
-		if not self.getdir:
-			self.items = [self.httpAdd(url) for url in self.items]
-			bin = getBin(mackies)
-		else: bin = "wget -P '%s'" % self.getdir
-		if conny:
-			try: pppConnect()
-			except NameError: pass
-		if bin == 'launch':
-			cmd = "%s '%s'" % (bin, "', '".join(self.items))
-			os.system(cmd)
+		if self.getdir:
+			os.system("wget -P '%s'" % "' '".join(self.items))
 		else:
-			for url in self.items:
-				cmd = "%s '%s'" % (bin, url)
-				os.system(cmd)
+			for url in self.items: selBrowser(url, 0, self.xb)
+			# put above into selbrowser.py
+			# doesn't work with firefox yet; try to solve in selbrowser.py
 					
 	def urlSearch(self):
-		if not self.id and not self.getdir and not finderCheck():
-			Usage('only works on Macs')
-		if not self.files: # read from stdin
-			data = sys.stdin.read()
-			Urlregex.findUrls(self, data)
-			LastExit.termInit(self)
-		else:
-			for f in self.files:
-				data, type = dataType(f)
-				Urlregex.findUrls(self, data, type)
-		if self.ugly: parseError()
-		if self.pat and self.items:
-			try: self.pat = re.compile(r'%s' % self.pat, re.IGNORECASE)
-			except re.error, strerror: Usage(strerror)
-			self.items = filter(lambda i: self.pat.search(i), self.items)
+		Urlcollector.urlCollect(self)
+		if not self.files: LastExit.termInit(self)
 		try:
-			ilen = len(self.items)
-			if ilen:
-				yorn = 'Retrieve %s? [y,N] ' \
-				       % sPl(ilen, ('url', 'message-id')[self.id])
+			if self.items:
+				yorn = '%s\nRetrieve the above %s? [y,N] ' \
+				       % ('\n'.join(self.items),
+					  sPl(len(self.items),
+				          	('url', 'message-id')[self.id])
+					 )
 				if raw_input(yorn) in ('y', 'Y'):
 					if not self.id: self.urlGo()
 					else:
@@ -140,7 +128,6 @@ class Urlbatcher(Urlregex, Kiosk, LastExit):
 				raw_input(msg)
 		except KeyboardInterrupt: pass
 		if not self.files: LastExit.reInit(self)
-
 
 
 def main():
