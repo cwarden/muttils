@@ -5,6 +5,11 @@ from valclamp import valClamp
 # format default paging command
 pds = {-1:'Back', 1:'Forward'}
 
+def codeError(msg):
+	import sys
+	print 'Tpager.py: %s\nCheck %s code!' % (msg, sys.argv[0])
+	sys.exit(2)
+
 class Tpager(Pages):
 	"""
 	Useful for interactive choice in a terminal window.
@@ -12,21 +17,21 @@ class Tpager(Pages):
 	def __init__(self, name='item', format='sf', qfunc='Quit', ckey='', crit='pattern'):
 		Pages.__init__(self) # <- items, ilen, pages, itemsdict, cols
 		self.name = name     # general name of an item
-		self.format = format # key to format function
+		if format in ('sf', 'bf'): # available formats
+			self.format = format # key to format function
+		else:
+			msg = 'the "%s" format is invalid.' % format
+			codeError(msg)
 		self.qfunc = qfunc   # name of exit function
-		self.ckey = ckey     # key to customize pager
+		if ckey and ckey in 'qQbB':
+			msg = 'the "%s" key is internally reserved.' % ckey
+			codeError(msg)
+		else:
+			self.ckey = ckey     # key to customize pager
 		self.crit = crit     # criterion for customizing
 
-	def checkReply(self, reply, prompt):
-		if reply in self.itemsdict:
-			return self.itemsdict[reply]
-		elif reply.startswith(self.ckey):
-			return reply
-		return 0
-		# to do: react to invalid answer
-
-	def interAct(self):
-		Pages.pagesDict(self)
+	def interAct(self, newdict=True):
+		if newdict: Pages.pagesDict(self)
 		mcols = self.cols - 3 # available columms for menu
 		hcols = self.cols - 2 # available columms for headline
 		headline = '*%s*' % sPl(self.ilen, self.name)
@@ -46,27 +51,39 @@ class Tpager(Pages):
 			if mlen > self.cols: # menu exceeds columns
 				prompt = '>%s' % prompt[mlen-mcols:]
 			reply = raw_input(prompt)
-			return self.checkReply(reply)
-		# more than 1 page
-		pn = 1 # start at 1. page
-		pdir = -1 # initial paging direction reversed
-		while 1:
-			bs = '' # reverse paging direction
-			print header + self.pages[pn]
-			if pn in (1, plen):
-				pdir *= -1
-			if 1 < pn < plen:
-				bs = 'b:%s, ' % pds[pdir*-1]
-			menu = 'Page %d of %d ([%s], %sq:%s' \
-				% (pn, plen, pds[pdir], bs, self.qfunc)
-			if self.ckey: menu = '%s, %s<%s>' % (menu, self.ckey, self.crit)
-			menu = '%s, number) ' % menu
-			mlen = len(menu)
-			if mlen > self.cols: # menu has too many columns
-				menu = '>%s' % menu[mlen-mcols:]
-			reply = raw_input(menu)
-			if reply and reply != 'b':
-				return self.checkReply(reply)
-			if reply and bs:
-				pdir *= -1
-			pn = valClamp(pn+pdir, 1, plen)
+#                        return self.checkReply(reply)
+			if not reply: return 0
+			elif reply in self.itemsdict:
+				return self.itemsdict[reply]
+			elif self.ckey and reply.startswith(self.ckey):
+				return reply
+			else: self.interAct(newdict=False)
+		else:# more than 1 page
+			pn = 1 # start at 1. page
+			pdir = -1 # initial paging direction reversed
+			while 1:
+				bs = '' # reverse paging direction
+				print header + self.pages[pn]
+				if pn in (1, plen):
+					pdir *= -1
+				if 1 < pn < plen:
+					bs = 'b:%s, ' % pds[pdir*-1]
+				menu = 'Page %d of %d ([%s], %sq:%s' \
+					% (pn, plen, pds[pdir], bs, self.qfunc)
+				if self.ckey: menu = '%s, %s<%s>' % (menu, self.ckey, self.crit)
+				menu = '%s, number) ' % menu
+				mlen = len(menu)
+				if mlen > self.cols: # menu has too many columns
+					menu = '>%s' % menu[mlen-mcols:]
+				reply = raw_input(menu)
+				if reply:
+					if reply in 'qQ': return 0
+					elif reply in self.itemsdict:
+						return self.itemsdict[reply]
+					elif self.ckey and reply.startswith(self.ckey):
+						return reply
+					elif reply in 'bB' and bs:
+						pdir *= -1
+						pn = valClamp(pn+pdir, 1, plen)
+					# nothing happens on invalid response
+				else: pn = valClamp(pn+pdir, 1, plen)
