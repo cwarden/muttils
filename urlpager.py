@@ -51,9 +51,8 @@ class Urlpager(Urlregex, Kiosk, Tpager, LastExit):
 	def __init__(self):
 		Urlregex.__init__(self) # <- proto, id, items
 		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mdirs, local
-		Tpager.__init__(self) # <- items, name
+		Tpager.__init__(self, name='url') # <- items, name
 		LastExit.__init__(self)
-		self.name = 'url'
 		self.files = []    # files to search
 		self.ft = ''	   # ftp client
 		self.xb = 0	   # force x-browser
