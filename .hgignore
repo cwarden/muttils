@@ -1,11 +1,3 @@
-syntax: glob
-
-*.pyc
-*.pyo
-*~
-*.swp
-*.orig
-*.rej
-
-build
-urlregex/__version__.py*
+(^|/)CVS($|/)
+(^|/)\.hg($|/)
+(^|/)\.hgtags($|/)
