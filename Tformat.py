@@ -1,3 +1,4 @@
+# $Id: Tformat.py,v 1.2 2005/02/04 16:26:04 chris Exp $
 class Tformat:
 	"""
 	Subclass to Pages (<- format, itemsdict, keys).

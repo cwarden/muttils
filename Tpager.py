@@ -1,3 +1,4 @@
+# $Id: Tpager.py,v 1.5 2005/02/04 16:26:04 chris Exp $
 from Pages import Pages
 from spl import sPl
 from valclamp import valClamp

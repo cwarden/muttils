@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# $Id: sigpager.py,v 1.4 2005/02/04 16:26:04 chris Exp $
 
 # Caveat:
 # Try the -n option if you send stdout to a tty

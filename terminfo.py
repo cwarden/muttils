@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# $Id: terminfo.py,v 1.2 2005/02/04 16:26:04 chris Exp $
 
 import os
 
