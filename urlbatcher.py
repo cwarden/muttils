@@ -20,7 +20,7 @@ from spl import sPl
 from getbin import getBin
 from selbrowser import finderCheck
 
-optstring = "d:ghik:lnr:"
+optstring = "d:ghik:lnr:w:"
 mackies = ('launch', 'open')
 
 def Usage(msg=''):
@@ -80,6 +80,12 @@ class Urlbatcher(Urlregex, Kiosk, LastExit):
 				self.id, self.mdirs = 1, []
 			elif o == '-r':
 				self.pat = a
+			elif o == '-w': # download dir for wget
+				self.id = 0
+				getdir = a
+				self.getdir = os.path.abspath(os.path.expanduser(getdir))
+				if not os.path.isdir(self.getdir):
+					Usage('%s: not a directory' % self.getdir)
 
 	def urlGo(self):
 		conny = 0
@@ -87,8 +93,10 @@ class Urlbatcher(Urlregex, Kiosk, LastExit):
 			if not url.startswith('file://'):
 				conny = 1
 				break
-		self.items = [self.httpAdd(url) for url in self.items]
-		bin = getBin(mackies)
+		if not self.getdir:
+			self.items = [self.httpAdd(url) for url in self.items]
+			bin = getBin(mackies)
+		else: bin = "wget -P '%s'" % self.getdir
 		if conny:
 			try: pppConnect()
 			except NameError: pass
@@ -101,7 +109,7 @@ class Urlbatcher(Urlregex, Kiosk, LastExit):
 				os.system(cmd)
 					
 	def urlSearch(self):
-		if not self.id and not finderCheck():
+		if not self.id and not self.getdir and not finderCheck():
 			Usage('only works on Macs')
 		if not self.files: # read from stdin
 			data = sys.stdin.read()
@@ -118,17 +126,14 @@ class Urlbatcher(Urlregex, Kiosk, LastExit):
 			self.items = filter(lambda i: self.pat.search(i), self.items)
 		try:
 			ilen = len(self.items)
-			if ilen and not self.id:
-				yorn = 'Really visit %s? [y,N] ' \
-				       % sPl(ilen, 'url')
+			if ilen:
+				yorn = 'Retrieve %s? [y,N] ' \
+				       % sPl(ilen, ('url', 'message-id')[self.id])
 				if raw_input(yorn) in ('y', 'Y'):
-					self.urlGo()
-			elif ilen:
-				yorn = 'Collect %s? [y/N] ' \
-				       % sPl(ilen, 'message')
-				if raw_input(yorn) in ('y', 'Y'):
-					if not self.files: self.nt = 1
-					Kiosk.kioskStore(self)
+					if not self.id: self.urlGo()
+					else:
+						if not self.files: self.nt = 1
+						Kiosk.kioskStore(self)
 			else:
 				msg = 'No %s found. [Enter] ' \
 				      % ('urls', 'message-ids')[self.id]
