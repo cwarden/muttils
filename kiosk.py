@@ -1,0 +1,294 @@
+#! /usr/bin/env python
+
+###
+# needs python version 2.3 #
+###
+
+import email, email.Errors, getopt, os, re, sys, tempfile, urllib
+from email.Generator import Generator
+from mailbox import PortableUnixMailbox
+from time import sleep, strftime
+from Urlregex import mail_re
+from spl import sPl
+try: from conny import pppConnect
+except ImportError: pass
+
+ggroups = 'http://groups.google.com/groups?'
+defaultmdir = os.path.join(os.getenv('HOME'), 'Mail')
+if not os.path.isdir(defaultmdir): defaultmdir = None
+muttone = "mutt -e 'set pager_index_lines=0' " \
+	       "-e 'set quit=yes' -e 'bind pager q quit' " \
+	       "-e 'push <return>' -f '%s'"
+#from_re = re.compile('[-._a-z9-9]+@[-._a-z0-9]+', re.IGNORECASE)
+
+def Usage(err=''):
+	if err: print err
+	print 'Usage:\n' \
+      	'%(sn)s [-l][-d <mail hierarchy>[:<mail hierarchy> ...]][-k <mbox>][-m <filemask>][-t] <msgID> [<msgID> ...]\n' \
+      	'%(sn)s [-l][-D <mail hierarchy>[:<mail hierarchy> ...]][-k <mbox>][-m <filemask>][-t] <msgID> [<msgID> ...]\n' \
+      	'%(sn)s -n [-l][-k <mbox>][-t] <msgID> [<msgID> ...]\n' \
+      	'%(sn)s -g [-k <mbox>][-t] <msgID> [<msgID> ...]\n' \
+      	'%(sn)s -b <msgID> [<msgID> ...]\n' \
+      	'%(sn)s -h' \
+	      % { 'sn': os.path.basename(sys.argv[0]) }
+	sys.exit(2)
+
+def regError(err, pat):
+	print '%s in pattern "%s"' % (err, pat)
+	sys.exit(2)
+
+def fpError(strerror, fp):
+	fp.close()
+	print strerror
+	sys.exit(2)
+
+def leafDir():
+	"""Returns path to directory where leafnode
+	stores hard links to all articles."""
+	leafinfo = os.popen("newsq").readline()
+	# -> 'Contents of queue in directory /sw/var/spool/news/out.going:\n'
+	leafl = leafinfo.split('/')[1:-1]
+	# -> ['sw', 'var', 'spool', 'news']
+	leafl.insert(0, '/')
+	leafl.append('message.id')
+	return os.path.join(*leafl)
+	# -> '/sw/var/spool/news/message.id'
+
+def msgFactory(fp):
+	try: return email.message_from_file(fp)
+	except email.Errors.MessageParseError: return ''
+
+def mailboxTest(path):
+	fp = file(path)
+	msg = msgFactory(fp)
+	fp.close()
+	if msg: return msg.get_unixfrom()
+
+def nakHead(header):
+	return header.split('>')[0].split('<')[-1]
+
+### customize user-agent header
+class AppURLopener(urllib.FancyURLopener):
+	def __init__(self, *args):
+		self.version = "w3m" # works with empty string too
+		urllib.FancyURLopener.__init__(self, *args)
+
+urllib._urlopener = AppURLopener()
+###
+
+
+class Kiosk:
+	def __init__(self):
+		self.items = []		# message-ids to look for
+		self.kiosk = ''		# path to kiosk mbox
+		self.mask = ''		# file mask for mdir (applied to directories too)
+		self.nt = 0		# if 1: needs terminal
+		self.browse = 0		# browse googlegroups
+		self.google = 0		# if 1: just googlegroups
+		self.mdirs = [] 	# mailbox hierarchies
+		if defaultmdir: self.mdirs = [defaultmdir]
+		self.local = 0          # local search only
+		self.midobj = None
+		self.msgs = []
+		self.tmp = 0
+
+	def argParser(self):
+		try: opts, self.items = getopt.getopt(sys.argv[1:], "bd:D:ghk:lm:nt")
+		except getopt.GetoptError, strerror: Usage(strerror)
+		for o, a in opts:
+			if o == '-b':
+				self.browse, self.google, self.mdirs = 1, 1, []
+			elif o == '-d':
+				self.mdirs = self.mdirs + a.split(':')
+			elif o == '-D': self.mdirs = a.split(':')
+			elif o == '-g':
+				self.google, self.mdirs = 1, []
+			elif o == '-h': Usage()
+			elif o == '-l': self.local, self.google = 1, 0
+			elif o == '-k': self.kiosk = a
+			elif o == '-m': self.mask = a
+			elif o == '-n': self.mdirs = [] # don't search local mailboxes
+			elif o == '-t': self.nt = 1
+	
+	def kioskTest(self):
+		if not self.kiosk:
+			self.kiosk = tempfile.mkstemp('kiosk')[1]
+			self.tmp = 1
+			return
+		self.kiosk = os.path.abspath(os.path.expanduser(self.kiosk))
+		if not os.path.exists(self.kiosk): return
+		if not os.path.isfile(self.kiosk):
+			err = '%s: not a regular file' % self.kiosk
+			Usage(err)
+		fp = file(self.kiosk)
+		testline = fp.readline()
+		fp.close()
+		if not testline: return # empty is fine
+		test = email.message_from_string(testline)
+		if not test.get_unixfrom():
+			err = '%s: not a unix mailbox' % self.kiosk
+			Usage(err)
+		
+	def mdirTest(self):
+		for dir in self.mdirs:
+			if not os.path.isdir(os.path.abspath(os.path.expanduser(dir))):
+				print 'Warning! %s: not a directory, skipping' % dir
+				self.mdirs.remove(dir)
+
+	def goGoogle(self):
+		print 'Going google ...'
+		try: pppConnect()
+		except NameError: pass
+		for id in self.items:
+			if not self.browse:
+				query = {'selm':id, 'output':'gplain'}
+			else: query = {'selm':id}
+			params = urllib.urlencode(query)
+			url = '%s%s' % (ggroups, params)
+			if self.browse:
+				cmd = "w3m -T text/html '%s'" % url
+				os.system(cmd)
+				sys.exit()
+			try: fp = urllib.urlopen(url)
+			except IOError, strerror: # no connection
+				fpError(strerror, fp)
+			try: msg = email.message_from_file(fp)
+			except email.Errors.MessageParseError, strerror:
+				fpError(strerror, fp)
+			fp.close()
+			if msg.__getitem__('message-id'):
+				self.msgs.append(msg)
+				self.items.remove(id)
+			else:
+				print msg.get_payload(decode=1)
+				sleep(5)
+				print 'Continuing ...'
+	
+	def leafSearch(self):
+		print 'Searching local newsserver ...'
+		leafdir = leafDir()
+#		for root, dirs, files in os.walk(leafdir):
+#			for name in files:
+#				if name == self.anglid:
+#					return os.path.join(root, name)
+		# but this is significantly faster:
+		leaflets = os.listdir(leafdir)
+		urldict = {}
+		[urldict.setdefault(id, '<%s>' % id) for id in self.items]
+		for leaflet in leaflets:
+			leaflet = os.path.join(leafdir, leaflet)
+			if self.items and os.path.isdir(leaflet):
+				articles = os.listdir(leaflet)
+				found = []
+				for key in urldict:
+					anglid = urldict[key]
+					if anglid in articles:
+						fp = file(os.path.join(leaflet, anglid))
+						try: msg = email.message_from_file(fp)
+						except email.Errors.MessageParseError, strerror:
+							fpError(strerror, fp)
+						fp.close()
+						self.msgs.append(msg)
+						found.append(key)
+						self.items.remove(key)
+						print 'found message-id <%s>' % key
+				for key in found: del urldict[key]
+
+	def midObj(self):
+		escitems = [re.escape(i) for i in self.items]
+		#raw = r'^message-id:\s*<(%s)>\s*$' % '|'.join(self.items)
+		s = '^message-id: ?<(%s)>\s*$' % '|'.join(escitems)
+		self.midobj = re.compile(s, re.IGNORECASE|re.MULTILINE)
+
+	def boxParser(self, path):
+		print 'Searching %s ...' % path
+		fp = file(path)
+		s = fp.read()
+		hits = self.midobj.findall(s)
+		if not hits:
+			fp.close()
+			return
+		print 'Extracting %s ...' % sPl(len(hits), 'message')
+		mbox = PortableUnixMailbox(fp, msgFactory)
+		msg = ''
+		while msg != None and hits:
+			msg = mbox.next()
+			if msg:
+				msgid = msg.__getitem__('message-id')[1:-1]
+				if msgid in hits:
+					self.msgs.append(msg)
+					self.items.remove(msgid)
+					self.midObj()
+					hits.remove(msgid)
+					print 'retrieved message-id <%s>' % msgid
+		fp.close()
+		if hits: print '%s.\n' \
+			       'Message-id quoted at start of line.\n' \
+			       'Continuing search ...' \
+			       % sPl(len(hits), 'false positive')
+	
+	def mailSearch(self):
+		print '%s not on local server.\n' \
+		      'Searching local mailboxes ...' \
+		      % sPl(len(self.items), 'message')
+		self.midObj()
+		for mdir in self.mdirs:
+			for root, dirs, files in os.walk(mdir):	
+				if self.mask:
+					rmdl = [d for d in dirs if not self.mask.search(d)]
+					for name in rmdl:
+						if name in dirs: dirs.remove(name)
+				for name in files:
+					if self.items and (not self.mask or self.mask.search(name)):
+						path = os.path.join(root, name)
+						if mailboxTest(path):
+							self.boxParser(path)
+
+	def kioskStore(self):
+		self.items = [nakHead(id) for id in self.items]
+		if not self.items: Usage('missing message-ids')
+		elif self.browse and len(self.items) == 1: self.goGoogle()
+		elif self.browse:
+			err = 'Browse 1 url at a time'
+			Usage(err)
+		self.kioskTest()
+		if self.mdirs: self.mdirTest()
+		if not self.google:
+			self.leafSearch()
+			if self.items and self.mdirs:
+				if self.mask:
+					try: self.mask = re.compile(r'%s' % self.mask)
+					except re.error, strerror:
+						regError(strerror, self.mask)
+				self.mailSearch()
+				if self.items:
+					print '%s not in specified local mailboxes.' \
+					      % sPl(len(self.items), 'message')
+		if self.items and not self.local: self.goGoogle()
+		elif self.items:
+			print '%s not found locally' \
+				% sPl(len(self.items), 'message')
+			sleep(5)
+			if not self.msgs: sys.exit(0)
+		outfp = file(self.kiosk, "a")
+		g = Generator(outfp)
+		for msg in self.msgs:
+			if not msg.get_unixfrom():
+				From = msg.__getitem__('From')
+				From = mail_re.search(From).group(0)
+				date = strftime("%a %b %d %H:%M:%S %Y")
+				msg.set_unixfrom('From %s  %s' % (From, date))
+			g.flatten(msg, unixfrom=True)
+		outfp.close()
+		if len(self.msgs) == 1: cmd = muttone % self.kiosk
+		else: cmd = "mutt -zf '%s'" % self.kiosk
+		if self.nt: cmd = "%s <> %s" % (cmd, os.ctermid())
+		os.system(cmd)
+		if self.tmp: os.unlink(self.kiosk)
+
+def main():
+	k = Kiosk()
+	k.argParser()
+	k.kioskStore()
+
+if __name__ == '__main__': main()
