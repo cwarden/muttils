@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlbatcher.py,v 1.4 2005/02/04 16:32:44 chris Exp $
+# $Id: urlbatcher.py,v 1.5 2005/02/04 22:31:27 chris Exp $
 
 ###
 # Caveat:
@@ -18,13 +18,13 @@ try: from conny import pppConnect
 except ImportError: pass
 from kiosk import Kiosk
 from spl import sPl
-from selbrowser import selBrowser
+from selbrowser import selBrowser, local_re
 
 optstring = "d:ghik:lnr:w:x"
 
 def Usage(msg=''):
 	scriptname = os.path.basename(sys.argv[0])
-	if msg: print msg
+	if msg: print '%s: %s' % (sn, msg)
 	print 'Usage:\n' \
 	'%(sn)s [-x][-r <pattern>][file ...]\n' \
 	'%(sn)s -w <download dir> [-r <pattern]\n' \
@@ -101,11 +101,12 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 				except NameError: pass
 				break
 		if self.getdir:
+			getBin(['wget'])
+			for url in self.items:
+				if local_re.search(url) != None:
+					Usage("wget doesn't retrieve local files")
 			os.system("wget -P '%s'" % "' '".join(self.items))
-		else:
-			for url in self.items: selBrowser(url, 0, self.xb)
-			# put above into selbrowser.py
-			# doesn't work with firefox yet; try to solve in selbrowser.py
+		else: selBrowser(self.items, 0, self.xb)
 					
 	def urlSearch(self):
 		Urlcollector.urlCollect(self)
