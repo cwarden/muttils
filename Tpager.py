@@ -17,12 +17,13 @@ class Tpager(Pages):
 		self.ckey = ckey     # key to customize pager
 		self.crit = crit     # criterion for customizing
 
-	def checkReply(self, reply):
+	def checkReply(self, reply, prompt):
 		if reply in self.itemsdict:
 			return self.itemsdict[reply]
 		elif reply.startswith(self.ckey):
 			return reply
 		return 0
+		# to do: react to invalid answer
 
 	def interAct(self):
 		Pages.pagesDict(self)
@@ -36,8 +37,6 @@ class Tpager(Pages):
 		plen = len(self.pages)
 		if plen == 1: # no paging
 			print header + self.pages[1]
-#                        if self.itemsdict: cs = ', number'
-#                        else: cs = ''
 			cs = ''
 			if self.ckey: cs = ', %s<%s>' % (self.ckey, self.crit)
 			if self.itemsdict: cs = '%s, number' % cs

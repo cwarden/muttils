@@ -112,7 +112,8 @@ class Signature(Tpager, LastExit):
 				self.pat = self.sign[1:]
 				self.sign = ''
 				self.checkPattern()
-				Tpager.__init__(self,'sig','bf','default sig','/')
+				Tpager.__init__(self,
+					self.name, self.format, self.qfunc, self.ckey)
 			else: break
 
 	def underSign(self):
