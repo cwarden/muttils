@@ -13,7 +13,7 @@ from spl import sPl
 try: from conny import pppConnect
 except ImportError: pass
 
-ggroups = 'http://groups.google.com/groups?'
+ggroups = 'http://groups.google.com/groups?hl=de&'
 defaultmdir = os.path.join(os.getenv('HOME'), 'Mail')
 if not os.path.isdir(defaultmdir): defaultmdir = None
 muttone = "mutt -e 'set pager_index_lines=0' " \
@@ -136,6 +136,8 @@ class Kiosk:
 				self.mdirs.remove(dir)
 
 	def goGoogle(self):
+		"""Gets messages from Google Groups."""
+		### To do: 1 (the first msg?) of a list gets lost??? ###
 		print 'Going google ...'
 		try: pppConnect()
 		except NameError: pass
