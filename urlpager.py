@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# $Id: urlpager.py,v 1.3 2005/02/04 16:22:10 chris Exp $
 
 ###
 # Caveat:
@@ -10,17 +11,17 @@
 ###
 
 import getopt, os, readline, sys
-from Urlregex import Urlregex, mailCheck, ftpCheck
+from Urlcollector import Urlcollector
 from LastExit import LastExit
 from Tpager import Tpager
+from Urlregex import mailCheck, ftpCheck
 try: from conny import pppConnect
 except ImportError: pass
-from datatype import dataType
 from kiosk import Kiosk
 from getbin import getBin
 from selbrowser import selBrowser
 
-optstring = "bd:D:f:ghilnp:k:tw:x"
+optstring = "bd:D:f:ghilnp:k:r:tw:x"
 mailers = ('mutt', 'pine', 'elm', 'mail')
 ftpclients = ('ftp', 'lftp', 'ncftp', 'ncftpget')
 
@@ -28,32 +29,25 @@ def Usage(msg=''):
 	scriptname = os.path.basename(sys.argv[0])
 	if msg: print msg
 	print 'Usage:\n' \
-	'%(sn)s [-p <protocol>][-t][-x][-f <ftp client>][<file> ...]\n' \
-	'%(sn)s -w <download dir>\n' \
-	'%(sn)s -i [<file> ...]\n' \
-	'%(sn)s [-i][-l][-k <mbox>][-d <mail hierarchy>[:<mail hierarchy> ...]][<file> ...]\n' \
-	'%(sn)s [-i][-l][-k <mbox>][-D <mail hierarchy>[:<mail hierarchy> ...]][<file> ...]\n' \
-	'%(sn)s [-i][-l][-k <mbox>] -n [<file> ...]\n' \
-	'%(sn)s [-i][-k <mbox>] -g [<file> ...]\n' \
-	'%(sn)s [-i][-g] -b [<file> ...]\n' \
+	'%(sn)s [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]\n' \
+	'%(sn)s -w <download dir> [-r <pattern]\n' \
+	'%(sn)s -i [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -n [-r <pattern][-l][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -g [-r <pattern][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -b [-r <pattern][<file> ...]\n' \
 	'%(sn)s -h' \
 	% { 'sn':scriptname }
 	sys.exit(2)
 
-def parseError():
-	errmsg = '*Encountered malformed html!*\n' \
-		 'Might be unable to retrieve every url.\n' \
-		 'Continue? ([RET], No) '
-	if raw_input(errmsg) in ('n', 'N'):
-		sys.exit()
 
-class Urlpager(Urlregex, Kiosk, Tpager, LastExit):
+class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def __init__(self):
-		Urlregex.__init__(self) # <- proto, id, items
+		Urlcollector.__init__(self) # <- proto, it, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mdirs, local
 		Tpager.__init__(self, name='url') # <- items, name
 		LastExit.__init__(self)
-		self.files = []    # files to search
 		self.ft = ''	   # ftp client
 		self.xb = 0	   # force x-browser
 		self.tb = 0	   # use text browser
@@ -66,27 +60,36 @@ class Urlpager(Urlregex, Kiosk, Tpager, LastExit):
 		for o, a in opts:
 			if o == '-b': # don't look up msgs locally
 				self.browse, self.id, self.google, self.mdirs = 1, 1, 1, []
+				self.getdir = ''
 			elif o == '-d': # add specific mail hierarchies
 				self.id = 1
 				self.mdirs = self.mdirs + a.split(':')
+				self.getdir = ''
 			elif o == '-D': # specific mail hierarchies
 				self.id = 1
 				self.mdirs = a.split(':')
+				self.getdir = ''
 			elif o == '-g': # don't look up msgs locally
 				self.id, self.google, self.mdirs = 1, 1, []
 			elif o == '-h': Usage()
 			elif o == '-i': # look for message-ids
 				self.id = 1
+				self.getdir = ''
 			elif o == '-k': # mailbox to store retrieved message
 				self.id = 1
 				self.kiosk = a
+				self.getdir = ''
 			elif o == '-l': # only local search for message-ids
 				self.local, self.id = 1, 1
+				self.getdir = ''
 			elif o == '-n': # don't search mailboxes for message-ids
 				self.id, self.mdirs = 1, []
+				self.getdir = ''
 			elif o == '-p': # protocol(s)
 				self.id = 0
 				self.proto = a
+			elif o == '-r': # regex pattern to match urls against
+				self.pat = a
 			elif o == '-x': # xbrowser
 				self.id, self.xb = 0, 1
 			elif o == '-t': # text browser command
@@ -94,6 +97,7 @@ class Urlpager(Urlregex, Kiosk, Tpager, LastExit):
 			elif o == '-f': # ftp client
 				self.id = 0
 				self.ft = a
+				self.getdir = ''
 			elif o == '-w': # download dir for wget
 				self.id = 0
 				self.getdir = a
@@ -118,9 +122,7 @@ class Urlpager(Urlregex, Kiosk, Tpager, LastExit):
 			conny = 0
 		elif self.getdir:
 			bin = "wget -P '%s'" % self.getdir
-		elif self.proto == 'ftp' \
-		or self.ft and not self.id and not mailCheck(self.url) \
-		or self.proto in ('all', 'web') and ftpCheck(self.url):
+		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
 			if self.ft: ftpclients = (self.ft)
 			bin = getBin(ftpclients)
 		if not bin:
@@ -135,15 +137,8 @@ class Urlpager(Urlregex, Kiosk, Tpager, LastExit):
 			os.system(cmd)
 					
 	def urlSearch(self):
-		if not self.files: # read from stdin
-			data = sys.stdin.read()
-			Urlregex.findUrls(self, data)
-			LastExit.termInit(self)
-		else:
-			for f in self.files:
-				data, type = dataType(f)
-				Urlregex.findUrls(self, data, type)
-		if self.ugly: parseError()
+		Urlcollector.urlCollect(self)
+		if not self.files: LastExit.termInit(self)
 		try:
 			self.urlPager()
 			if self.url:
