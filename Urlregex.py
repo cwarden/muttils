@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# $Id: Urlregex.py,v 1.2 2005/02/04 16:30:11 chris Exp $
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError

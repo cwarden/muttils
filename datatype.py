@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# $Id: datatype.py,v 1.2 2005/02/04 16:30:24 chris Exp $
 
 import os.path
 import urllib

@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# $Id: Urlparser.py,v 1.2 2005/02/04 16:29:56 chris Exp $
 
 import email, email.Errors, os.path, re, sys
 from email.Utils import getaddresses
