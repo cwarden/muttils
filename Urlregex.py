@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: Urlregex.py,v 1.2 2005/02/04 16:30:11 chris Exp $
+# $Id: Urlregex.py,v 1.3 2005/02/13 19:43:54 chris Exp $
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -138,7 +138,8 @@ class Urlregex(Urlparser):
 		### intro ###
 		if self.proto in ('all', 'web'): ## groups
 			#protocols = "https?:// finger:// ftp:// telnet:// mailto:".split()
-			protocols = "(www|ftp)\. https?:// file://(localhost)?/ " \
+			protocols = "(www|ftp)\. https?:// " \
+				"(file://(localhost)?/|http://localhost) " \
 				"finger:// ftp:// telnet:// mailto:".split()
 			# gopher? wais?
 			if self.proto == 'web':
