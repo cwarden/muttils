@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlpager.py,v 1.6 2005/02/05 16:47:46 chris Exp $
+# $Id: urlpager.py,v 1.7 2005/02/07 14:48:01 chris Exp $
 
 ###
 # Caveat:
@@ -23,7 +23,6 @@ from selbrowser import selBrowser, local_re
 
 optstring = "bd:D:f:ghilnp:k:r:tw:x"
 mailers = ('mutt', 'pine', 'elm', 'mail')
-ftpclients = ('ftp', 'lftp', 'ncftp', 'ncftpget')
 
 def Usage(msg=''):
 	scriptname = os.path.basename(sys.argv[0])
@@ -48,7 +47,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mdirs, local
 		Tpager.__init__(self, name='url') # <- items, name
 		LastExit.__init__(self)
-		self.ft = ''	   # ftp client
+		self.ft = 'ftp'	   # ftpclient
 		self.xb = 0	   # force x-browser
 		self.tb = 0	   # use text browser
 		self.url = ''	   # selected url
@@ -69,6 +68,9 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				self.id = 1
 				self.mdirs = a.split(':')
 				self.getdir = ''
+			elif o == '-f': # ftp client
+				getBin([a])
+				self.ft = a
 			elif o == '-g': # don't look up msgs locally
 				self.id, self.google, self.mdirs = 1, 1, []
 			elif o == '-h': Usage()
@@ -94,17 +96,14 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				self.id, self.xb = 0, 1
 			elif o == '-t': # text browser command
 				self.id, self.tb = 0, 1
-			elif o == '-f': # ftp client
-				self.id = 0
-				self.ft = a
-				self.getdir = ''
 			elif o == '-w': # download dir for wget
-				self.id = 0
+				getBin(['wget'])
+				self.proto = 'web'
 				self.getdir = a
 				self.getdir = os.path.abspath(os.path.expanduser(self.getdir))
 				if not os.path.isdir(self.getdir):
 					Usage('%s: not a directory' % self.getdir)
-				self.proto = 'web'
+				self.id = 0
 
 	def urlPager(self):
 		if not self.id and self.proto != 'all':
@@ -121,17 +120,14 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			bin = getBin(mailers)
 			conny = 0
 		elif self.getdir:
-			getBin(['wget'])
 			if local_re.search(self.url) != None:
 				Usage("wget doesn't retrieve local files")
 			bin = "wget -P '%s'" % self.getdir
 		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
-			if self.ft: ftpclients = (self.ft)
-			bin = getBin(ftpclients)
-		if not bin:
-			selBrowser([self.url], self.tb, self.xb)
+			bin, self.nt = self.ft, 1
+		if not bin: selBrowser([self.url], self.tb, self.xb)
 		else:
-			if not self.files and not self.getdir: # program needs terminal
+			if not self.files and not self.getdir or self.nt: # program needs terminal
 				cmd = "%s '%s' < %s" % (bin, self.url, os.ctermid())
 			else: cmd = "%s '%s'" % (bin, self.url)
 			if conny:
