@@ -35,7 +35,8 @@ class Signature(Tpager, LastExit):
 	matched against a regular expression of your choice.
 	"""
 	def __init__(self):
-		Tpager.__init__(self) # <- items, name, format, qfunc
+		Tpager.__init__(self,name='sig',format='bf',qfunc='default sig',ckey='/')
+							# <- item, name, format, qfunc
 		LastExit.__init__(self)
 		self.sign = ''          # chosen self.signature
 		self.sig = defaultsig	# self.signature file
@@ -49,11 +50,6 @@ class Signature(Tpager, LastExit):
 					# sig appended otherwise
 		self.pat = ''           # match sigs against pattern
 		self.menu = 'Enter pattern to match signatures against:\n'
-		# Tpager vars
-		self.name = 'sig'
-		self.format = 'bf'
-		self.qfunc = 'default sig'
-		self.ckey = '/'
 
 	def argParser(self):
 		try: opts, args = getopt.getopt(sys.argv[1:], optstring)
