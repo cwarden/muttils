@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlpager.py,v 1.8 2005/02/08 02:18:57 chris Exp $
+# $Id: urlpager.py,v 1.9 2005/02/13 19:41:56 chris Exp $
 
 ###
 # Caveat:
@@ -114,7 +114,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 
 	def urlGo(self):
 		bin = ''
-		conny = 1
+		conny = local_re.search(self.url) != None
 		if self.proto == 'mailto' \
 		or self.proto == 'all' and mailCheck(self.url):
 			bin = getBin(mailers)
