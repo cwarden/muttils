@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlpager.py,v 1.5 2005/02/04 22:28:06 chris Exp $
+# $Id: urlpager.py,v 1.6 2005/02/05 16:47:46 chris Exp $
 
 ###
 # Caveat:
@@ -122,7 +122,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			conny = 0
 		elif self.getdir:
 			getBin(['wget'])
-			if local_re.search(url) != None:
+			if local_re.search(self.url) != None:
 				Usage("wget doesn't retrieve local files")
 			bin = "wget -P '%s'" % self.getdir
 		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
