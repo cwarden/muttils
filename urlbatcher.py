@@ -61,17 +61,22 @@ class Urlbatcher(Urlregex, Kiosk, LastExit):
 		for o, a in opts:
 			if o == '-d': # specific mail hierarchies
 				self.id = 1
+				self.proto = 'all'
 				self.mdirs = a.split(':')
 			elif o == '-h': Usage()
 			elif o == '-g': # go to google directly for message-ids
-				self.id, self.google = 1, 1
+				self.proto = 'all'
+				self.id, self.google, self.mdirs = 1, 1, []
 			elif o == '-i': # look for message-ids
+				self.proto = 'all'
 				self.id = 1
 			elif o == '-k': # mailbox to store retrieved messages
+				self.proto = 'all'
 				self.id, self.kiosk = 1, a
 			elif o == '-l': # only local search for message-ids
 				self.id, self.local = 1, 1
 			elif o == '-n': # don't search local mailboxes
+				self.proto = 'all'
 				self.id, self.mdirs = 1, []
 			elif o == '-r':
 				self.pat = a
