@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlpager.py,v 1.9 2005/02/13 19:41:56 chris Exp $
+# $Id: urlpager.py,v 1.10 2005/02/27 18:13:56 chris Exp $
 
 ###
 # Caveat:
@@ -114,13 +114,13 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 
 	def urlGo(self):
 		bin = ''
-		conny = local_re.search(self.url) != None
+		conny = local_re.search(self.url) == None
 		if self.proto == 'mailto' \
 		or self.proto == 'all' and mailCheck(self.url):
 			bin = getBin(mailers)
-			conny = 0
+			conny = False
 		elif self.getdir:
-			if local_re.search(self.url) != None:
+			if not conny:
 				Usage("wget doesn't retrieve local files")
 			bin = "wget -P '%s'" % self.getdir
 		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
