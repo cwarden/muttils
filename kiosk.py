@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.5 2005/02/04 16:31:21 chris Exp $
+# $Id: kiosk.py,v 1.6 2005/06/23 23:53:10 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -62,7 +62,7 @@ def msgFactory(fp):
 	except email.Errors.MessageParseError: return ''
 
 def mailboxTest(path):
-	fp = file(path)
+	fp = open(path, "rb")
 	msg = msgFactory(fp)
 	fp.close()
 	if msg: return msg.get_unixfrom()
@@ -123,7 +123,7 @@ class Kiosk:
 		if not os.path.isfile(self.kiosk):
 			err = '%s: not a regular file' % self.kiosk
 			Usage(err)
-		fp = file(self.kiosk)
+		fp = open(self.kiosk)
 		testline = fp.readline()
 		fp.close()
 		if not testline: return # empty is fine
@@ -189,7 +189,7 @@ class Kiosk:
 				for key in urldict:
 					anglid = urldict[key]
 					if anglid in articles:
-						fp = file(os.path.join(leaflet, anglid))
+						fp = open(os.path.join(leaflet, anglid))
 						try: msg = email.message_from_file(fp)
 						except email.Errors.MessageParseError, strerror:
 							fpError(strerror, fp)
@@ -208,7 +208,7 @@ class Kiosk:
 
 	def boxParser(self, path):
 		print 'Searching %s ...' % path
-		fp = file(path)
+		fp = open(path)
 		s = fp.read()
 		hits = self.midobj.findall(s)
 		if not hits:
@@ -276,7 +276,7 @@ class Kiosk:
 				% sPl(len(self.items), 'message')
 			sleep(5)
 			if not self.msgs: sys.exit(0)
-		outfp = file(self.kiosk, "a")
+		outfp = open(self.kiosk, "a")
 		g = Generator(outfp)
 		for msg in self.msgs:
 			if not msg.get_unixfrom():
