@@ -1,13 +1,12 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.6 2005/06/23 23:53:10 chris Exp $
+# $Id: kiosk.py,v 1.7 2005/06/26 22:42:21 chris Exp $
 
 ###
 # needs python version 2.3 #
 ###
 
-import email, email.Errors, getopt, os, re, sys, tempfile, urllib
+import email, email.Errors, getopt, mailbox, os, re, sys, tempfile, urllib
 from email.Generator import Generator
-from mailbox import PortableUnixMailbox
 from time import sleep, strftime
 from Urlregex import mail_re
 from getbin import getBin
@@ -16,7 +15,11 @@ try: from conny import pppConnect
 except ImportError: pass
 
 ggroups = 'http://groups.google.com/groups?hl=de&'
-defaultmdir = os.path.join(os.getenv('HOME'), 'Mail')
+defaultmdir = os.environ['MAIL']
+if defaultmdir: # workaround for my machine, check!
+	defaultmdir = os.path.split(defaultmdir[:-1])[0]
+else:
+	defaultmdir = os.path.join(os.environ['HOME'], 'Mail')
 if not os.path.isdir(defaultmdir): defaultmdir = None
 mutt = getBin(('mutt', 'muttng'))
 muttone = "%s -e 'set pager_index_lines=0' " \
@@ -200,55 +203,47 @@ class Kiosk:
 						print 'found message-id <%s>' % key
 				for key in found: del urldict[key]
 
-	def midObj(self):
-		escitems = [re.escape(i) for i in self.items]
-		#raw = r'^message-id:\s*<(%s)>\s*$' % '|'.join(self.items)
-		s = '^message-id: ?<(%s)>\s*$' % '|'.join(escitems)
-		self.midobj = re.compile(s, re.IGNORECASE|re.MULTILINE)
-
-	def boxParser(self, path):
+	def boxParser(self, path, maildir=0):
 		print 'Searching %s ...' % path
-		fp = open(path)
-		s = fp.read()
-		hits = self.midobj.findall(s)
-		if not hits:
-			fp.close()
-			return
-		print 'Extracting %s ...' % sPl(len(hits), 'message')
-		mbox = PortableUnixMailbox(fp, msgFactory)
+		if maildir:
+			mbox = mailbox.Maildir(path, msgFactory)
+		else:
+			fp = open(path)
+			mbox = mailbox.PortableUnixMailbox(fp, msgFactory)
 		msg = ''
-		while msg != None and hits:
+		while msg != None and self.items:
 			msg = mbox.next()
 			if msg:
-				msgid = msg.__getitem__('message-id')[1:-1]
-				if msgid in hits:
-					self.msgs.append(msg)
-					self.items.remove(msgid)
-					self.midObj()
-					hits.remove(msgid)
-					print 'retrieved message-id <%s>' % msgid
-		fp.close()
-		if hits: print '%s.\n' \
-			       'Message-id quoted at start of line.\n' \
-			       'Continuing search ...' \
-			       % sPl(len(hits), 'false positive')
+				try:
+					msgid = msg.__getitem__('message-id')[1:-1]
+					if msgid in self.items:
+						self.msgs.append(msg)
+						self.items.remove(msgid)
+						print 'retrieved message-id <%s>' % msgid
+				except TypeError: pass # in rarest case of no id (None)
+		if not maildir: fp.close()
 	
 	def mailSearch(self):
 		print '%s not on local server.\n' \
 		      'Searching local mailboxes ...' \
 		      % sPl(len(self.items), 'message')
-		self.midObj()
 		for mdir in self.mdirs:
 			for root, dirs, files in os.walk(mdir):	
 				if self.mask:
 					rmdl = [d for d in dirs if not self.mask.search(d)]
 					for name in rmdl:
 						if name in dirs: dirs.remove(name)
+				for name in dirs:
+					if not self.items: break
+					dir = os.path.join(root, name)
+					dirlist = os.listdir(dir)
+					if 'cur' in dirlist and 'new' in dirlist:
+						self.boxParser(dir, 1)
+						dirs.remove(name)
 				for name in files:
 					if self.items and (not self.mask or self.mask.search(name)):
 						path = os.path.join(root, name)
-						if mailboxTest(path):
-							self.boxParser(path)
+						self.boxParser(path)
 
 	def kioskStore(self):
 		self.items = [nakHead(id) for id in self.items]
