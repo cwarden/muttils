@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: Urlregex.py,v 1.5 2005/03/07 13:53:37 chris Exp $
+# $Id: Urlregex.py,v 1.6 2005/06/26 09:31:01 chris Exp $
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -15,7 +15,7 @@ any = '_a-z0-9/#~:.,?+=&%!@\-'  # valid url-chars + comma
 				# Message-ID: <10rb6mngqccs018@corp.supernews.com>
 idy = '_a-z0-9/#~.?+=&%!\-\][$' # reference chars (message-id) ### w/o ":"?
 onlidy = '$\]['               # chars that appear in ids _only_
-punc = '.:?\-'		        # punctuation (how 'bout "!"?)
+punc = '.,:?!\-'		        # punctuation (how 'bout "!"?)
 
 ### outro ###
 outro = """
