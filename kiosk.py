@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.7 2005/06/26 22:42:21 chris Exp $
+# $Id: kiosk.py,v 1.8 2005/06/27 19:27:39 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -15,12 +15,7 @@ try: from conny import pppConnect
 except ImportError: pass
 
 ggroups = 'http://groups.google.com/groups?hl=de&'
-defaultmdir = os.environ['MAIL']
-if defaultmdir: # workaround for my machine, check!
-	defaultmdir = os.path.split(defaultmdir[:-1])[0]
-else:
-	defaultmdir = os.path.join(os.environ['HOME'], 'Mail')
-if not os.path.isdir(defaultmdir): defaultmdir = None
+
 mutt = getBin(('mutt', 'muttng'))
 muttone = "%s -e 'set pager_index_lines=0' " \
 	       "-e 'set quit=yes' -e 'bind pager q quit' " \
@@ -60,6 +55,16 @@ def leafDir():
 	return os.path.join(*leafl)
 	# -> '/sw/var/spool/news/message.id'
 
+def mailDir():
+	"""Returns either ~/Maildir or ~/Mail
+	as first item of a list if they are directories,
+	an empty list otherwise."""
+	castle = os.environ['HOME']
+	for dir in ('Maildir', 'Mail'):
+		d = os.path.join(castle, dir)
+		if os.path.isdir(d): return [d]
+	return []
+
 def msgFactory(fp):
 	try: return email.message_from_file(fp)
 	except email.Errors.MessageParseError: return ''
@@ -91,10 +96,8 @@ class Kiosk:
 		self.nt = 0		# if 1: needs terminal
 		self.browse = 0		# browse googlegroups
 		self.google = 0		# if 1: just googlegroups
-		self.mdirs = [] 	# mailbox hierarchies
-		if defaultmdir: self.mdirs = [defaultmdir]
+		self.mdirs = mailDir() 	# mailbox hierarchies
 		self.local = 0          # local search only
-		self.midobj = None
 		self.msgs = []
 		self.tmp = 0
 
