@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: Urlregex.py,v 1.6 2005/06/26 09:31:01 chris Exp $
+# $Id: Urlregex.py,v 1.7 2005/07/13 15:20:55 chris Exp $
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -92,7 +92,7 @@ rawwipe = r'(%s)|(%s)' % (rawid, headsoff)
 
 ## precompiled regexes ##
 ftp_re = re.compile('ftp(://|\.)', re.IGNORECASE)
-mail_re = re.compile('(mailto:)?[-._a-z0-9]+@[-._a-z0-9]+%s' \
+mail_re = re.compile(r'(mailto:)?[-._a-z0-9]+@[-._a-z0-9]+%s\b' \
 		    % top, re.IGNORECASE)
 	
 ## filter functions ##
