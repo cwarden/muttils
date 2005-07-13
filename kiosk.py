@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.8 2005/06/27 19:27:39 chris Exp $
+# $Id: kiosk.py,v 1.9 2005/07/13 15:28:29 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -7,8 +7,8 @@
 
 import email, email.Errors, getopt, mailbox, os, re, sys, tempfile, urllib
 from email.Generator import Generator
+from email.Utils import parseaddr, parsedate
 from time import sleep, strftime
-from Urlregex import mail_re
 from getbin import getBin
 from spl import sPl
 try: from conny import pppConnect
@@ -16,11 +16,12 @@ except ImportError: pass
 
 ggroups = 'http://groups.google.com/groups?hl=de&'
 
+maildir_re = r'^(cur|new|tmp)'
+
 mutt = getBin(('mutt', 'muttng'))
 muttone = "%s -e 'set pager_index_lines=0' " \
 	       "-e 'set quit=yes' -e 'bind pager q quit' " \
 	       "-e 'push <return>' -f" % mutt
-#from_re = re.compile('[-._a-z9-9]+@[-._a-z0-9]+', re.IGNORECASE)
 
 def Usage(err=''):
 	if err: print err
@@ -90,7 +91,7 @@ urllib._urlopener = AppURLopener()
 
 class Kiosk:
 	def __init__(self):
-		self.items = []		# message-ids to look for
+		self.items = None	# message-ids to look for
 		self.kiosk = ''		# path to kiosk mbox
 		self.mask = ''		# file mask for mdir (applied to directories too)
 		self.nt = 0		# if 1: needs terminal
@@ -213,17 +214,15 @@ class Kiosk:
 		else:
 			fp = open(path)
 			mbox = mailbox.PortableUnixMailbox(fp, msgFactory)
-		msg = ''
-		while msg != None and self.items:
+		while msg != None:
 			msg = mbox.next()
 			if msg:
-				try:
-					msgid = msg.__getitem__('message-id')[1:-1]
-					if msgid in self.items:
-						self.msgs.append(msg)
-						self.items.remove(msgid)
-						print 'retrieved message-id <%s>' % msgid
-				except TypeError: pass # in rarest case of no id (None)
+				msgid = msg.get('message-id','')[1:-1]
+				if msgid in self.items:
+					self.msgs.append(msg)
+					self.items.remove(msgid)
+					print 'retrieved Message-ID <%s>' % msgid
+					if not self.items: break
 		if not maildir: fp.close()
 	
 	def mailSearch(self):
@@ -232,19 +231,18 @@ class Kiosk:
 		      % sPl(len(self.items), 'message')
 		for mdir in self.mdirs:
 			for root, dirs, files in os.walk(mdir):	
-				if self.mask:
-					rmdl = [d for d in dirs if not self.mask.search(d)]
-					for name in rmdl:
-						if name in dirs: dirs.remove(name)
+				if not self.items: break
+				rmdl = [d for d in dirs if self.mask.search(d)!=None]
+				for name in rmdl:
+					if name in dirs: dirs.remove(name)
 				for name in dirs:
-					if not self.items: break
-					dir = os.path.join(root, name)
-					dirlist = os.listdir(dir)
-					if 'cur' in dirlist and 'new' in dirlist:
-						self.boxParser(dir, 1)
-						dirs.remove(name)
+					if self.items:
+						dir = os.path.join(root, name)
+						dirlist = os.listdir(dir)
+						if 'cur' in dirlist and 'new' in dirlist:
+							self.boxParser(dir, 1)
 				for name in files:
-					if self.items and (not self.mask or self.mask.search(name)):
+					if self.items and self.mask.search(name)==None:
 						path = os.path.join(root, name)
 						self.boxParser(path)
 
@@ -260,10 +258,11 @@ class Kiosk:
 		if not self.google:
 			self.leafSearch()
 			if self.items and self.mdirs:
-				if self.mask:
-					try: self.mask = re.compile(r'%s' % self.mask)
-					except re.error, strerror:
-						regError(strerror, self.mask)
+				if self.mask: self.mask = '%s|%s' % (maildir_re, self.mask)
+				else: self.mask = maildir_re
+				try: self.mask = re.compile(r'%s' % self.mask)
+				except re.error, strerror:
+					regError(strerror, ask)
 				self.mailSearch()
 				if self.items:
 					print '%s not in specified local mailboxes.' \
@@ -275,13 +274,16 @@ class Kiosk:
 			sleep(5)
 			if not self.msgs: sys.exit(0)
 		outfp = open(self.kiosk, "a")
-		g = Generator(outfp)
+		g = Generator(outfp, mangle_from_=True, maxheaderlen=0)
 		for msg in self.msgs:
 			if not msg.get_unixfrom():
-				From = msg.__getitem__('From')
-				From = mail_re.search(From).group(0)
-				date = strftime("%a %b %d %H:%M:%S %Y")
-				msg.set_unixfrom('From %s  %s' % (From, date))
+				received = msg.__getitem__('received')
+				if received: # try to clone an `original' unixfrom
+					received = received.split('; ')[-1]
+					received = parsedate(received)
+					received = strftime("%a %b %d %H:%M:%S %Y", received)
+					fromaddr = parseaddr(msg.__getitem__('from'))[1]
+					msg.set_unixfrom('From %s  %s' % (fromaddr, received))
 			g.flatten(msg, unixfrom=True)
 		outfp.close()
 		if len(self.msgs) == 1: cmd = "%s '%s'" % (muttone, self.kiosk)
