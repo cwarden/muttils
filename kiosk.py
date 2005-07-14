@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.9 2005/07/13 15:28:29 chris Exp $
+# $Id: kiosk.py,v 1.10 2005/07/14 07:37:55 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -214,6 +214,7 @@ class Kiosk:
 		else:
 			fp = open(path)
 			mbox = mailbox.PortableUnixMailbox(fp, msgFactory)
+		msg = ''
 		while msg != None:
 			msg = mbox.next()
 			if msg:
