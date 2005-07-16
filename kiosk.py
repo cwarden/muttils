@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.10 2005/07/14 07:37:55 chris Exp $
+# $Id: kiosk.py,v 1.11 2005/07/17 00:22:37 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -231,21 +231,24 @@ class Kiosk:
 		      'Searching local mailboxes ...' \
 		      % sPl(len(self.items), 'message')
 		for mdir in self.mdirs:
+			maildir = 0
 			for root, dirs, files in os.walk(mdir):	
 				if not self.items: break
 				rmdl = [d for d in dirs if self.mask.search(d)!=None]
-				for name in rmdl:
+				for d in rmdl:
 					if name in dirs: dirs.remove(name)
 				for name in dirs:
 					if self.items:
 						dir = os.path.join(root, name)
 						dirlist = os.listdir(dir)
 						if 'cur' in dirlist and 'new' in dirlist:
+							maildir = 1
 							self.boxParser(dir, 1)
-				for name in files:
-					if self.items and self.mask.search(name)==None:
-						path = os.path.join(root, name)
-						self.boxParser(path)
+				if not maildir:
+					for name in files:
+						if self.items and self.mask.search(name)==None:
+							path = os.path.join(root, name)
+							self.boxParser(path)
 
 	def kioskStore(self):
 		self.items = [nakHead(id) for id in self.items]
@@ -278,13 +281,16 @@ class Kiosk:
 		g = Generator(outfp, mangle_from_=True, maxheaderlen=0)
 		for msg in self.msgs:
 			if not msg.get_unixfrom():
+				date = None
 				received = msg.__getitem__('received')
 				if received: # try to clone an `original' unixfrom
-					received = received.split('; ')[-1]
-					received = parsedate(received)
-					received = strftime("%a %b %d %H:%M:%S %Y", received)
-					fromaddr = parseaddr(msg.__getitem__('from'))[1]
-					msg.set_unixfrom('From %s  %s' % (fromaddr, received))
+					date = received.split('; ')[-1]
+				else: date = msg.__getitem__('date')
+				if date:
+					date = parsedate(date)
+					date = strftime("%a %b %d %H:%M:%S %Y", date)
+					fromaddr = parseaddr(msg.get('from', 'nobody'))[1]
+					msg.set_unixfrom('From %s  %s' % (fromaddr, date))
 			g.flatten(msg, unixfrom=True)
 		outfp.close()
 		if len(self.msgs) == 1: cmd = "%s '%s'" % (muttone, self.kiosk)
