@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.12 2005/07/17 15:34:46 chris Exp $
+# $Id: kiosk.py,v 1.13 2005/07/19 15:01:03 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -312,6 +312,8 @@ class Kiosk:
 		outfp = open(self.kiosk, "ab")
 		g = Generator(outfp, mangle_from_=True, maxheaderlen=0)
 		for msg in self.msgs:
+			msg.__delitem__('status') # show msg as new in mutt
+			msg.__delitem__('xref') # delete server info
 			if not msg.get_unixfrom(): msg = mkUnixfrom(msg)
 			g.flatten(msg, unixfrom=True)
 		outfp.close()
