@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.13 2005/07/19 15:01:03 chris Exp $
+# $Id: kiosk.py,v 1.14 2005/07/20 14:33:31 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -10,7 +10,7 @@ from email.Generator import Generator
 from email.Parser import HeaderParser
 from email.Utils import parseaddr, parsedate
 from tempfile import mkstemp
-from time import sleep, strftime
+from time import sleep, asctime
 if sys.version_info[1] > 3:
 	from subprocess import Popen, PIPE
 	def subpro(cmd):
@@ -82,7 +82,7 @@ def mailDir():
 
 def msgFactory(fp):
 	try: return HeaderParser().parse(fp)
-	except email.Errors.MessageParseError: return ''
+	except email.Errors.HeaderParseError: return ''
 
 def nakHead(header):
 	"""Strips Message-ID header down to pure ID."""
@@ -104,10 +104,11 @@ def mkUnixfrom(msg):
 		date = msg['received'].split('; ')[-1]
 	else: date = msg.__getitem__('date')
 	if date:
-		date = parsedate(date)
-		date = strftime("%a %b %d %H:%M:%S %Y", date)
-		fromaddr = parseaddr(msg.get('from', 'nobody'))[1]
-		msg.set_unixfrom('From %s  %s' % (fromaddr, date))
+		date = asctime(parsedate(date))
+		if 'return-path' in msg:
+			ufromaddr = msg['return-path'][1:-1]
+		else: ufromaddr = parseaddr(msg.get('from', 'nobody'))[1]
+		msg.set_unixfrom('From %s  %s' % (ufromaddr, date))
 	return msg
 
 class Kiosk:
