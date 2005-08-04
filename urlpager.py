@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlpager.py,v 1.10 2005/02/27 18:13:56 chris Exp $
+# $Id: urlpager.py,v 1.11 2005/08/04 21:09:50 chris Exp $
 
 ###
 # Caveat:
@@ -21,7 +21,7 @@ from kiosk import Kiosk
 from getbin import getBin
 from selbrowser import selBrowser, local_re
 
-optstring = "bd:D:f:ghilnp:k:r:tw:x"
+optstring = "bd:D:f:ghiIlnp:k:r:tw:x"
 mailers = ('mutt', 'pine', 'elm', 'mail')
 
 def Usage(msg=''):
@@ -30,12 +30,14 @@ def Usage(msg=''):
 	print 'Usage:\n' \
 	'%(sn)s [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]\n' \
 	'%(sn)s -w <download dir> [-r <pattern]\n' \
-	'%(sn)s -i [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -n [-r <pattern][-l][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -g [-r <pattern][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -b [-r <pattern][<file> ...]\n' \
+	'%(sn)s -i [-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -I [-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]] [-I][-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]] [-I][-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -n [-r <pattern][-I][-l][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -g [-r <pattern][-I][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -b [-r <pattern][-I][<file> ...]\n' \
 	'%(sn)s -h' \
 	% { 'sn':scriptname }
 	sys.exit(2)
@@ -43,7 +45,7 @@ def Usage(msg=''):
 
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def __init__(self):
-		Urlcollector.__init__(self) # <- proto, it, items, files, pat
+		Urlcollector.__init__(self) # <- proto, id, laxid, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mdirs, local
 		Tpager.__init__(self, name='url') # <- items, name
 		LastExit.__init__(self)
@@ -74,7 +76,10 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			elif o == '-g': # don't look up msgs locally
 				self.id, self.google, self.mdirs = 1, 1, []
 			elif o == '-h': Usage()
-			elif o == '-i': # look for message-ids
+			elif o == '-I': # look for declared message-ids
+				self.id, self.decl = 1, 1
+				self.getdir = ''
+			elif o == '-i': # look for ids, in text w/o prot (email false positives)
 				self.id = 1
 				self.getdir = ''
 			elif o == '-k': # mailbox to store retrieved message
