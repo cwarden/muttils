@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlbatcher.py,v 1.5 2005/02/04 22:31:27 chris Exp $
+# $Id: urlbatcher.py,v 1.6 2005/08/04 21:24:57 chris Exp $
 
 ###
 # Caveat:
@@ -20,19 +20,21 @@ from kiosk import Kiosk
 from spl import sPl
 from selbrowser import selBrowser, local_re
 
-optstring = "d:ghik:lnr:w:x"
+optstring = "d:D:ghiIk:lnr:w:x"
 
 def Usage(msg=''):
 	scriptname = os.path.basename(sys.argv[0])
-	if msg: print '%s: %s' % (sn, msg)
+	if msg: print '%s: %s' % (scriptname, msg)
 	print 'Usage:\n' \
 	'%(sn)s [-x][-r <pattern>][file ...]\n' \
 	'%(sn)s -w <download dir> [-r <pattern]\n' \
-	'%(sn)s -i [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -n [-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -g [-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -i [-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -I [-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -n [-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -g [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -h' \
 	% { 'sn':scriptname }
 	sys.exit(2)
@@ -45,40 +47,41 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 	You can specify urls/ids by a regex pattern.
 	"""
 	def __init__(self):
-		Urlcollector.__init__(self) # <- proto, id, items, files, pat
+		Urlcollector.__init__(self, proto='web') # <- proto, id, decl, items, files, pat
 		Kiosk.__init__(self)        # <- nt, kiosk, mdirs, local, google
 		LastExit.__init__(self)
 		self.xb = 0                 # force x-browser
 		self.getdir = ''            # download in dir via wget
-		self.proto = 'web'
 
 	def argParser(self):
 		try: opts, self.files = getopt.getopt(sys.argv[1:], optstring)
 		except getopt.GetoptError, msg: Usage(msg)
 		for o, a in opts:
-			if o == '-d': # specific mail hierarchies
+			if o == '-d': # add specific mail hierarchies
 				self.id = 1
-				self.proto = 'all'
+				self.mdirs = self.mdirs + a.split(':')
+				self.getdir = ''
+			elif o == '-D': # specific mail hierarchies
+				self.id = 1
 				self.mdirs = a.split(':')
 				self.getdir = ''
 			elif o == '-h': Usage()
 			elif o == '-g': # go to google directly for message-ids
-				self.proto = 'all'
 				self.id, self.google, self.mdirs = 1, 1, []
 				self.getdir = ''
 			elif o == '-i': # look for message-ids
-				self.proto = 'all'
 				self.id = 1
 				self.getdir = ''
+			elif o == '-I': # look for declared message-ids
+				self.id, self.decl = 1, 1
+				self.getdir = ''
 			elif o == '-k': # mailbox to store retrieved messages
-				self.proto = 'all'
 				self.id, self.kiosk = 1, a
 				self.getdir = ''
 			elif o == '-l': # only local search for message-ids
-				self.id, self.local = 1, 1
+				self.local, self.id = 1, 1
 				self.getdir = ''
 			elif o == '-n': # don't search local mailboxes
-				self.proto = 'all'
 				self.id, self.mdirs = 1, []
 				self.getdir = ''
 			elif o == '-r':
@@ -91,6 +94,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 					Usage('%s: not a directory' % self.getdir)
 			elif o == '-x': # xbrowser
 				self.xb, self.id, self.getdir = 1, 0, ''
+			if self.id: self.proto = 'all'
 
 	def urlGo(self):
 		conny = 0
