@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.14 2005/07/20 14:33:31 chris Exp $
+# $Id: kiosk.py,v 1.15 2005/08/04 21:17:26 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -116,8 +116,9 @@ class Kiosk:
 	Provides methods to search for and retrieve
 	messages via their Message-ID.
 	"""
-	def __init__(self):
-		self.items = None	# message-ids to look for
+	def __init__(self, items=None):
+		if items == None: items = []
+		self.items = items      # message-ids to look for
 		self.kiosk = ''		# path to kiosk mbox
 		self.mask = None	# file mask for mdir (applied to directories too)
 		self.nt = 0		# if 1: needs terminal
