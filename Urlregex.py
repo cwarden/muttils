@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: Urlregex.py,v 1.7 2005/07/13 15:20:55 chris Exp $
+# $Id: Urlregex.py,v 1.8 2005/08/04 21:21:16 chris Exp $
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -14,7 +14,7 @@ def orJoin(s):
 any = '_a-z0-9/#~:.,?+=&%!@\-'  # valid url-chars + comma
 				# Message-ID: <10rb6mngqccs018@corp.supernews.com>
 idy = '_a-z0-9/#~.?+=&%!\-\][$' # reference chars (message-id) ### w/o ":"?
-onlidy = '$\]['               # chars that appear in ids _only_
+#onlidy = '$\]['                 # chars that appear in ids _only_
 punc = '.,:?!\-'		        # punctuation (how 'bout "!"?)
 
 ### outro ###
@@ -67,16 +67,9 @@ headsoff = r"""
 # attributions:
 nproto = '(msgid|news|nntp|message(-id)?|article|MID)(:\s*|\s+)<{,2}'
 
-rawid = r"""
-	((
-		%(nproto)s	# nproto and separator
-		[%(idy)s]+?	# valid url char & "$[]"
-	|
-		\b              # start at word boundary
-		[%(idy)s]*      # optional url (id) char
-		[%(onlidy)s]+?  # mandatory id char
-		[%(idy)s]*      # optional id char
-	)
+mid = r"""
+	(
+	[%(idy)s]+?             # valid id char
 	@
 	[%(idy)s]+? 		# valid url char & "$[]"
 	)
@@ -88,7 +81,10 @@ rawid = r"""
 	)
 	""" % vars()
 
-rawwipe = r'(%s)|(%s)' % (rawid, headsoff)
+declid = r'(%(nproto)s%(mid)s)' % vars()
+simplid = r'(\b%s)' % mid
+
+rawwipe = r'(%s)|(%s)' % (declid, headsoff)
 
 ## precompiled regexes ##
 ftp_re = re.compile('ftp(://|\.)', re.IGNORECASE)
@@ -124,7 +120,7 @@ class Urlregex(Urlparser):
 	"""
 	def __init__(self, proto='all', nofind=0):
 		Urlparser.__init__(self, proto) # <- id, proto, items, url_re, ugly
-		self.nofind = nofind
+		self.nofind = nofind    # for grabbing regexes only
 		self.decl = 0		# list only declared urls
 		self.uni = 1		# list only unique urls
 		self.kill_re = None	# customized pattern to find non url chars
@@ -249,9 +245,10 @@ class Urlregex(Urlparser):
 				self.kill_re = re.compile('\s+|^url:', re.IGNORECASE) 
 				if not self.decl:
 					self.proto_re = re.compile('^%s' % self.protocol, re.I)
-		else:
-			self.url_re = re.compile(rawid, re.IGNORECASE|re.VERBOSE)
+		elif self.decl:
+			self.url_re = re.compile(declid, re.IGNORECASE|re.VERBOSE)
 			if not self.nofind: self.kill_re = re.compile(nproto, re.I)
+		else: self.url_re = re.compile(simplid, re.IGNORECASE|re.VERBOSE)
 
 	def findUrls(self, data, type='text/plain'):
 		self.urlObjects() # compile url_re
@@ -260,10 +257,8 @@ class Urlregex(Urlparser):
 			if not self.id:
 				wipe_re = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE)
 				s = wipe_re.sub('', s)
-				urls = [u[0] for u in self.url_re.findall(s)]
-#                                urls = [self.kill_re.sub('', u) for u in urls]
-			else: urls = [u[0] for u in self.url_re.findall(s)]
-			urls = [self.kill_re.sub('', u) for u in urls]
+			urls = [u[0] for u in self.url_re.findall(s)]
+			if self.kill_re: urls = [self.kill_re.sub('', u) for u in urls]
 			if urls: self.items += urls
 		elif type == 'text/html':
 			try: Urlparser.makeUrlist(self, data)
