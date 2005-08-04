@@ -1,4 +1,4 @@
-# $Id: Urlcollector.py,v 1.1 2005/02/04 16:29:23 chris Exp $
+# $Id: Urlcollector.py,v 1.2 2005/08/04 21:18:40 chris Exp $
 import os, re, sys
 from datatype import dataType
 from Urlregex import Urlregex
@@ -17,8 +17,8 @@ class Urlcollector(Urlregex):
 	Provides function to retrieve urls
 	from files or input stream.
 	"""
-	def __init__(self):
-		Urlregex.__init__(self) # <- proto, id, items
+	def __init__(self, proto='all'):
+		Urlregex.__init__(self, proto) # <- proto, id, decl, items
 		self.files =[]          # files to search
 		self.pat = None         # pattern to match urls against
 
