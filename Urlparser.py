@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: Urlparser.py,v 1.2 2005/02/04 16:29:56 chris Exp $
+# $Id: Urlparser.py,v 1.3 2005/08/04 21:11:52 chris Exp $
 
 import email, email.Errors, os.path, re, sys
 from email.Utils import getaddresses
@@ -106,10 +106,8 @@ class Urlparser(HTMLParser):
 	def msgDeconstructor(self, sl=None):
 		if sl == None: sl = []
 		if self.id: self.headParser(refkeys)
-		elif self.proto in ('all', 'mailto'):
-			self.headParser(addrkeys)
-		if not self.id:
-			self.headSearcher()
+		elif self.proto in ('all', 'mailto'): self.headParser(addrkeys)
+		if not self.id: self.headSearcher()
 		for part in self.msg.walk(): # use email.Iterator?
 			if part.get_content_maintype() == 'text':
 				text = part.get_payload(decode=1)
