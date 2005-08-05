@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: Urlregex.py,v 1.10 2005/08/05 11:46:43 chris Exp $
+# $Id: Urlregex.py,v 1.11 2005/08/05 16:38:02 chris Exp $
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -150,7 +150,6 @@ class Urlregex(Urlparser):
 	def setStrings(self):
 		### intro ###
 		if self.proto in ('all', 'web'): ## groups
-			#protocols = "https?:// finger:// ftp:// telnet:// mailto:".split()
 			protocols = "(www|ftp)\. https?:// " \
 				"(file://(localhost)?/|http://localhost) " \
 				"finger:// ftp:// telnet:// mailto:".split()
@@ -163,17 +162,15 @@ class Urlregex(Urlparser):
 			self.protocol = '(%s)' % protocols
 
 		else:				  ## singles
+			self.decl = 1
 			if self.proto != 'mailto':
-				self.protocol = '%s://' % self.proto # used by uniUrls
+				self.protocol = '%s://' % self.proto
 			else: self.protocol = 'mailto:'
 			if self.proto == 'http':
-				self.intro = '(http://|www\.)'
+				self.intro = '(https?://|www\.)'
 			elif self.proto == 'ftp':
 				self.intro = 'ftp(://|\.)'
 			else: self.intro = self.protocol
-			if self.proto not in ('http', 'ftp', 'mailto'):
-				self.decl = 1 # protocol has to be "declared"
-					      # in text to recognize protocol
 		self.intro = '(url:)?%s' % self.intro
 
 	def getRaw(self):
