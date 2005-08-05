@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: Urlparser.py,v 1.3 2005/08/04 21:11:52 chris Exp $
+# $Id: Urlparser.py,v 1.4 2005/08/05 11:44:17 chris Exp $
 
 import email, email.Errors, os.path, re, sys
 from email.Utils import getaddresses
@@ -86,7 +86,8 @@ class Urlparser(HTMLParser):
 	def mailDeconstructor(self, s):
 		try: self.msg = email.message_from_string(s)
 		except email.Errors.HeaderParseError: return s
-		if not self.msg or not self.msg.__len__(): return s
+#                if not self.msg or not self.msg.__len__(): return s
+		if not self.msg or not self.msg['Message-ID']: return s
 		# else it's a message or a mailbox
 		if not self.msg.get_unixfrom():
 			sl = self.msgDeconstructor()
