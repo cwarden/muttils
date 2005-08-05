@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: Urlregex.py,v 1.9 2005/08/05 02:09:37 chris Exp $
+# $Id: Urlregex.py,v 1.10 2005/08/05 11:46:43 chris Exp $
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -11,11 +11,11 @@ def orJoin(s):
 
 # and now to the url parts
 #any = '_a-z0-9/#~:.?+=&%!@\-'   # valid url-chars
-any = '_a-z0-9/#~:.,()?+=&%!@\-' # valid url-chars + comma + parenthesises
-				 # Message-ID: <10rb6mngqccs018@corp.supernews.com>
-                                 # Message-id: <20050702131039.GA10840@oreka.com>
-idy = '_a-z0-9/#~.?+=&%!\-\][$'  # reference chars (message-id) ### w/o ":"?
-punc = '.,:?!\-'		 # punctuation (how 'bout "!"?)
+any = '-._a-z0-9/#~:,?+=&%!@()' # valid url-chars + comma + parenthesises
+			        # Message-ID: <10rb6mngqccs018@corp.supernews.com>
+                                # Message-id: <20050702131039.GA10840@oreka.com>
+idy = '-._a-z0-9#~?+=&%!$\]['   # valid message-id-chars ### w/o ":/"?
+punc = '-.,:?!'		        # punctuation (how 'bout "!"?)
 
 # top level domains
 tops = "a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
@@ -32,11 +32,11 @@ tops = "a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
 top = '\.%s' % orJoin(tops)
 
 ### outro ###
-outro = """
+outro = r"""
 	%(top)s			# top level preceded by dot
 	(			# { ungreedy 0 or more
-		[./]		#   dot or slash
-		[%(any)s]+	#   1 or more valid  
+		/		#   slash
+		[%(any)s] *	#   0 or more valid  
 	) ?			# } 0 or one
 	(?=			# look-ahead non-consumptive assertion
 		[%(punc)s]*	#  either 0 or more punctuation
@@ -44,6 +44,16 @@ outro = """
 	|			# or else
 		$		#  then end of the string
 	)
+	""" % vars()
+
+### outro w/ spaces ###
+spoutro = r"""
+	%(top)s			# top level dom preceded by dot
+	(			# { 0 or more
+		\s*/		#   opt space and slash
+		[%(any)s\s]*	#   any or space (space to be removed)
+	) ?			# } 0 or one
+	(?=>)		# lookahead for ">"
 	""" % vars()
 
 # get rid of *quoted* mail headers of no use
@@ -72,9 +82,9 @@ headsoff = r"""
 nproto = '(msgid|news|nntp|message(-id)?|article|MID)(:\s*|\s+)<{,2}'
 
 mid = r"""
-	[%(idy)s]+?             # valid id char
+	[%(idy)s]+              # one or more valid id char
 	@
-	[%(idy)s]+? 		# valid id char
+	[-._a-z0-9]+ 		# one or more server char
 	%(top)s                 # top level domain
 	\b
 	""" % vars()
@@ -172,36 +182,32 @@ class Urlregex(Urlparser):
 			(?<=<)		# look behind for "<"
 			%(intro)s	# intro
 			[%(any)s\s] +	# any or space (space to be removed)
-			(?=>)		# lookahead for ">"
+			%(spoutro)s     # outro w/ spaces
 			|		## or url in 1 line ##
 			\b		# start at word boundary
 			%(intro)s	# intro
 			[%(any)s] +?	# followed by 1 or more valid url char
 			%(outro)s	# outro
-			""" % { 'intro': self.intro,
-				  'any': any,
-				'outro': outro }
+			""" % { 'intro':   self.intro,
+			        'any':     any,
+                                'spoutro': spoutro,
+				'outro':   outro }
 
 		if self.decl: return '(%s)' % proto_url
 
 		## follows an attempt to comprise as much urls as possible
 		## some bad formatted stuff too
 		any_url = r"""		## long url ##
-			(?<=<)			# look behind for "<"
-			[%(any)s\s] +		# any or space (space to be removed)
-			%(top)s			# top level dom preceded by dot
-			(			# { 0 or more
-				[./]		#   dot or slash
-				[%(any)s\s]+	#   any or space (space to be removed)
-			) ?			# } 0 or one
-			(?=>)			# lookahead for ">"
+			(?<=<)		# look behind for "<"
+			[%(any)s\s] +	# any or space (space to be removed)
+			%(spoutro)s     # outro w/ spaces
 			|		## or url in 1 line ##
-			\b			# start at word boundary
-			[%(any)s] +?		# one or more valid characters
-			%(outro)s		# outro
-			""" % { 'top': top,
-				'any': any,
-				'outro': outro }
+			\b		# start at word boundary
+			[%(any)s] +?	# one or more valid characters
+			%(outro)s	# outro
+			""" % { 'any':     any,
+				'spoutro': spoutro,
+				'outro':   outro }
 		
 		return '(%s|%s)' % (proto_url, any_url)
 
