@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: Urlparser.py,v 1.4 2005/08/05 11:44:17 chris Exp $
+# $Id: Urlparser.py,v 1.5 2005/08/05 16:36:33 chris Exp $
 
 import email, email.Errors, os.path, re, sys
 from email.Utils import getaddresses
@@ -7,7 +7,7 @@ from cStringIO import StringIO
 from HTMLParser import HTMLParser, HTMLParseError
 from mailbox import PortableUnixMailbox
 
-protos = ('all', 'web', 'http', 'https', 'mailto',
+protos = ('all', 'web', 'http', 'mailto',
 	  'ftp', 'finger', 'telnet')
 
 # header lists (to be extended)
