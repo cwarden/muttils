@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: Urlregex.py,v 1.8 2005/08/04 21:21:16 chris Exp $
+# $Id: Urlregex.py,v 1.9 2005/08/05 02:09:37 chris Exp $
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -10,23 +10,12 @@ def orJoin(s):
 	return '(%s)' % '|'.join(s.split())
 
 # and now to the url parts
-#any = '_a-z0-9/#~:.?+=&%!@\-'  # valid url-chars
-any = '_a-z0-9/#~:.,?+=&%!@\-'  # valid url-chars + comma
-				# Message-ID: <10rb6mngqccs018@corp.supernews.com>
-idy = '_a-z0-9/#~.?+=&%!\-\][$' # reference chars (message-id) ### w/o ":"?
-#onlidy = '$\]['                 # chars that appear in ids _only_
-punc = '.,:?!\-'		        # punctuation (how 'bout "!"?)
-
-### outro ###
-outro = """
-	(?=			# look-ahead non-consumptive assertion
-		[%(punc)s]*	#  either 0 or more punctuation
-		[^%(any)s]	#  followed by a non-url char
-	|			# or else
-		$		#  then end of the string
-	)
-	""" % { 'punc': punc,
-		 'any': any  }
+#any = '_a-z0-9/#~:.?+=&%!@\-'   # valid url-chars
+any = '_a-z0-9/#~:.,()?+=&%!@\-' # valid url-chars + comma + parenthesises
+				 # Message-ID: <10rb6mngqccs018@corp.supernews.com>
+                                 # Message-id: <20050702131039.GA10840@oreka.com>
+idy = '_a-z0-9/#~.?+=&%!\-\][$'  # reference chars (message-id) ### w/o ":"?
+punc = '.,:?!\-'		 # punctuation (how 'bout "!"?)
 
 # top level domains
 tops = "a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
@@ -41,6 +30,21 @@ tops = "a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
 	"v[acegivu] w[fs] y[etu] z[amw] " \
 	"arpa com edu gov int mil net org aero biz coop info name pro"
 top = '\.%s' % orJoin(tops)
+
+### outro ###
+outro = """
+	%(top)s			# top level preceded by dot
+	(			# { ungreedy 0 or more
+		[./]		#   dot or slash
+		[%(any)s]+	#   1 or more valid  
+	) ?			# } 0 or one
+	(?=			# look-ahead non-consumptive assertion
+		[%(punc)s]*	#  either 0 or more punctuation
+		[^%(any)s]	#  followed by a non-url char
+	|			# or else
+		$		#  then end of the string
+	)
+	""" % vars()
 
 # get rid of *quoted* mail headers of no use
 # (how to do this more elegantly?)
@@ -68,17 +72,11 @@ headsoff = r"""
 nproto = '(msgid|news|nntp|message(-id)?|article|MID)(:\s*|\s+)<{,2}'
 
 mid = r"""
-	(
 	[%(idy)s]+?             # valid id char
 	@
-	[%(idy)s]+? 		# valid url char & "$[]"
-	)
-	(?=			# look-ahead non-consumptive assertion
-		[%(punc)s]*	#  either 0 or more punctuation
-		[^%(idy)s]	#  followed by a non-ref char
-	|			# or else
-		$		#  then end of the string
-	)
+	[%(idy)s]+? 		# valid id char
+	%(top)s                 # top level domain
+	\b
 	""" % vars()
 
 declid = r'(%(nproto)s%(mid)s)' % vars()
@@ -200,11 +198,6 @@ class Urlregex(Urlparser):
 			|		## or url in 1 line ##
 			\b			# start at word boundary
 			[%(any)s] +?		# one or more valid characters
-			%(top)s			# top level preceded by dot
-			(			# { ungreedy 0 or more
-				[./]		#   dot or slash
-				[%(any)s]+	#   1 or more valid  
-			) ?			# } 0 or one
 			%(outro)s		# outro
 			""" % { 'top': top,
 				'any': any,
@@ -279,5 +272,4 @@ trash.org> Can you find them?"""
 	ur.findUrls(sample)
 	print "Here's what we found: '%s'" % ur.items
 
-if __name__ == '__main__':
-	_test()
+if __name__ == '__main__': _test()
