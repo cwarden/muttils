@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: sigpager.py,v 1.4 2005/02/04 16:26:04 chris Exp $
+# $Id: sigpager.py,v 1.5 2005/08/08 10:00:40 chris Exp $
 
 # Caveat:
 # Try the -n option if you send stdout to a tty
@@ -135,8 +135,6 @@ def main():
 	siggi.argParser()
 	siggi.underSign()
 
-if __name__ == '__main__':
-	main()
+if __name__ == '__main__': main()
 
 # EOF vim:ft=python
-
