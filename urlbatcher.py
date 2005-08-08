@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlbatcher.py,v 1.6 2005/08/04 21:24:57 chris Exp $
+# $Id: urlbatcher.py,v 1.7 2005/08/08 09:57:16 chris Exp $
 
 ###
 # Caveat:
@@ -14,13 +14,19 @@ import getopt, os, sys
 from Urlcollector import Urlcollector
 from LastExit import LastExit
 from Urlregex import mailCheck, ftpCheck
-try: from conny import pppConnect
-except ImportError: pass
+#try: from conny import pppConnect
+#except ImportError: pass
+from getbin import getBin
 from kiosk import Kiosk
 from spl import sPl
 from selbrowser import selBrowser, local_re
+from systemcall import systemCall
 
 optstring = "d:D:ghiIk:lnr:w:x"
+
+wget = getBin('wget')
+connyAS = os.path.join(os.environ["HOME"], "AS/conny.applescript")
+if os.path.exists(connyAS): connyAS = False
 
 def Usage(msg=''):
 	scriptname = os.path.basename(sys.argv[0])
@@ -99,17 +105,16 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 	def urlGo(self):
 		conny = 0
 		bin = ''
-		for url in self.items:
-			if not url.startswith('file://'):
-				try: pppConnect()
-				except NameError: pass
+		if connyAS:
+			for url in self.items:
+				if not url.startswith('file://'):
+					systemCall(["osascript", connyAS])
 				break
 		if self.getdir:
-			getBin(['wget'])
 			for url in self.items:
 				if local_re.search(url) != None:
 					Usage("wget doesn't retrieve local files")
-			os.system("wget -P '%s'" % "' '".join(self.items))
+			systemCall(wget, "-P", self.items])
 		else: selBrowser(self.items, 0, self.xb)
 					
 	def urlSearch(self):
@@ -140,5 +145,4 @@ def main():
 	up.argParser()
 	up.urlSearch()
 
-if __name__ == '__main__':
-	main()
+if __name__ == '__main__': main()

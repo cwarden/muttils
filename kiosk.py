@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.15 2005/08/04 21:17:26 chris Exp $
+# $Id: kiosk.py,v 1.16 2005/08/08 09:57:16 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -11,20 +11,15 @@ from email.Parser import HeaderParser
 from email.Utils import parseaddr, parsedate
 from tempfile import mkstemp
 from time import sleep, asctime
-if sys.version_info[1] > 3:
-	from subprocess import Popen, PIPE
-	def subpro(cmd):
-		return Popen(cmd, bufsize=1, stdout=PIPE).stdout.readline()
-else:
-	def subpro(cmd): return os.popen(cmd).readline()
 from getbin import getBin
 from spl import sPl
+from systemcall import systemCall, backQuote
 try: from conny import pppConnect
 except ImportError: pass
 
 ggroups = 'http://groups.google.com/groups?hl=de&'
 
-mutt = getBin(('mutt', 'muttng'))
+mutt = getBin('mutt', 'muttng')
 muttone = "%s -e 'set pager_index_lines=0' " \
 	       "-e 'set quit=yes' -e 'bind pager q quit' " \
 	       "-e 'push <return>' -f" % mutt
@@ -60,8 +55,7 @@ def fpError(strerror, fp):
 def leafDir():
 	"""Returns path to directory where leafnode
 	stores hard links to all articles."""
-	try: leafinfo = subpro("newsq")
-	except OSError: return None
+	leafinfo = backQuote("newsq")
 	# -> 'Contents of queue in directory /sw/var/spool/news/out.going:\n'
 	leafl = leafinfo.split('/')[1:-1]
 	# -> ['sw', 'var', 'spool', 'news']
@@ -190,8 +184,9 @@ class Kiosk:
 			params = urllib.urlencode(query)
 			url = '%s%s' % (ggroups, params)
 			if self.browse:
-				cmd = "w3m -T text/html '%s'" % url
-				os.system(cmd)
+				cs = []
+				if os.environ['TERM'] == 'screen': cs = ["screen"]
+				systemCall(cs + ["w3m", "-T", "text/html", url])
 				sys.exit()
 			try: fp = urllib.urlopen(url)
 			except IOError, strerror: # no connection
@@ -323,7 +318,7 @@ class Kiosk:
 			cmd = "%s '%s'" % (muttone, self.kiosk)
 		else: cmd = "%s '%s'" % (mutti(firstid), self.kiosk)
 		if self.nt: cmd = "%s <> %s" % (cmd, os.ctermid())
-		os.system(cmd)
+		systemCall(cmd, sh=True)
 		if self.tmp:
 			try: os.remove(self.kiosk)
 			except OSError: pass # in case mutt already removed the file
