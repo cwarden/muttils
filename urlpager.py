@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlpager.py,v 1.11 2005/08/04 21:09:50 chris Exp $
+# $Id: urlpager.py,v 1.12 2005/08/08 09:58:50 chris Exp $
 
 ###
 # Caveat:
@@ -15,14 +15,17 @@ from Urlcollector import Urlcollector
 from LastExit import LastExit
 from Tpager import Tpager
 from Urlregex import mailCheck, ftpCheck
-try: from conny import pppConnect
-except ImportError: pass
 from kiosk import Kiosk
 from getbin import getBin
 from selbrowser import selBrowser, local_re
+from systemcall import systemCall
 
 optstring = "bd:D:f:ghiIlnp:k:r:tw:x"
 mailers = ('mutt', 'pine', 'elm', 'mail')
+
+connyAS = os.path.join(os.environ["HOME"], "AS/conny.applescript")
+if not os.path.exists(connyAS): connyAS = False
+
 
 def Usage(msg=''):
 	scriptname = os.path.basename(sys.argv[0])
@@ -102,7 +105,6 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			elif o == '-t': # text browser command
 				self.id, self.tb = 0, 1
 			elif o == '-w': # download dir for wget
-				getBin(['wget'])
 				self.proto = 'web'
 				self.getdir = a
 				self.getdir = os.path.abspath(os.path.expanduser(self.getdir))
@@ -118,29 +120,28 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		self.url = Tpager.interAct(self)
 
 	def urlGo(self):
-		bin = ''
+		cs = []
 		conny = local_re.search(self.url) == None
 		if self.proto == 'mailto' \
 		or self.proto == 'all' and mailCheck(self.url):
-			bin = getBin(mailers)
+			cs = [getBin(mailers)]
 			conny = False
 		elif self.getdir:
 			if not conny:
 				Usage("wget doesn't retrieve local files")
-			bin = "wget -P '%s'" % self.getdir
+			cs = [getBin('wget'), "-P", "'%s'" % self.getdir]
 		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
-			if not self.ft: bin = 'ftp'
-			else: bin = self.ft
+			if not self.ft: cs = ["ftp"]
+			else: cs = [self.ft]
 			self.nt = 1
-		if not bin: selBrowser([self.url], self.tb, self.xb)
+		if not cs: selBrowser([self.url], self.tb, self.xb)
 		else:
 			if not self.files and not self.getdir or self.nt: # program needs terminal
-				cmd = "%s '%s' < %s" % (bin, self.url, os.ctermid())
-			else: cmd = "%s '%s'" % (bin, self.url)
-			if conny:
-				try: pppConnect()
-				except NameError: pass
-			os.system(cmd)
+				cs = cs + [self.url + "<" + os.ctermid()]
+			else: cs.append(self.url)
+			if conny and connyAS:
+				systemCall(["osascript", connyAS])
+			systemCall(cs)
 					
 	def urlSearch(self):
 		Urlcollector.urlCollect(self)
