@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: kiosk.py,v 1.16 2005/08/08 09:57:16 chris Exp $
+# $Id: kiosk.py,v 1.17 2005/08/15 13:02:51 chris Exp $
 
 ###
 # needs python version 2.3 #
@@ -14,11 +14,18 @@ from time import sleep, asctime
 from getbin import getBin
 from spl import sPl
 from systemcall import systemCall, backQuote
-try: from conny import pppConnect
-except ImportError: pass
 
 ggroups = 'http://groups.google.com/groups?hl=de&'
+mailspool = os.getenv('MAIL')
+if not mailspool:
+	mailspool = os.path.join('/var/mail', os.environ['USER'])
+	if not os.path.isfile(mailspool): mailspool = None
+elif mailspool.endswith('/'): mailspool = mailspool[:-1] # ~/Maildir/-INBOX[/]
 
+connyAS = os.path.join(os.environ["HOME"], "AS/conny.applescript")
+if not os.path.exists(connyAS): connyAS = False
+
+#screen = getBin('screen', quiet=1)
 mutt = getBin('mutt', 'muttng')
 muttone = "%s -e 'set pager_index_lines=0' " \
 	       "-e 'set quit=yes' -e 'bind pager q quit' " \
@@ -133,7 +140,9 @@ class Kiosk:
 				self.browse, self.google, self.mdirs = 1, 1, []
 			elif o == '-d':
 				self.mdirs = self.mdirs + a.split(':')
-			elif o == '-D': self.mdirs = a.split(':')
+			elif o == '-D':
+				self.mdirs = a.split(':')
+				if mailspool: mailspool = None
 			elif o == '-g':
 				self.google, self.mdirs = 1, []
 			elif o == '-h': Usage()
@@ -174,8 +183,7 @@ class Kiosk:
 	def goGoogle(self):
 		"""Gets messages from Google Groups."""
 		print 'Going google ...'
-		try: pppConnect()
-		except NameError: pass
+		if connyAS: systemCall(["osascript", connyAS])
 		delitems = []
 		for item in self.items:
 			if not self.browse:
@@ -184,9 +192,10 @@ class Kiosk:
 			params = urllib.urlencode(query)
 			url = '%s%s' % (ggroups, params)
 			if self.browse:
-				cs = []
-				if os.environ['TERM'] == 'screen': cs = ["screen"]
-				systemCall(cs + ["w3m", "-T", "text/html", url])
+#                                cs = []
+#                                if screen: cs = [screen, "-t", "GOOGLE"]
+#                                systemCall(cs + ["w3m", "-T", "text/html", url])
+				systemCall(["w3m", "-T", "text/html", url])
 				sys.exit()
 			try: fp = urllib.urlopen(url)
 			except IOError, strerror: # no connection
@@ -251,6 +260,7 @@ class Kiosk:
 		print '%s not on local server.\n' \
 		      'Searching local mailboxes ...' \
 		      % sPl(len(self.items), 'message')
+		if mailspool: self.boxParser(mailspool, os.path.isdir(mailspool))
 		for mdir in self.mdirs:
 			for root, dirs, files in os.walk(mdir):	
 				if not self.items: break
@@ -262,13 +272,14 @@ class Kiosk:
 				for name in dirs:
 					if self.items:
 						path = os.path.join(root, name)
-						dirlist = os.listdir(path)
-						if 'cur' in dirlist and 'new' in dirlist:
-							self.boxParser(path, 1)
+						if path != mailspool:
+							dirlist = os.listdir(path)
+							if 'cur' in dirlist and 'new' in dirlist:
+								self.boxParser(path, 1)
 				for name in files:
 					if self.items:
 						path = os.path.join(root, name)
-						self.boxParser(path)
+						if path != mailspool: self.boxParser(path)
 
 	def masKompile(self):
 		"""Compiles masks to exclude files and directories from search."""
