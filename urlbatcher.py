@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlbatcher.py,v 1.7 2005/08/08 09:57:16 chris Exp $
+# $Id: urlbatcher.py,v 1.8 2005/08/15 13:03:30 chris Exp $
 
 ###
 # Caveat:
@@ -14,8 +14,6 @@ import getopt, os, sys
 from Urlcollector import Urlcollector
 from LastExit import LastExit
 from Urlregex import mailCheck, ftpCheck
-#try: from conny import pppConnect
-#except ImportError: pass
 from getbin import getBin
 from kiosk import Kiosk
 from spl import sPl
