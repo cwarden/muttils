@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-Urlregex_rcsid = '$Id: Urlregex.py,v 1.12 2005/08/21 13:38:14 chris Exp $'
+Urlregex_rcsid = '$Id: Urlregex.py,v 1.13 2005/08/21 13:52:15 chris Exp $'
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -268,7 +268,7 @@ class Urlregex(Urlparser):
 
 def _test():
 	rcs = Rcsparser(Urlregex_rcsid)
-	rcs.rcsParseid()
+	rcs.parseId()
 	sample = """hello world, these are 3 urls:
 cis.tarzisius.net
 www.python.org.
