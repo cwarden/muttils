@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# $Id: urlpager.py,v 1.12 2005/08/08 09:58:50 chris Exp $
+urlpager_rcsid = '$Id: urlpager.py,v 1.13 2005/08/21 20:19:46 chris Exp $'
 
 ###
 # Caveat:
@@ -17,32 +17,34 @@ from Tpager import Tpager
 from Urlregex import mailCheck, ftpCheck
 from kiosk import Kiosk
 from getbin import getBin
+from Rcsparser import Rcsparser
 from selbrowser import selBrowser, local_re
 from systemcall import systemCall
 
 optstring = "bd:D:f:ghiIlnp:k:r:tw:x"
-mailers = ('mutt', 'pine', 'elm', 'mail')
-
+mailers = ('mutt', 'pine', 'elm', 'mail') 
 connyAS = os.path.join(os.environ["HOME"], "AS/conny.applescript")
 if not os.path.exists(connyAS): connyAS = False
 
 
 def Usage(msg=''):
-	scriptname = os.path.basename(sys.argv[0])
-	if msg: print msg
+	rcs = Rcsparser(urlpager_rcsid)
+	print rcs.getVals()
 	print 'Usage:\n' \
 	'%(sn)s [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]\n' \
 	'%(sn)s -w <download dir> [-r <pattern]\n' \
 	'%(sn)s -i [-r <pattern>][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -I [-r <pattern>][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]] [-I][-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]] [-I][-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]] ' \
+		'[-I][-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]] ' \
+		'[-I][-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -n [-r <pattern][-I][-l][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -g [-r <pattern][-I][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -b [-r <pattern][-I][<file> ...]\n' \
 	'%(sn)s -h' \
-	% { 'sn':scriptname }
+	% { 'sn': rcs.rcsdict['rcsfile'] }
 	sys.exit(2)
 
 
