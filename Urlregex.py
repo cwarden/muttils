@@ -1,9 +1,10 @@
 #! /usr/bin/env python
-# $Id: Urlregex.py,v 1.11 2005/08/05 16:38:02 chris Exp $
+Urlregex_rcsid = '$Id: Urlregex.py,v 1.12 2005/08/21 13:38:14 chris Exp $'
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
 from Urlparser import Urlparser
+from Rcsparser import Rcsparser
 from unilist import uniList_o
 
 def orJoin(s):
@@ -151,8 +152,9 @@ class Urlregex(Urlparser):
 		### intro ###
 		if self.proto in ('all', 'web'): ## groups
 			protocols = "(www|ftp)\. https?:// " \
-				"(file://(localhost)?/|http://localhost) " \
 				"finger:// ftp:// telnet:// mailto:".split()
+#                                "(file://(localhost)?/|http://(localhost|127\.) " \
+				# TO DO: local switch!
 			# gopher? wais?
 			if self.proto == 'web':
 				protocols = protocols[:-1] # web only
@@ -265,11 +267,14 @@ class Urlregex(Urlparser):
 
 
 def _test():
+	rcs = Rcsparser(Urlregex_rcsid)
+	rcs.rcsParseid()
 	sample = """hello world, these are 3 urls:
 cis.tarzisius.net
 www.python.org.
 <www.black
 trash.org> Can you find them?"""
+	print rcs.rcsfile, rcs.rcsrevision, rcs.rcsdate
 	print sample
 	ur = Urlregex()
 	ur.findUrls(sample)
