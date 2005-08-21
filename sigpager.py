@@ -1,5 +1,6 @@
 #! /usr/bin/env python
-# $Id: sigpager.py,v 1.5 2005/08/08 10:00:40 chris Exp $
+
+sigpager_rcsid = '$Id: sigpager.py,v 1.6 2005/08/21 20:23:50 chris Exp $'
 
 # Caveat:
 # Try the -n option if you send stdout to a tty
@@ -7,6 +8,7 @@
 import getopt, os, re, readline, sys
 from random import shuffle
 from LastExit import LastExit
+from Rcsparser import Rcsparser
 from Tpager import Tpager
 from readwrite import readFile, writeFile
 
@@ -20,14 +22,15 @@ optstring = "d:fhns:t:w"
 # s: defaultsig, t: sigtail, w [(over)write target file(s)]
 
 def Usage(msg=''):
-	sn = os.path.basename(sys.argv[0])
+	rcs = Rcsparser(sigpager_rcsid)
+	print rcs.getVals()
 	if msg: print msg
 	print 'Usage:\n' \
 	      '%(sn)s [-d <sigdir>][-f][-n][-s <defaultsig>]' \
 	      		'[-t <sigtail>][-]\n' \
 	      '%(sn)s [-d <sigdir>][-f][-n][-s <defaultsig>]' \
 	      		'[-t <sigtail>][-w][<file> ...]\n' \
-	      '%(sn)s -h' % {'sn': sn}
+	      '%(sn)s -h' % {'sn': rcs.rcsdict['rcsfile']}
 	sys.exit(2)
 
 class Signature(Tpager, LastExit):
