@@ -1,5 +1,6 @@
-#! /usr/bin/env python
-# $Id: kiosk.py,v 1.17 2005/08/15 13:02:51 chris Exp $
+#!/usr/bin/env python
+
+kiosk_rcsid = '$Id: kiosk.py,v 1.18 2005/08/22 19:51:36 chris Exp $'
 
 ###
 # needs python version 2.3 #
@@ -12,20 +13,26 @@ from email.Utils import parseaddr, parsedate
 from tempfile import mkstemp
 from time import sleep, asctime
 from getbin import getBin
+from Rcsparser import Rcsparser
+from selbrowser import selBrowser
 from spl import sPl
 from systemcall import systemCall, backQuote
 
-ggroups = 'http://groups.google.com/groups?hl=de&'
+rcs = Rcsparser(kiosk_rcsid)
+shortversion = rcs.getVals(shortv=True)
+
+optstr = "bd:D:ghk:lm:ntTx"
+
+ggroups = 'http://groups.google.com/groups?'
 mailspool = os.getenv('MAIL')
 if not mailspool:
-	mailspool = os.path.join('/var/mail', os.environ['USER'])
+	mailspool = os.path.join('var', 'mail', os.environ["USER"])
 	if not os.path.isfile(mailspool): mailspool = None
 elif mailspool.endswith('/'): mailspool = mailspool[:-1] # ~/Maildir/-INBOX[/]
 
-connyAS = os.path.join(os.environ["HOME"], "AS/conny.applescript")
+connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if not os.path.exists(connyAS): connyAS = False
 
-#screen = getBin('screen', quiet=1)
 mutt = getBin('mutt', 'muttng')
 muttone = "%s -e 'set pager_index_lines=0' " \
 	       "-e 'set quit=yes' -e 'bind pager q quit' " \
@@ -37,32 +44,45 @@ def mutti(id): # uncollapse??
 			% (mutt, id)
 
 def Usage(err=''):
+	print shortversion
 	if err: print err
 	print 'Usage:\n' \
-      	'%(sn)s [-l][-d <mail hierarchy>[:<mail hierarchy> ...]]' \
+      	'%(fn)s [-l][-d <mail hierarchy>[:<mail hierarchy> ...]]' \
 		'[-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]\n' \
-      	'%(sn)s [-l][-D <mail hierarchy>[:<mail hierarchy> ...]]' \
+      	'%(fn)s [-l][-D <mail hierarchy>[:<mail hierarchy> ...]]' \
 		'[-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]\n' \
-      	'%(sn)s -n [-l][-k <mbox>][-t] <ID> [<ID> ...]\n' \
-      	'%(sn)s -g [-k <mbox>][-t] <ID> [<ID> ...]\n' \
-      	'%(sn)s -b <ID> [<ID> ...]\n' \
-      	'%(sn)s -h' \
-	      % { 'sn': os.path.basename(sys.argv[0]) }
+      	'%(fn)s -n [-l][-k <mbox>][-t] <ID> [<ID> ...]\n' \
+      	'%(fn)s -g [-k <mbox>][-t] <ID> [<ID> ...]\n' \
+	'     *** -g: broken because plain text is inaccessible ***\n' \
+      	'%(fn)s -b <ID> [<ID> ...]\n' \
+      	'%(fn)s -h' % { 'fn': rcs.rcsdict['rcsfile'] }
 	sys.exit(2)
 
 def regError(err, pat):
+	print shortversion
 	print '%s in pattern "%s"' % (err, pat)
 	sys.exit(2)
 
 def fpError(strerror, fp):
 	fp.close()
+	print shortversion
 	print strerror
 	sys.exit(2)
+
+def servErr():
+	print
+	print shortversion
+	print 'needs leafnode installed to search local news server'
+	print
 
 def leafDir():
 	"""Returns path to directory where leafnode
 	stores hard links to all articles."""
-	leafinfo = backQuote("newsq")
+	newsq = getBin('nnewsq', quiet=True)
+	if not newsq:
+		servErr()
+		return
+	leafinfo = backQuote(newsq)
 	# -> 'Contents of queue in directory /sw/var/spool/news/out.going:\n'
 	leafl = leafinfo.split('/')[1:-1]
 	# -> ['sw', 'var', 'spool', 'news']
@@ -75,7 +95,7 @@ def mailDir():
 	"""Returns either ~/Maildir or ~/Mail
 	as first item of a list if they are directories,
 	an empty list otherwise."""
-	castle = os.environ['HOME']
+	castle = os.environ["HOME"]
 	for dir in ('Maildir', 'Mail'):
 		d = os.path.join(castle, dir)
 		if os.path.isdir(d): return [d]
@@ -92,7 +112,6 @@ def nakHead(header):
 ### customize user-agent header
 class AppURLopener(urllib.FancyURLopener):
 	def __init__(self, *args):
-		self.version = "w3m" # works with empty string too
 		urllib.FancyURLopener.__init__(self, *args)
 
 urllib._urlopener = AppURLopener()
@@ -122,36 +141,41 @@ class Kiosk:
 		self.items = items      # message-ids to look for
 		self.kiosk = ''		# path to kiosk mbox
 		self.mask = None	# file mask for mdir (applied to directories too)
-		self.nt = 0		# if 1: needs terminal
-		self.browse = 0		# browse googlegroups
-		self.google = 0		# if 1: just googlegroups
+		self.nt = False		# if True: needs terminal
+		self.browse = False	# browse googlegroups
+		self.google = False	# if True: just googlegroups
 		self.mdirs = mailDir() 	# mailbox hierarchies
-		self.local = 0          # local search only
+		self.local = False      # local search only
 		self.msgs = []          # list of retrieved message objects
-		self.tmp = 0            # whether kiosk is a temporary file
-		self.muttone = 1        # configure mutt for display of 1 msg only
+		self.tmp = False        # whether kiosk is a temporary file
+		self.muttone = True     # configure mutt for display of 1 msg only
+		self.xb = False	        # force x-browser
+		self.tb = False         # use text browser
 		self.mdmask = r'^(cur|new|tmp)$'
 
 	def argParser(self):
-		try: opts, self.items = getopt.getopt(sys.argv[1:], "bd:D:ghk:lm:nt")
+		try: opts, self.items = getopt.getopt(sys.argv[1:], optstr)
 		except getopt.GetoptError, strerror: Usage(strerror)
 		for o, a in opts:
 			if o == '-b':
-				self.browse, self.google, self.mdirs = 1, 1, []
+				self.browse, self.google, self.mdirs = True, True, []
 			elif o == '-d':
 				self.mdirs = self.mdirs + a.split(':')
 			elif o == '-D':
 				self.mdirs = a.split(':')
 				if mailspool: mailspool = None
 			elif o == '-g':
-				self.google, self.mdirs = 1, []
+				self.browse, self.google, self.mdirs = True, True, []
+#                                self.google, self.mdirs = 1, []# temporarily(?) disabled
 			elif o == '-h': Usage()
-			elif o == '-l': self.local, self.google = 1, 0
+			elif o == '-l': self.local, self.google = True, False
 			elif o == '-k': self.kiosk = a
 			elif o == '-m': self.mask = a
 			elif o == '-n': self.mdirs = [] # don't search local mailboxes
-			elif o == '-t': self.nt = 1
-	
+			elif o == '-t': self.tb = True # use text browser
+			elif o == '-T': self.nt = True # needs terminal
+			elif o == '-x': self.xb = True # use xbrowser
+
 	def kioskTest(self):
 		"""Provides the path to an mbox file to store retrieved messages."""
 		if not self.kiosk:
@@ -163,7 +187,7 @@ class Kiosk:
 		if not os.path.isfile(self.kiosk):
 			err = '%s: not a regular file' % self.kiosk
 			Usage(err)
-		fp = open(self.kiosk, "rb", 1)
+		fp = open(self.kiosk, "rb")
 		testline = fp.readline()
 		fp.close()
 		if not testline: return # empty is fine
@@ -171,8 +195,8 @@ class Kiosk:
 		if not test.get_unixfrom():
 			err = '%s: not a unix mailbox' % self.kiosk
 			Usage(err)
-		else: self.muttone = 0
-		
+		else: self.muttone = False
+
 	def dirTest(self):
 		"""Checks whether given directories exist."""
 		for dir in self.mdirs:
@@ -180,24 +204,25 @@ class Kiosk:
 				print 'Warning! %s: not a directory, skipping' % dir
 				self.mdirs.remove(dir)
 
+	def makeQuery(self, id):
+		"""Reformats Message-ID to google query."""
+		if not self.browse:
+			query = {'selm': id, 'output': 'gplain'}
+		else: query = {'selm': id, 'hl': 'en'}
+		params = urllib.urlencode(query)
+		return '%s%s' % (ggroups, params)
+
 	def goGoogle(self):
 		"""Gets messages from Google Groups."""
 		print 'Going google ...'
+		self.items = [self.makeQuery(id) for id in self.items]
+		if self.browse:
+			selBrowser(self.items, self.tb, self.xb)
+			sys.exit()
 		if connyAS: systemCall(["osascript", connyAS])
-		delitems = []
+		found = []
 		for item in self.items:
-			if not self.browse:
-				query = {'selm':item, 'output':'gplain'}
-			else: query = {'selm':item}
-			params = urllib.urlencode(query)
-			url = '%s%s' % (ggroups, params)
-			if self.browse:
-#                                cs = []
-#                                if screen: cs = [screen, "-t", "GOOGLE"]
-#                                systemCall(cs + ["w3m", "-T", "text/html", url])
-				systemCall(["w3m", "-T", "text/html", url])
-				sys.exit()
-			try: fp = urllib.urlopen(url)
+			try: fp = urllib.urlopen(item)
 			except IOError, strerror: # no connection
 				fpError(strerror, fp)
 			try: msg = email.message_from_file(fp)
@@ -205,14 +230,14 @@ class Kiosk:
 				fpError(strerror, fp)
 			fp.close()
 			if 'message-id' in msg:
+				found.append(item)
 				self.msgs.append(msg)
-				delitems.append(item)
 			else:
 				print msg.get_payload(decode=1)
 				sleep(5)
 				print 'Continuing ...'
-		for item in delitems: self.items.remove(item)
-	
+		for item in found: self.items.remove(item)
+
 	def leafSearch(self, leafdir):
 		print 'Searching local newsserver ...'
 #		for root, dirs, files in os.walk(leafdir):
@@ -255,7 +280,7 @@ class Kiosk:
 				print 'retrieving Message-ID <%s>' % msgid
 				if not self.items: break
 		if not maildir: fp.close()
-	
+
 	def mailSearch(self):
 		print '%s not on local server.\n' \
 		      'Searching local mailboxes ...' \
@@ -290,14 +315,15 @@ class Kiosk:
 			else: self.mdmask = re.compile(r'%s' % self.mdmask)
 		except re.error, strerror: regError(strerror, self.mask)
 
-
 	def kioskStore(self):
+		"""Displays messages identified by ID either
+		by retrieving them locally or from GoogleGroups
+		and opening mutt on the kiosk mailbox -- or
+		online with a text browser."""
 		self.items = [nakHead(item) for item in self.items]
-		if not self.items: Usage('missing message-ids')
-		elif self.browse and len(self.items) == 1: self.goGoogle()
-		elif self.browse:
-			err = 'Browse 1 url at a time'
-			Usage(err)
+		if not self.items:
+			Usage('needs Message-ID(s) as mandatory argument(s)')
+		elif self.browse: self.goGoogle()
 		firstid = self.items[0]
 		self.kioskTest()
 		if self.mdirs: self.dirTest()
@@ -311,12 +337,13 @@ class Kiosk:
 				if self.items:
 					print '%s not in specified local mailboxes.' \
 					      % sPl(len(self.items), 'message')
-		if self.items and not self.local: self.goGoogle()
-		elif self.items:
-			print '%s not found locally' \
+#                if self.items and not self.local: self.goGoogle()
+#                elif self.items:
+                if self.items: # haven't found a way to retrieve orig msgs
+			print '%s not found' \
 				% sPl(len(self.items), 'message')
-			sleep(5)
-			if not self.msgs: sys.exit(0)
+			if self.msgs: sleep(5)
+		if not self.msgs: sys.exit()
 		outfp = open(self.kiosk, "ab")
 		g = Generator(outfp, mangle_from_=True, maxheaderlen=0)
 		for msg in self.msgs:
@@ -330,9 +357,9 @@ class Kiosk:
 		else: cmd = "%s '%s'" % (mutti(firstid), self.kiosk)
 		if self.nt: cmd = "%s <> %s" % (cmd, os.ctermid())
 		systemCall(cmd, sh=True)
-		if self.tmp:
-			try: os.remove(self.kiosk)
-			except OSError: pass # in case mutt already removed the file
+		if self.tmp and os.path.isfile(self.kiosk):
+			os.remove(self.kiosk)
+
 
 def main():
 	k = Kiosk()
@@ -340,3 +367,5 @@ def main():
 	k.kioskStore()
 
 if __name__ == '__main__': main()
+
+# EOF vim:ft=python
