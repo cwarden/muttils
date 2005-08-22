@@ -1,5 +1,6 @@
-#! /usr/bin/env python
-urlpager_rcsid = '$Id: urlpager.py,v 1.13 2005/08/21 20:19:46 chris Exp $'
+#!/usr/bin/env python
+
+urlpager_rcsid = '$Id: urlpager.py,v 1.14 2005/08/22 19:33:26 chris Exp $'
 
 ###
 # Caveat:
@@ -23,13 +24,12 @@ from systemcall import systemCall
 
 optstring = "bd:D:f:ghiIlnp:k:r:tw:x"
 mailers = ('mutt', 'pine', 'elm', 'mail') 
-connyAS = os.path.join(os.environ["HOME"], "AS/conny.applescript")
+connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if not os.path.exists(connyAS): connyAS = False
-
 
 def Usage(msg=''):
 	rcs = Rcsparser(urlpager_rcsid)
-	print rcs.getVals()
+	print rcs.getVals(shortv=True)
 	print 'Usage:\n' \
 	'%(sn)s [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]\n' \
 	'%(sn)s -w <download dir> [-r <pattern]\n' \
@@ -51,12 +51,10 @@ def Usage(msg=''):
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def __init__(self):
 		Urlcollector.__init__(self) # <- proto, id, laxid, items, files, pat
-		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mdirs, local
+		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mdirs, local, xb, tb
 		Tpager.__init__(self, name='url') # <- items, name
 		LastExit.__init__(self)
 		self.ft = ''	   # ftpclient
-		self.xb = 0	   # force x-browser
-		self.tb = 0	   # use text browser
 		self.url = ''	   # selected url
 		self.getdir = ''   # download in dir via wget
 
@@ -136,7 +134,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			if not self.ft: cs = ["ftp"]
 			else: cs = [self.ft]
 			self.nt = 1
-		if not cs: selBrowser([self.url], self.tb, self.xb)
+		if not cs: selBrowser(self.url, tb=self.tb, xb=self.xb)
 		else:
 			if not self.files and not self.getdir or self.nt: # program needs terminal
 				cs = cs + [self.url + "<" + os.ctermid()]
@@ -166,5 +164,6 @@ def main():
 	up.argParser()
 	up.urlSearch()
 
-if __name__ == '__main__':
-	main()
+if __name__ == '__main__': main()
+
+# EOF vim:ft=python
