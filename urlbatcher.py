@@ -1,5 +1,6 @@
-#! /usr/bin/env python
-# $Id: urlbatcher.py,v 1.8 2005/08/15 13:03:30 chris Exp $
+#!/usr/bin/env python
+
+urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.9 2005/08/22 19:40:43 chris Exp $'
 
 ###
 # Caveat:
@@ -16,6 +17,7 @@ from LastExit import LastExit
 from Urlregex import mailCheck, ftpCheck
 from getbin import getBin
 from kiosk import Kiosk
+from Rcsparser import Rcsparser
 from spl import sPl
 from selbrowser import selBrowser, local_re
 from systemcall import systemCall
@@ -23,24 +25,27 @@ from systemcall import systemCall
 optstring = "d:D:ghiIk:lnr:w:x"
 
 wget = getBin('wget')
-connyAS = os.path.join(os.environ["HOME"], "AS/conny.applescript")
+connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if os.path.exists(connyAS): connyAS = False
 
 def Usage(msg=''):
-	scriptname = os.path.basename(sys.argv[0])
-	if msg: print '%s: %s' % (scriptname, msg)
+	rcs = Rcsparser(urlbatcher_rcsid)
+	print rcs.getVals(shortv=True)
+	if msg: print msg
 	print 'Usage:\n' \
 	'%(sn)s [-x][-r <pattern>][file ...]\n' \
 	'%(sn)s -w <download dir> [-r <pattern]\n' \
 	'%(sn)s -i [-r <pattern>][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -I [-r <pattern>][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]] [-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]]' \
+		'[-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]]' \
+		'[-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -n [-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -g [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
 	'%(sn)s -h' \
-	% { 'sn':scriptname }
+	% { 'sn': rcs.rcsdict['rcsfile'] }
 	sys.exit(2)
 
 
@@ -52,9 +57,8 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 	"""
 	def __init__(self):
 		Urlcollector.__init__(self, proto='web') # <- proto, id, decl, items, files, pat
-		Kiosk.__init__(self)        # <- nt, kiosk, mdirs, local, google
+		Kiosk.__init__(self)        # <- nt, kiosk, mdirs, local, google, xb, tb
 		LastExit.__init__(self)
-		self.xb = 0                 # force x-browser
 		self.getdir = ''            # download in dir via wget
 
 	def argParser(self):
@@ -112,8 +116,8 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 			for url in self.items:
 				if local_re.search(url) != None:
 					Usage("wget doesn't retrieve local files")
-			systemCall(wget, "-P", self.items])
-		else: selBrowser(self.items, 0, self.xb)
+			systemCall([wget, "-P", self.items])
+		else: selBrowser(self.items, tb=False, self.xb)
 					
 	def urlSearch(self):
 		Urlcollector.urlCollect(self)
@@ -144,3 +148,5 @@ def main():
 	up.urlSearch()
 
 if __name__ == '__main__': main()
+
+# EOF vim:ft=python
