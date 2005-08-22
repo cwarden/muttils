@@ -1,10 +1,10 @@
-#! /usr/bin/env python
-Urlregex_rcsid = '$Id: Urlregex.py,v 1.14 2005/08/21 20:18:10 chris Exp $'
+#!/usr/bin/env python
+
+Urlregex_rcsid = '$Id: Urlregex.py,v 1.15 2005/08/22 19:37:43 chris Exp $'
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
 from Urlparser import Urlparser
-from Rcsparser import Rcsparser
 from unilist import uniList_o
 
 def orJoin(s):
@@ -250,7 +250,12 @@ class Urlregex(Urlparser):
 
 	def findUrls(self, data, type='text/plain'):
 		self.urlObjects() # compile url_re
-		if type == 'text/plain':
+		if type == 'text/html':
+			try: Urlparser.makeUrlist(self, data)
+			except HTMLParseError, AssertionError:
+				self.ugly = 1
+				pass
+		elif type.startswith('text/'):
 			s = Urlparser.mailDeconstructor(self, data)
 			if not self.id:
 				wipe_re = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE)
@@ -258,25 +263,26 @@ class Urlregex(Urlparser):
 			urls = [u[0] for u in self.url_re.findall(s)]
 			if self.kill_re: urls = [self.kill_re.sub('', u) for u in urls]
 			if urls: self.items += urls
-		elif type == 'text/html':
-			try: Urlparser.makeUrlist(self, data)
-			except HTMLParseError, AssertionError:
-				self.ugly = 1
-				pass
 		self.urlFilter()
 
 
 def _test():
+	from Rcsparser import Rcsparser
 	rcs = Rcsparser(Urlregex_rcsid)
-	sample = """hello world, these are 3 urls:
+	sample = """
+hello world, these are 3 urls:
 cis.tarzisius.net
 www.python.org.
 <www.black
-trash.org> Can you find them?"""
-	print rcs.getVals()
+trash.org> Can you find them?
+"""
+	print rcs.getVals(shortv=True)
 	print sample
 	ur = Urlregex()
 	ur.findUrls(sample)
-	print "Here's what we found: '%s'" % ur.items
+	print "Here's what we found:"
+	print ur.items
 
 if __name__ == '__main__': _test()
+
+# EOF vim:ft=python
