@@ -1,6 +1,6 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
-sigpager_rcsid = '$Id: sigpager.py,v 1.6 2005/08/21 20:23:50 chris Exp $'
+sigpager_rcsid = '$Id: sigpager.py,v 1.7 2005/08/22 19:29:48 chris Exp $'
 
 # Caveat:
 # Try the -n option if you send stdout to a tty
@@ -23,14 +23,14 @@ optstring = "d:fhns:t:w"
 
 def Usage(msg=''):
 	rcs = Rcsparser(sigpager_rcsid)
-	print rcs.getVals()
+	print rcs.getVals(shortv=True)
 	if msg: print msg
 	print 'Usage:\n' \
-	      '%(sn)s [-d <sigdir>][-f][-n][-s <defaultsig>]' \
-	      		'[-t <sigtail>][-]\n' \
-	      '%(sn)s [-d <sigdir>][-f][-n][-s <defaultsig>]' \
-	      		'[-t <sigtail>][-w][<file> ...]\n' \
-	      '%(sn)s -h' % {'sn': rcs.rcsdict['rcsfile']}
+	'%(fn)s [-d <sigdir>][-f][-n][-s <defaultsig>]' \
+		'[-t <sigtail>][-]\n' \
+	'%(fn)s [-d <sigdir>][-f][-n][-s <defaultsig>]' \
+		'[-t <sigtail>][-w][<file> ...]\n' \
+	'%(fn)s -h' % {'fn': rcs.rcsdict['rcsfile']}
 	sys.exit(2)
 
 class Signature(Tpager, LastExit):
@@ -132,6 +132,7 @@ class Signature(Tpager, LastExit):
 			else:
 				for targetfile in self.targets:
 					writeFile(targetfile, self.sign, self.w)
+
 
 def main():
 	siggi = Signature()
