@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-kiosk_rcsid = '$Id: kiosk.py,v 1.18 2005/08/22 19:51:36 chris Exp $'
+kiosk_rcsid = '$Id: kiosk.py,v 1.19 2005/09/01 15:40:07 chris Exp $'
 
 ###
 # needs python version 2.3 #
@@ -78,7 +78,7 @@ def servErr():
 def leafDir():
 	"""Returns path to directory where leafnode
 	stores hard links to all articles."""
-	newsq = getBin('nnewsq', quiet=True)
+	newsq = getBin('newsq', quiet=True)
 	if not newsq:
 		servErr()
 		return
