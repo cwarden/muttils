@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlpager_rcsid = '$Id: urlpager.py,v 1.14 2005/08/22 19:33:26 chris Exp $'
+urlpager_rcsid = '$Id: urlpager.py,v 1.15 2005/09/02 16:55:33 chris Exp $'
 
 ###
 # Caveat:
@@ -140,8 +140,11 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				cs = cs + [self.url + "<" + os.ctermid()]
 			else: cs.append(self.url)
 			if conny and connyAS:
-				systemCall(["osascript", connyAS])
-			systemCall(cs)
+				cs = ["osascript", connyAS, ";"] + cs
+			if not self.files and not self.getdir or self.nt: # program needs terminal
+				cs = ' '.join(cs)
+				systemCall(cs, True)
+			else: systemCall(cs)
 					
 	def urlSearch(self):
 		Urlcollector.urlCollect(self)
