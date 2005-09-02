@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-Urlregex_rcsid = '$Id: Urlregex.py,v 1.15 2005/08/22 19:37:43 chris Exp $'
+Urlregex_rcsid = '$Id: Urlregex.py,v 1.16 2005/09/02 12:24:26 chris Exp $'
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -16,7 +16,7 @@ any = '-._a-z0-9/#~:,?+=&%!@()' # valid url-chars + comma + parenthesises
 			        # Message-ID: <10rb6mngqccs018@corp.supernews.com>
                                 # Message-id: <20050702131039.GA10840@oreka.com>
 idy = '-._a-z0-9#~?+=&%!$\]['   # valid message-id-chars ### w/o ":/"?
-punc = '-.,:?!'		        # punctuation (how 'bout "!"?)
+delim = '-.,:?!)('		        # punctuation (how 'bout "!"?)
 
 # top level domains
 tops = "a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
@@ -40,7 +40,7 @@ outro = r"""
 		[%(any)s] *	#   0 or more valid  
 	) ?			# } 0 or one
 	(?=			# look-ahead non-consumptive assertion
-		[%(punc)s]*	#  either 0 or more punctuation
+		[%(delim)s]*	#  either 0 or more punctuation
 		[^%(any)s]	#  followed by a non-url char
 	|			# or else
 		$		#  then end of the string
