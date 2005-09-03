@@ -1,7 +1,8 @@
 #! /usr/bin/env python
-# $Id: Urlparser.py,v 1.5 2005/08/05 16:36:33 chris Exp $
+# $Id: Urlparser.py,v 1.6 2005/09/03 12:35:54 chris Exp $
 
 import email, email.Errors, os.path, re, sys
+from email.Parser import HeaderParser
 from email.Utils import getaddresses
 from cStringIO import StringIO
 from HTMLParser import HTMLParser, HTMLParseError
@@ -28,8 +29,8 @@ addrkeys = ['from', 'to', 'reply-to', 'cc',
 quote_re = re.compile(r'^(> ?)+', re.MULTILINE)
 
 def msgFactory(fp):
-	try: return email.message_from_file(fp)
-	except email.Errors.MessageParseError: return ''
+	try: return HeaderParser().parse(fp)
+	except email.Errors.HeaderParseError: return ''
 
 def unQuote(s):
 	return quote_re.sub('', s)
@@ -84,9 +85,8 @@ class Urlparser(HTMLParser):
 				self.items += urls
 
 	def mailDeconstructor(self, s):
-		try: self.msg = email.message_from_string(s)
+		try: self.msg = HeaderParser().parsestr(s)
 		except email.Errors.HeaderParseError: return s
-#                if not self.msg or not self.msg.__len__(): return s
 		if not self.msg or not self.msg['Message-ID']: return s
 		# else it's a message or a mailbox
 		if not self.msg.get_unixfrom():
