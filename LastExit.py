@@ -1,4 +1,5 @@
-# $Id: LastExit.py,v 1.2 2005/02/04 16:26:04 chris Exp $
+# $Id: LastExit.py,v 1.3 2005/09/05 15:27:06 chris Exp $
+
 import os, sys
 from readwrite import writeFile, readLine
 
@@ -14,7 +15,7 @@ class Termplus:
 		writeFile(self.dev, o)
 	
 	def readline(self, size=-1):
-		return readLine(self.dev, size)
+		return readLine(self.dev, size=size)
 
 
 class LastExit(Termplus):
@@ -31,3 +32,5 @@ class LastExit(Termplus):
 	def reInit(self):
 		"""Switches back to previous term."""
 		sys.stdin, sys.stdout = self.iostack.pop()
+
+# EOF vim:ft=python

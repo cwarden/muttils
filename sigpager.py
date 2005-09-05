@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-sigpager_rcsid = '$Id: sigpager.py,v 1.7 2005/08/22 19:29:48 chris Exp $'
+sigpager_rcsid = '$Id: sigpager.py,v 1.8 2005/09/05 15:27:06 chris Exp $'
 
 # Caveat:
 # Try the -n option if you send stdout to a tty
@@ -50,7 +50,7 @@ class Signature(Tpager, LastExit):
 		self.nt = 0		# if 1: needs terminal (stdout to a tty)
 		self.inp = ''		# append sig at input
 		self.targets = []	# target files to self.sign
-		self.w = 1		# if 0: overwrite target file(s)
+		self.w = "wa"           # if "w": overwrite target file(s)
 					# sig appended otherwise
 		self.pat = ''           # match sigs against pattern
 		self.menu = 'Enter pattern to match signatures against:\n'
@@ -65,7 +65,7 @@ class Signature(Tpager, LastExit):
 			elif o == '-n': self.nt = 1
 			elif o == '-s': self.sig = a
 			elif o == '-t': self.tail = a
-			elif o == '-w': self.w = 0
+			elif o == '-w': self.w = "w"
 		if args == ['-']: self.inp = sys.stdin.read()
 		else: self.targets = args
 		if self.inp or self.full:
