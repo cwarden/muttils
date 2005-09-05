@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-kiosk_rcsid = '$Id: kiosk.py,v 1.19 2005/09/01 15:40:07 chris Exp $'
+kiosk_rcsid = '$Id: kiosk.py,v 1.20 2005/09/05 15:55:37 chris Exp $'
 
 ###
 # needs python version 2.3 #
@@ -13,7 +13,9 @@ from email.Utils import parseaddr, parsedate
 from tempfile import mkstemp
 from time import sleep, asctime
 from getbin import getBin
+from Leafnode import Leafnode
 from Rcsparser import Rcsparser
+from readwrite import readLine
 from selbrowser import selBrowser
 from spl import sPl
 from systemcall import systemCall, backQuote
@@ -21,7 +23,7 @@ from systemcall import systemCall, backQuote
 rcs = Rcsparser(kiosk_rcsid)
 shortversion = rcs.getVals(shortv=True)
 
-optstr = "bd:D:ghk:lm:ntTx"
+optstr = "bd:D:ghk:lm:ns:tTx"
 
 ggroups = 'http://groups.google.com/groups?'
 mailspool = os.getenv('MAIL')
@@ -69,28 +71,6 @@ def fpError(strerror, fp):
 	print strerror
 	sys.exit(2)
 
-def servErr():
-	print
-	print shortversion
-	print 'needs leafnode installed to search local news server'
-	print
-
-def leafDir():
-	"""Returns path to directory where leafnode
-	stores hard links to all articles."""
-	newsq = getBin('newsq', quiet=True)
-	if not newsq:
-		servErr()
-		return
-	leafinfo = backQuote(newsq)
-	# -> 'Contents of queue in directory /sw/var/spool/news/out.going:\n'
-	leafl = leafinfo.split('/')[1:-1]
-	# -> ['sw', 'var', 'spool', 'news']
-	leafl.insert(0, '/')
-	leafl.append('message.id')
-	return os.path.join(*leafl)
-	# -> '/sw/var/spool/news/message.id'
-
 def mailDir():
 	"""Returns either ~/Maildir or ~/Mail
 	as first item of a list if they are directories,
@@ -131,12 +111,13 @@ def mkUnixfrom(msg):
 		msg.set_unixfrom('From %s  %s' % (ufromaddr, date))
 	return msg
 
-class Kiosk:
+class Kiosk(Leafnode):
 	"""
 	Provides methods to search for and retrieve
 	messages via their Message-ID.
 	"""
-	def __init__(self, items=None):
+	def __init__(self, items=None, spool=''):
+		Leafnode.__init__(self, spool=spool) # <- spool
 		if items == None: items = []
 		self.items = items      # message-ids to look for
 		self.kiosk = ''		# path to kiosk mbox
@@ -172,6 +153,7 @@ class Kiosk:
 			elif o == '-k': self.kiosk = a
 			elif o == '-m': self.mask = a
 			elif o == '-n': self.mdirs = [] # don't search local mailboxes
+			elif o == '-s': self.spool = a # location of local news spool
 			elif o == '-t': self.tb = True # use text browser
 			elif o == '-T': self.nt = True # needs terminal
 			elif o == '-x': self.xb = True # use xbrowser
@@ -187,9 +169,7 @@ class Kiosk:
 		if not os.path.isfile(self.kiosk):
 			err = '%s: not a regular file' % self.kiosk
 			Usage(err)
-		fp = open(self.kiosk, "rb")
-		testline = fp.readline()
-		fp.close()
+		testline = readLine(self.kiosk, "rb")
 		if not testline: return # empty is fine
 		test = email.message_from_string(testline)
 		if not test.get_unixfrom():
@@ -238,30 +218,16 @@ class Kiosk:
 				print 'Continuing ...'
 		for item in found: self.items.remove(item)
 
-	def leafSearch(self, leafdir):
+	def leafSearch(self):
 		print 'Searching local newsserver ...'
-#		for root, dirs, files in os.walk(leafdir):
-#			for name in files:
-#				if name == self.anglid:
-#					return os.path.join(root, name)
-		# but this is significantly faster:
-		leaflets = os.listdir(leafdir)
-		for leaflet in leaflets:
-			if not self.items: break
-			leaflet = os.path.join(leafdir, leaflet)
-			if os.path.isdir(leaflet):
-				articles = os.listdir(leaflet)
-				for item in self.items:
-					anglid = '<%s>' % item
-					if anglid in articles:
-						print 'retrieving message-id %s' % anglid
-						fp = open(os.path.join(leaflet, anglid), "rb")
-						try: msg = email.message_from_file(fp)
-						except email.Errors.MessageParseError, strerror:
-							fpError(strerror, fp)
-						fp.close()
-						self.msgs.append(msg)
-						self.items.remove(item)
+		articles, self.items = Leafnode.idPath(self, self.items, True)
+		for article in articles:
+			fp = open(article, "rb")
+			try: msg = email.message_from_file(fp)
+			except email.Errors.MessageParseError, strerror:
+				fpError(strerror, fp)
+			fp.close()
+			self.msgs.append(msg)
 
 	def boxParser(self, path, maildir=0):
 		print 'Searching %s ...' % path
@@ -329,8 +295,8 @@ class Kiosk:
 		if self.mdirs: self.dirTest()
 		if not self.google:
 			self.masKompile()
-			leafdir = leafDir()
-			if leafdir: self.leafSearch(leafdir)
+			if not self.spool: Leafnode.newsSpool(self)
+			if self.spool: self.leafSearch()
 			else: print 'No local news server found.'
 			if self.items and self.mdirs:
 				self.mailSearch()
