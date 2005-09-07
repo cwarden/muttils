@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.9 2005/08/22 19:40:43 chris Exp $'
+urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.10 2005/09/07 16:18:51 chris Exp $'
 
 ###
 # Caveat:
@@ -24,7 +24,6 @@ from systemcall import systemCall
 
 optstring = "d:D:ghiIk:lnr:w:x"
 
-wget = getBin('wget')
 connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if os.path.exists(connyAS): connyAS = False
 
@@ -105,19 +104,13 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 			if self.id: self.proto = 'all'
 
 	def urlGo(self):
-		conny = 0
-		bin = ''
-		if connyAS:
-			for url in self.items:
-				if not url.startswith('file://'):
-					systemCall(["osascript", connyAS])
-				break
 		if self.getdir:
 			for url in self.items:
 				if local_re.search(url) != None:
 					Usage("wget doesn't retrieve local files")
-			systemCall([wget, "-P", self.items])
-		else: selBrowser(self.items, tb=False, self.xb)
+			if connyAS: systemCall(["osascript", connyAS])
+			systemCall([getbin('wget'), "-P", self.getdir] + self.items)
+		else: selBrowser(urls=self.items, tb=False, xb=self.xb)
 					
 	def urlSearch(self):
 		Urlcollector.urlCollect(self)
