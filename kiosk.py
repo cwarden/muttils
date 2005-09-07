@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-kiosk_rcsid = '$Id: kiosk.py,v 1.20 2005/09/05 15:55:37 chris Exp $'
+kiosk_rcsid = '$Id: kiosk.py,v 1.21 2005/09/07 16:21:44 chris Exp $'
 
 ###
 # needs python version 2.3 #
@@ -133,6 +133,7 @@ class Kiosk(Leafnode):
 		self.xb = False	        # force x-browser
 		self.tb = False         # use text browser
 		self.mdmask = r'^(cur|new|tmp)$'
+		self.mspool = mailspool
 
 	def argParser(self):
 		try: opts, self.items = getopt.getopt(sys.argv[1:], optstr)
@@ -144,7 +145,7 @@ class Kiosk(Leafnode):
 				self.mdirs = self.mdirs + a.split(':')
 			elif o == '-D':
 				self.mdirs = a.split(':')
-				if mailspool: mailspool = None
+				if self.mspool: self.mspool = None
 			elif o == '-g':
 				self.browse, self.google, self.mdirs = True, True, []
 #                                self.google, self.mdirs = 1, []# temporarily(?) disabled
@@ -229,7 +230,7 @@ class Kiosk(Leafnode):
 			fp.close()
 			self.msgs.append(msg)
 
-	def boxParser(self, path, maildir=0):
+	def boxParser(self, path, maildir=False):
 		print 'Searching %s ...' % path
 		if maildir:
 			mbox = mailbox.Maildir(path, msgFactory)
@@ -247,30 +248,38 @@ class Kiosk(Leafnode):
 				if not self.items: break
 		if not maildir: fp.close()
 
+	def walkMdir(self, mdir):
+		"""Visits mail hierarchies and parses their mailboxes.
+		Detects mbox and Maildir mailboxes."""
+		for root, dirs, files in os.walk(mdir):	
+			if not self.items: break
+			rmdl = [d for d in dirs if self.mdmask.search(d)!=None]
+			for d in rmdl: dirs.remove(d)
+			if self.mask:
+				rmfl = [f for f in files if self.mask.search(f)!=None]
+				for f in rmfl: files.remove(f)
+			for name in dirs:
+				if self.items:
+					path = os.path.join(root, name)
+					if path != self.mspool:
+						dirlist = os.listdir(path)
+						if 'cur' in dirlist and 'new' in dirlist:
+							self.boxParser(path, True)
+			for name in files:
+				if self.items:
+					path = os.path.join(root, name)
+					if path != self.mspool:
+						self.boxParser(path)
+
 	def mailSearch(self):
+		"""Announces search of mailboxes, searches spool,
+		and passes mail hierarchies to walkMdir."""
 		print '%s not on local server.\n' \
 		      'Searching local mailboxes ...' \
 		      % sPl(len(self.items), 'message')
-		if mailspool: self.boxParser(mailspool, os.path.isdir(mailspool))
-		for mdir in self.mdirs:
-			for root, dirs, files in os.walk(mdir):	
-				if not self.items: break
-				rmdl = [d for d in dirs if self.mdmask.search(d)!=None]
-				for d in rmdl: dirs.remove(d)
-				if self.mask:
-					rmfl = [f for f in files if self.mask.search(f)!=None]
-					for f in rmfl: files.remove(f)
-				for name in dirs:
-					if self.items:
-						path = os.path.join(root, name)
-						if path != mailspool:
-							dirlist = os.listdir(path)
-							if 'cur' in dirlist and 'new' in dirlist:
-								self.boxParser(path, 1)
-				for name in files:
-					if self.items:
-						path = os.path.join(root, name)
-						if path != mailspool: self.boxParser(path)
+		if self.mspool:
+			self.boxParser(self.mspool, os.path.isdir(self.mspool))
+		for mdir in self.mdirs: self.walkMdir(mdir)
 
 	def masKompile(self):
 		"""Compiles masks to exclude files and directories from search."""
@@ -311,7 +320,7 @@ class Kiosk(Leafnode):
 			if self.msgs: sleep(5)
 		if not self.msgs: sys.exit()
 		outfp = open(self.kiosk, "ab")
-		g = Generator(outfp, mangle_from_=True, maxheaderlen=0)
+		g = Generator(outfp, maxheaderlen=0)
 		for msg in self.msgs:
 			msg.__delitem__('status') # show msg as new in mutt
 			msg.__delitem__('xref') # delete server info
@@ -321,7 +330,9 @@ class Kiosk(Leafnode):
 		if len(self.msgs) == 1 and self.muttone:
 			cmd = "%s '%s'" % (muttone, self.kiosk)
 		else: cmd = "%s '%s'" % (mutti(firstid), self.kiosk)
-		if self.nt: cmd = "%s <> %s" % (cmd, os.ctermid())
+		if self.nt:
+			tty = os.ctermid()
+			cmd = "%(cmd)s <%(tty)s >%(tty)s" % {'cmd':cmd, 'tty':tty}
 		systemCall(cmd, sh=True)
 		if self.tmp and os.path.isfile(self.kiosk):
 			os.remove(self.kiosk)
