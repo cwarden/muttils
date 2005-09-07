@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlpager_rcsid = '$Id: urlpager.py,v 1.15 2005/09/02 16:55:33 chris Exp $'
+urlpager_rcsid = '$Id: urlpager.py,v 1.16 2005/09/07 16:14:34 chris Exp $'
 
 ###
 # Caveat:
@@ -129,7 +129,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		elif self.getdir:
 			if not conny:
 				Usage("wget doesn't retrieve local files")
-			cs = [getBin('wget'), "-P", "'%s'" % self.getdir]
+			cs = [getBin('wget'), "-P", self.getdir]
 		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
 			if not self.ft: cs = ["ftp"]
 			else: cs = [self.ft]
@@ -137,13 +137,14 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		if not cs: selBrowser(self.url, tb=self.tb, xb=self.xb)
 		else:
 			if not self.files and not self.getdir or self.nt: # program needs terminal
-				cs = cs + [self.url + "<" + os.ctermid()]
+				tty = os.ctermid()
+				cs = cs + [self.url, "<", tty, ">", tty]
 			else: cs.append(self.url)
 			if conny and connyAS:
 				cs = ["osascript", connyAS, ";"] + cs
 			if not self.files and not self.getdir or self.nt: # program needs terminal
 				cs = ' '.join(cs)
-				systemCall(cs, True)
+				systemCall(cs, sh=True)
 			else: systemCall(cs)
 					
 	def urlSearch(self):
