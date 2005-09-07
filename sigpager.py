@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-sigpager_rcsid = '$Id: sigpager.py,v 1.8 2005/09/05 15:27:06 chris Exp $'
+sigpager_rcsid = '$Id: sigpager.py,v 1.9 2005/09/07 16:13:15 chris Exp $'
 
 # Caveat:
 # Try the -n option if you send stdout to a tty
@@ -73,7 +73,7 @@ class Signature(Tpager, LastExit):
 			self.qfunc = '%s, <C-c>:cancel' % self.qfunc
 			
 	def interRuptus(self):
-		if self.inp or self.full: sys.exit(0)
+		if self.inp or self.full: sys.exit()
 		else: self.sign = None
 
 	def getString(self, fn):
