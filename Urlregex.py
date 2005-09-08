@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-Urlregex_rcsid = '$Id: Urlregex.py,v 1.16 2005/09/02 12:24:26 chris Exp $'
+Urlregex_rcsid = '$Id: Urlregex.py,v 1.17 2005/09/08 13:59:45 chris Exp $'
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -19,10 +19,10 @@ idy = '-._a-z0-9#~?+=&%!$\]['   # valid message-id-chars ### w/o ":/"?
 delim = '-.,:?!)('		        # punctuation (how 'bout "!"?)
 
 # top level domains
-tops = "a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
+tops =	"a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
 	"c[acdfghiklmnoruvxyz] d[ejkmoz] e[ceghrst] " \
 	"f[ijkmor] g[abdefghilmnpqrstuwy] " \
-	"h[kmnrtu] i[delnmoqrst] j[emop " \
+	"h[kmnrtu] i[delnmoqrst] j[emop] " \
 	"k[eghimnprwyz] l[abcikrstuvy] " \
 	"m[acdghklmnopqrstuvwxyz] n[acefgilopruz] om " \
 	"p[aefghklmnrstwy] qa r[eouw] " \
@@ -97,8 +97,21 @@ rawwipe = r'(%s)|(%s)' % (declid, headsoff)
 
 ## precompiled regexes ##
 ftp_re = re.compile('ftp(://|\.)', re.IGNORECASE)
-mail_re = re.compile(r'(mailto:)?[-._a-z0-9]+@[-._a-z0-9]+%s\b' \
-		    % top, re.IGNORECASE)
+
+address = '[-._a-z0-9]+@[-._a-z0-9]+%s' % top
+mail = r"""
+	\b(			# word boundary and group open
+		mailto:
+		%(address)s	# address
+		\?subject=	# ?subject=
+		[^>]		# any except >
+	|			# or
+		(mailto:)?	# optional mailto
+		%(address)s	# and address
+	)\b			# close group and word boundary
+	""" % { 'address':address }
+mail_re = re.compile(mail, re.IGNORECASE|re.VERBOSE)
+# chris@localhost necessary
 	
 ## filter functions ##
 
@@ -130,8 +143,8 @@ class Urlregex(Urlparser):
 	def __init__(self, proto='all', nofind=0):
 		Urlparser.__init__(self, proto) # <- id, proto, items, url_re, ugly
 		self.nofind = nofind    # for grabbing regexes only
-		self.decl = 0		# list only declared urls
-		self.uni = 1		# list only unique urls
+		self.decl = False       # list only declared urls
+		self.uni = True         # list only unique urls
 		self.kill_re = None	# customized pattern to find non url chars
 		self.intro = ''
 		self.protocol = ''	# pragmatic proto (may include www., ftp.)
@@ -164,10 +177,8 @@ class Urlregex(Urlparser):
 			self.protocol = '(%s)' % protocols
 
 		else:				  ## singles
-			self.decl = 1
-			if self.proto != 'mailto':
-				self.protocol = '%s://' % self.proto
-			else: self.protocol = 'mailto:'
+			self.decl = True
+			self.protocol = '%s://' % self.proto
 			if self.proto == 'http':
 				self.intro = '(https?://|www\.)'
 			elif self.proto == 'ftp':
@@ -235,7 +246,10 @@ class Urlregex(Urlparser):
 	def urlObjects(self):
 		"""Creates customized regex objects of url."""
 		Urlparser.protoTest(self)
-		if not self.id:
+		if self.proto == 'mailto':# be pragmatic and list not only declared
+			self.url_re = mail_re
+			self.proto_re = re.compile('^mailto:')
+		elif not self.id:
 			self.setStrings()
 			rawurl = self.getRaw()
 			self.url_re = re.compile(rawurl, re.IGNORECASE|re.VERBOSE)
@@ -253,7 +267,7 @@ class Urlregex(Urlparser):
 		if type == 'text/html':
 			try: Urlparser.makeUrlist(self, data)
 			except HTMLParseError, AssertionError:
-				self.ugly = 1
+				self.ugly = True
 				pass
 		elif type.startswith('text/'):
 			s = Urlparser.mailDeconstructor(self, data)
