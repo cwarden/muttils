@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlpager_rcsid = '$Id: urlpager.py,v 1.16 2005/09/07 16:14:34 chris Exp $'
+urlpager_rcsid = '$Id: urlpager.py,v 1.17 2005/09/11 08:56:42 chris Exp $'
 
 ###
 # Caveat:
@@ -63,54 +63,56 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		except getopt.GetoptError, msg: Usage(msg)
 		for o, a in opts:
 			if o == '-b': # don't look up msgs locally
-				self.browse, self.id, self.google, self.mdirs = 1, 1, 1, []
+				self.browse, self.id, self.google = True, True, True
+				self.mdirs = []
 				self.getdir = ''
 			elif o == '-d': # add specific mail hierarchies
-				self.id = 1
+				self.id = True
 				self.mdirs = self.mdirs + a.split(':')
 				self.getdir = ''
 			elif o == '-D': # specific mail hierarchies
-				self.id = 1
+				self.id = True
 				self.mdirs = a.split(':')
 				self.getdir = ''
 			elif o == '-f': # ftp client
-				getBin([a])
-				self.ft = a
+				self.ft = getBin(a)
 			elif o == '-g': # don't look up msgs locally
-				self.id, self.google, self.mdirs = 1, 1, []
+				self.id, self.google = True, True
+				self.mdirs = []
 			elif o == '-h': Usage()
 			elif o == '-I': # look for declared message-ids
-				self.id, self.decl = 1, 1
+				self.id, self.decl = True, True
 				self.getdir = ''
 			elif o == '-i': # look for ids, in text w/o prot (email false positives)
-				self.id = 1
+				self.id = True
 				self.getdir = ''
 			elif o == '-k': # mailbox to store retrieved message
-				self.id = 1
+				self.id = True
 				self.kiosk = a
 				self.getdir = ''
 			elif o == '-l': # only local search for message-ids
-				self.local, self.id = 1, 1
+				self.local, self.id = True, True
 				self.getdir = ''
 			elif o == '-n': # don't search mailboxes for message-ids
-				self.id, self.mdirs = 1, []
+				self.id = True
+				self.mdirs = []
 				self.getdir = ''
 			elif o == '-p': # protocol(s)
-				self.id = 0
 				self.proto = a
+				self.id = False
 			elif o == '-r': # regex pattern to match urls against
 				self.pat = a
 			elif o == '-x': # xbrowser
-				self.id, self.xb = 0, 1
+				self.xb = True
 			elif o == '-t': # text browser command
-				self.id, self.tb = 0, 1
+				self.tb = True
 			elif o == '-w': # download dir for wget
 				self.proto = 'web'
 				self.getdir = a
 				self.getdir = os.path.abspath(os.path.expanduser(self.getdir))
 				if not os.path.isdir(self.getdir):
 					Usage('%s: not a directory' % self.getdir)
-				self.id = 0
+				self.id = False
 
 	def urlPager(self):
 		if not self.id and self.proto != 'all':
@@ -133,20 +135,20 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
 			if not self.ft: cs = ["ftp"]
 			else: cs = [self.ft]
-			self.nt = 1
+			self.nt = True
 		if not cs: selBrowser(self.url, tb=self.tb, xb=self.xb)
 		else:
-			if not self.files and not self.getdir or self.nt: # program needs terminal
+			if conny and connyAS: systemCall(["osascript", connyAS])
+			if not self.files and not self.getdir \
+			or self.nt: # program needs terminal
 				tty = os.ctermid()
 				cs = cs + [self.url, "<", tty, ">", tty]
-			else: cs.append(self.url)
-			if conny and connyAS:
-				cs = ["osascript", connyAS, ";"] + cs
-			if not self.files and not self.getdir or self.nt: # program needs terminal
 				cs = ' '.join(cs)
 				systemCall(cs, sh=True)
-			else: systemCall(cs)
-					
+			else:
+				cs.append(self.url)
+				systemCall(cs)
+
 	def urlSearch(self):
 		Urlcollector.urlCollect(self)
 		if not self.files: LastExit.termInit(self)
@@ -156,7 +158,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				if not self.id: self.urlGo()
 				else:
 					if not self.files:
-						self.nt = 1
+						self.nt = True
 					self.items = [self.url]
 					Kiosk.kioskStore(self)
 		except KeyboardInterrupt: pass
