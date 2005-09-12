@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-kiosk_rcsid = '$Id: kiosk.py,v 1.21 2005/09/07 16:21:44 chris Exp $'
+kiosk_rcsid = '$Id: kiosk.py,v 1.22 2005/09/12 23:32:36 chris Exp $'
 
 ###
 # needs python version 2.3 #
@@ -188,7 +188,7 @@ class Kiosk(Leafnode):
 	def makeQuery(self, id):
 		"""Reformats Message-ID to google query."""
 		if not self.browse:
-			query = {'selm': id, 'output': 'gplain'}
+			query = {'selm': id, 'hl': 'en', 'dmode': 'source'}
 		else: query = {'selm': id, 'hl': 'en'}
 		params = urllib.urlencode(query)
 		return '%s%s' % (ggroups, params)
