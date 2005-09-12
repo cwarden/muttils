@@ -1,8 +1,8 @@
 #! /usr/bin/env python
-# $Id: Urlparser.py,v 1.6 2005/09/03 12:35:54 chris Exp $
+
+# $Id: Urlparser.py,v 1.7 2005/09/12 23:14:22 chris Exp $
 
 import email, email.Errors, os.path, re, sys
-from email.Parser import HeaderParser
 from email.Utils import getaddresses
 from cStringIO import StringIO
 from HTMLParser import HTMLParser, HTMLParseError
@@ -29,8 +29,8 @@ addrkeys = ['from', 'to', 'reply-to', 'cc',
 quote_re = re.compile(r'^(> ?)+', re.MULTILINE)
 
 def msgFactory(fp):
-	try: return HeaderParser().parse(fp)
-	except email.Errors.HeaderParseError: return ''
+	try: return email.message_from_file(fp)
+	except email.Errors.MessageParseError: return ''
 
 def unQuote(s):
 	return quote_re.sub('', s)
@@ -85,8 +85,8 @@ class Urlparser(HTMLParser):
 				self.items += urls
 
 	def mailDeconstructor(self, s):
-		try: self.msg = HeaderParser().parsestr(s)
-		except email.Errors.HeaderParseError: return s
+		try: self.msg = email.message_from_string(s)
+		except email.Errors.MessageParseError: return s
 		if not self.msg or not self.msg['Message-ID']: return s
 		# else it's a message or a mailbox
 		if not self.msg.get_unixfrom():
@@ -111,13 +111,15 @@ class Urlparser(HTMLParser):
 		if not self.id: self.headSearcher()
 		for part in self.msg.walk(): # use email.Iterator?
 			if part.get_content_maintype() == 'text':
-				text = part.get_payload(decode=1)
+				text = part.get_payload(decode=True)
 				subtype = part.get_content_subtype()
 				if subtype == 'plain':
 					sl.append(text)
 				elif subtype.startswith('htm'):
 					try: self.makeUrlist(text)
 					except HTMLParseError, AssertionError:
-						self.ugly = 1
+						self.ugly = True
 						pass
 		return sl
+
+# EOF vim:ft=python
