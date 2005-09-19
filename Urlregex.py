@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-Urlregex_rcsid = '$Id: Urlregex.py,v 1.17 2005/09/08 13:59:45 chris Exp $'
+Urlregex_rcsid = '$Id: Urlregex.py,v 1.18 2005/09/19 07:42:28 chris Exp $'
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -37,7 +37,7 @@ outro = r"""
 	%(top)s			# top level preceded by dot
 	(			# { ungreedy 0 or more
 		/		#   slash
-		[%(any)s] *	#   0 or more valid  
+		[%(any)s] *?	#   0 or more valid  
 	) ?			# } 0 or one
 	(?=			# look-ahead non-consumptive assertion
 		[%(delim)s]*	#  either 0 or more punctuation
@@ -191,7 +191,7 @@ class Urlregex(Urlparser):
 		proto_url = r"""	## long url ##
 			(?<=<)		# look behind for "<"
 			%(intro)s	# intro
-			[%(any)s\s] +	# any or space (space to be removed)
+			[%(any)s\s] +?	# any or space (space to be removed)
 			%(spoutro)s     # outro w/ spaces
 			|		## or url in 1 line ##
 			\b		# start at word boundary
