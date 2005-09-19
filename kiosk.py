@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-kiosk_rcsid = '$Id: kiosk.py,v 1.22 2005/09/12 23:32:36 chris Exp $'
+kiosk_rcsid = '$Id: kiosk.py,v 1.23 2005/09/19 19:49:52 chris Exp $'
 
 ###
 # needs python version 2.3 #
@@ -57,7 +57,7 @@ def Usage(err=''):
       	'%(fn)s -g [-k <mbox>][-t] <ID> [<ID> ...]\n' \
 	'     *** -g: broken because plain text is inaccessible ***\n' \
       	'%(fn)s -b <ID> [<ID> ...]\n' \
-      	'%(fn)s -h' % { 'fn': rcs.rcsdict['rcsfile'] }
+      	'%(fn)s -h (display this help)' % { 'fn': rcs.rcsdict['rcsfile'] }
 	sys.exit(2)
 
 def regError(err, pat):
