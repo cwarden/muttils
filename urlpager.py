@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlpager_rcsid = '$Id: urlpager.py,v 1.17 2005/09/11 08:56:42 chris Exp $'
+urlpager_rcsid = '$Id: urlpager.py,v 1.18 2005/10/27 15:28:25 chris Exp $'
 
 ###
 # Caveat:
@@ -22,7 +22,7 @@ from Rcsparser import Rcsparser
 from selbrowser import selBrowser, local_re
 from systemcall import systemCall
 
-optstring = "bd:D:f:ghiIlnp:k:r:tw:x"
+optstring = "bd:D:f:ghiIlnp:k:r:tTw:x"
 mailers = ('mutt', 'pine', 'elm', 'mail') 
 connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if not os.path.exists(connyAS): connyAS = False
@@ -106,6 +106,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				self.xb = True
 			elif o == '-t': # text browser command
 				self.tb = True
+			elif o == '-T': # needs terminal (at end of pipe e.g)
+				self.nt = True
 			elif o == '-w': # download dir for wget
 				self.proto = 'web'
 				self.getdir = a
@@ -139,8 +141,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		if not cs: selBrowser(self.url, tb=self.tb, xb=self.xb)
 		else:
 			if conny and connyAS: systemCall(["osascript", connyAS])
-			if not self.files and not self.getdir \
-			or self.nt: # program needs terminal
+			if not self.getdir or self.nt: # program needs terminal
 				tty = os.ctermid()
 				cs = cs + [self.url, "<", tty, ">", tty]
 				cs = ' '.join(cs)
@@ -150,19 +151,18 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				systemCall(cs)
 
 	def urlSearch(self):
+		if not self.files: self.nt = True
 		Urlcollector.urlCollect(self)
-		if not self.files: LastExit.termInit(self)
+		if self.nt: LastExit.termInit(self)
 		try:
 			self.urlPager()
 			if self.url:
 				if not self.id: self.urlGo()
 				else:
-					if not self.files:
-						self.nt = True
 					self.items = [self.url]
 					Kiosk.kioskStore(self)
 		except KeyboardInterrupt: pass
-		if not self.files: LastExit.reInit(self)
+		if self.nt: LastExit.reInit(self)
 
 
 def main():
