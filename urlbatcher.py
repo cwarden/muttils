@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.10 2005/09/07 16:18:51 chris Exp $'
+urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.11 2005/10/27 15:29:16 chris Exp $'
 
 ###
 # Caveat:
@@ -22,7 +22,7 @@ from spl import sPl
 from selbrowser import selBrowser, local_re
 from systemcall import systemCall
 
-optstring = "d:D:ghiIk:lnr:w:x"
+optstring = "d:D:ghiIk:lnr:Tw:x"
 
 connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if os.path.exists(connyAS): connyAS = False
@@ -93,6 +93,8 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 				self.getdir = ''
 			elif o == '-r':
 				self.pat = a
+			elif o == '-T': # force new terminal
+				self.nt = True
 			elif o == '-w': # download dir for wget
 				self.id = 0
 				getdir = a
@@ -113,8 +115,9 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 		else: selBrowser(urls=self.items, tb=False, xb=self.xb)
 					
 	def urlSearch(self):
+		if not self.files: self.nt =True
 		Urlcollector.urlCollect(self)
-		if not self.files: LastExit.termInit(self)
+		if self.nt: LastExit.termInit(self)
 		try:
 			if self.items:
 				yorn = '%s\nRetrieve the above %s? [y,N] ' \
@@ -124,15 +127,13 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 					 )
 				if raw_input(yorn) in ('y', 'Y'):
 					if not self.id: self.urlGo()
-					else:
-						if not self.files: self.nt = 1
-						Kiosk.kioskStore(self)
+					else: Kiosk.kioskStore(self)
 			else:
 				msg = 'No %s found. [Enter] ' \
 				      % ('urls', 'message-ids')[self.id]
 				raw_input(msg)
 		except KeyboardInterrupt: pass
-		if not self.files: LastExit.reInit(self)
+		if self.nt: LastExit.reInit(self)
 
 
 def main():
