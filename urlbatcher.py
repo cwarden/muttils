@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.11 2005/10/27 15:29:16 chris Exp $'
+urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.12 2005/11/14 11:32:53 chris Exp $'
 
 ###
 # Caveat:
@@ -120,7 +120,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 		if self.nt: LastExit.termInit(self)
 		try:
 			if self.items:
-				yorn = '%s\nRetrieve the above %s? [y,N] ' \
+				yorn = '%s\nRetrieve the above %s? yes, [No] ' \
 				       % ('\n'.join(self.items),
 					  sPl(len(self.items),
 				          	('url', 'message-id')[self.id])
@@ -129,7 +129,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 					if not self.id: self.urlGo()
 					else: Kiosk.kioskStore(self)
 			else:
-				msg = 'No %s found. [Enter] ' \
+				msg = 'No %s found. [Ok] ' \
 				      % ('urls', 'message-ids')[self.id]
 				raw_input(msg)
 		except KeyboardInterrupt: pass
