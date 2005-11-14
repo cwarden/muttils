@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlpager_rcsid = '$Id: urlpager.py,v 1.18 2005/10/27 15:28:25 chris Exp $'
+urlpager_rcsid = '$Id: urlpager.py,v 1.19 2005/11/14 11:41:36 chris Exp $'
 
 ###
 # Caveat:
@@ -50,7 +50,7 @@ def Usage(msg=''):
 
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def __init__(self):
-		Urlcollector.__init__(self) # <- proto, id, laxid, items, files, pat
+		Urlcollector.__init__(self) # <- nt, proto, id, laxid, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mdirs, local, xb, tb
 		Tpager.__init__(self, name='url') # <- items, name
 		LastExit.__init__(self)
