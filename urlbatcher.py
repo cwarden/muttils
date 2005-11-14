@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.12 2005/11/14 11:32:53 chris Exp $'
+urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.13 2005/11/14 11:39:13 chris Exp $'
 
 ###
 # Caveat:
@@ -55,7 +55,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 	You can specify urls/ids by a regex pattern.
 	"""
 	def __init__(self):
-		Urlcollector.__init__(self, proto='web') # <- proto, id, decl, items, files, pat
+		Urlcollector.__init__(self, proto='web') # <- nt, proto, id, decl, items, files, pat
 		Kiosk.__init__(self)        # <- nt, kiosk, mdirs, local, google, xb, tb
 		LastExit.__init__(self)
 		self.getdir = ''            # download in dir via wget
