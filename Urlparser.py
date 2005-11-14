@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# $Id: Urlparser.py,v 1.7 2005/09/12 23:14:22 chris Exp $
+# $Id: Urlparser.py,v 1.8 2005/11/14 11:31:40 chris Exp $
 
 import email, email.Errors, os.path, re, sys
 from email.Utils import getaddresses
@@ -98,8 +98,7 @@ class Urlparser(HTMLParser):
 			mbox = PortableUnixMailbox(fp, msgFactory)
 			while self.msg != None:
 				self.msg = mbox.next()
-				if self.msg:
-					sl = self.msgDeconstructor(sl)
+				if self.msg: sl = self.msgDeconstructor(sl)
 			fp.close()
 		s = '\n'.join(sl)
 		return unQuote(s) # get quoted urls spanning more than 1 line
