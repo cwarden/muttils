@@ -1,4 +1,4 @@
-# $Id: Tpager.py,v 1.5 2005/02/04 16:26:04 chris Exp $
+# $Id: Tpager.py,v 1.6 2005/11/15 18:46:22 chris Exp $
 from Pages import Pages
 from spl import sPl
 from valclamp import valClamp
@@ -56,7 +56,7 @@ class Tpager(Pages):
 			cs = ''
 			if self.ckey: cs = ', %s<%s>' % (self.ckey, self.crit)
 			if self.itemsdict: cs = '%s, number' % cs
-			menu = 'Page 1 of 1 ([%s]%s) ' \
+			menu = 'Page 1 of 1 [%s]%s ' \
 				% (self.qfunc, cs)
 			reply = self.pageDisplay(menu)
 			if not reply: return 0
@@ -73,10 +73,10 @@ class Tpager(Pages):
 				if 1 < pn < plen:
 					bs = '-:%s, ' % pds[pdir*-1]
 				else: pdir *= -1
-				menu = 'Page %d of %d ([%s], %sq:%s' \
+				menu = 'Page %d of %d [%s], %sq:%s' \
 					% (pn, plen, pds[pdir], bs, self.qfunc)
 				if self.ckey: menu = '%s, %s<%s>' % (menu, self.ckey, self.crit)
-				menu = '%s, number) ' % menu
+				menu = '%s, number ' % menu
 				reply = self.pageDisplay(menu, pn)
 				if reply:
 					if reply in 'qQ': return 0
