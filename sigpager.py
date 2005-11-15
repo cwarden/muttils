@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-sigpager_rcsid = '$Id: sigpager.py,v 1.9 2005/09/07 16:13:15 chris Exp $'
-
-# Caveat:
-# Try the -n option if you send stdout to a tty
+sigpager_rcsid = '$Id: sigpager.py,v 1.10 2005/11/15 18:54:12 chris Exp $'
 
 import getopt, os, re, readline, sys
 from random import shuffle
@@ -17,8 +14,8 @@ sigdir = os.path.expanduser('~/.Sig')
 defaultsig = os.getenv('SIGNATURE')
 if not defaultsig:
 	defaultsig = os.path.expanduser('~/.signature')
-optstring = "d:fhns:t:w"
-# d: sigdir, f [include separator], h [help], n [needs terminal],
+optstring = "d:fhs:t:w"
+# d: sigdir, f [include separator], h [help],
 # s: defaultsig, t: sigtail, w [(over)write target file(s)]
 
 def Usage(msg=''):
@@ -26,11 +23,11 @@ def Usage(msg=''):
 	print rcs.getVals(shortv=True)
 	if msg: print msg
 	print 'Usage:\n' \
-	'%(fn)s [-d <sigdir>][-f][-n][-s <defaultsig>]' \
+	'%(fn)s [-d <sigdir>][-f][-s <defaultsig>]' \
 		'[-t <sigtail>][-]\n' \
-	'%(fn)s [-d <sigdir>][-f][-n][-s <defaultsig>]' \
-		'[-t <sigtail>][-w][<file> ...]\n' \
-	'%(fn)s -h' % {'fn': rcs.rcsdict['rcsfile']}
+	'%(fn)s [-d <sigdir>][-f][-s <defaultsig>]' \
+		'[-t <sigtail>][-w] <file> [<file> ...]\n' \
+	'%(fn)s -h (display this help)' % {'fn': rcs.rcsdict['rcsfile']}
 	sys.exit(2)
 
 class Signature(Tpager, LastExit):
@@ -39,42 +36,33 @@ class Signature(Tpager, LastExit):
 	matched against a regular expression of your choice.
 	"""
 	def __init__(self):
-		Tpager.__init__(self,name='sig',format='bf',qfunc='default sig',ckey='/')
-							# <- item, name, format, qfunc
+		Tpager.__init__(self, # <- item, name, format, qfunc
+			name='sig', format='bf',
+			qfunc='default sig, C-c:cancel', ckey='/')
 		LastExit.__init__(self)
 		self.sign = ''          # chosen self.signature
 		self.sig = defaultsig	# self.signature file
 		self.sdir = sigdir	# directory containing sigfiles
 		self.tail = '.sig'	# tail for sigfiles
-		self.full = 0		# sig including separator
-		self.nt = 0		# if 1: needs terminal (stdout to a tty)
+		self.full = False	# sig including separator
 		self.inp = ''		# append sig at input
 		self.targets = []	# target files to self.sign
 		self.w = "wa"           # if "w": overwrite target file(s)
 					# sig appended otherwise
-		self.pat = ''           # match sigs against pattern
-		self.menu = 'Enter pattern to match signatures against:\n'
+		self.pat = None         # match sigs against pattern
 
 	def argParser(self):
 		try: opts, args = getopt.getopt(sys.argv[1:], optstring)
 		except getopt.GetoptError, msg: Usage(msg)
 		for o, a in opts:
 			if o == '-d': self.sdir = a
-			elif o == '-f': self.full = 1
+			elif o == '-f': self.full = True
 			elif o == '-h': Usage()
-			elif o == '-n': self.nt = 1
 			elif o == '-s': self.sig = a
 			elif o == '-t': self.tail = a
 			elif o == '-w': self.w = "w"
 		if args == ['-']: self.inp = sys.stdin.read()
 		else: self.targets = args
-		if self.inp or self.full:
-			self.menu = '<Ctrl-C> to cancel or\n%s' % self.menu
-			self.qfunc = '%s, <C-c>:cancel' % self.qfunc
-			
-	def interRuptus(self):
-		if self.inp or self.full: sys.exit()
-		else: self.sign = None
 
 	def getString(self, fn):
 		sigfile = os.path.join(self.sdir, fn)
@@ -89,7 +77,7 @@ class Signature(Tpager, LastExit):
 		if self.pat and self.items:
 			self.items = filter(lambda i: self.pat.search(i), self.items)
 		try: self.sign = Tpager.interAct(self)
-		except KeyboardInterrupt: self.interRuptus()
+		except KeyboardInterrupt: self.sign = None
 
 	def checkPattern(self):
 		try: self.pat = re.compile(r'%s' % self.pat, re.IGNORECASE)
@@ -100,10 +88,11 @@ class Signature(Tpager, LastExit):
 			self.getPattern()
 
 	def getPattern(self):
-		if self.pat == None:
-			try: self.pat = raw_input(self.menu)
-			except KeyboardInterrupt: self.interRuptus()
-		if self.sign != None: self.checkPattern()
+		prompt = 'C-c to cancel or\n' \
+			'Enter pattern to match signatures against:\n'
+		try: self.pat = raw_input(prompt)
+		except KeyboardInterrupt: self.pat = None
+		if self.pat: self.checkPattern()
 
 	def siggiLoop(self):
 		while 1:
@@ -117,12 +106,10 @@ class Signature(Tpager, LastExit):
 			else: break
 
 	def underSign(self):
-		if self.nt: LastExit.termInit(self)
+		if not self.targets: LastExit.termInit(self)
 		self.siggiLoop()
-		if self.nt: LastExit.reInit(self)
-		if self.sign is None and (self.inp or self.full):
-			print self.inp[:-1]
-		else:
+		if not self.targets: LastExit.reInit(self)
+		if self.sign != None:
 			if not self.sign: self.sign = readFile(self.sig)
 			if self.full: self.sign = '-- \n%s' % self.sign
 			self.sign = self.sign.rstrip() # get rid of EOFnewline
@@ -132,6 +119,8 @@ class Signature(Tpager, LastExit):
 			else:
 				for targetfile in self.targets:
 					writeFile(targetfile, self.sign, self.w)
+		elif self.inp: print self.inp
+		elif self.targets: print
 
 
 def main():
