@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-Urlregex_rcsid = '$Id: Urlregex.py,v 1.18 2005/09/19 07:42:28 chris Exp $'
+Urlregex_rcsid = '$Id: Urlregex.py,v 1.19 2005/12/04 01:08:54 chris Exp $'
 
 import os.path, re, sys
 from HTMLParser import HTMLParseError
@@ -32,6 +32,11 @@ tops =	"a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
 	"arpa com edu gov int mil net org aero biz coop info name pro"
 top = '\.%s' % orJoin(tops)
 
+#CPAN = 'ftp://ftp.cpan.org/pub/CPAN/'
+CPAN = r'ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1'
+#CTAN = 'ftp://ftp.ctan.org/tex-archive/'
+CTAN = r'ftp://ftp.dante.de/tex-archive/\1'
+
 ### outro ###
 outro = r"""
 	%(top)s			# top level preceded by dot
@@ -40,7 +45,7 @@ outro = r"""
 		[%(any)s] *?	#   0 or more valid  
 	) ?			# } 0 or one
 	(?=			# look-ahead non-consumptive assertion
-		[%(delim)s]*	#  either 0 or more punctuation
+		[%(delim)s] *?	#  either 0 or more punctuation
 		[^%(any)s]	#  followed by a non-url char
 	|			# or else
 		$		#  then end of the string
@@ -51,8 +56,8 @@ outro = r"""
 spoutro = r"""
 	%(top)s			# top level dom preceded by dot
 	(			# { 0 or more
-		\s*/		#   opt space and slash
-		[%(any)s\s]*	#   any or space (space to be removed)
+		\s*?/		#   opt space and slash
+		[%(any)s\s] *?	#   any or space (space to be removed)
 	) ?			# } 0 or one
 	(?=>)		# lookahead for ">"
 	""" % vars()
@@ -70,30 +75,30 @@ headsoff = r"""
 		[\n^]		#  for newline or absolute beginning
 	)			# end anger
 	%s:			# header followed by colon &
-	  	[^\n]+		# greedy anything
+	  	[^\n]+?		# greedy anything
 	(			# { 0 or more
 		\n		#   newline followed by
-		[ \t]+		#   greedy spacetabs
-		[^\n]+		#   greedy anything
-	) *			# } 0 or more
+		[ \t]+?		#   greedy spacetabs
+		[^\n]+?		#   greedy anything
+	) *?			# } 0 or more
 	(\n|$)			# newline or end of text
 	""" % head
 
 # attributions:
-nproto = '(msgid|news|nntp|message(-id)?|article|MID)(:\s*|\s+)<{,2}'
+nproto = '(msgid|news|nntp|message(-id)?|article|MID)(:\s*?|\s+?)<{,2}'
 
 mid = r"""
-	[%(idy)s]+              # one or more valid id char
+	[%(idy)s] +?            # one or more valid id char
 	@
-	[-._a-z0-9]+ 		# one or more server char
+	[-._a-z0-9] +?		# one or more server char
 	%(top)s                 # top level domain
 	\b
 	""" % vars()
 
 declid = r'(%(nproto)s%(mid)s)' % vars()
-simplid = r'(\b%s)' % mid
+simplid = r'(\b%(mid)s)' % vars()
 
-rawwipe = r'(%s)|(%s)' % (declid, headsoff)
+rawwipe = r'(%(declid)s)|(%(headsoff)s)' % vars()
 
 ## precompiled regexes ##
 ftp_re = re.compile('ftp(://|\.)', re.IGNORECASE)
@@ -109,7 +114,7 @@ mail = r"""
 		(mailto:)?	# optional mailto
 		%(address)s	# and address
 	)\b			# close group and word boundary
-	""" % { 'address':address }
+	""" % vars()
 mail_re = re.compile(mail, re.IGNORECASE|re.VERBOSE)
 # chris@localhost necessary
 	
@@ -209,7 +214,7 @@ class Urlregex(Urlparser):
 		## some bad formatted stuff too
 		any_url = r"""		## long url ##
 			(?<=<)		# look behind for "<"
-			[%(any)s\s] +	# any or space (space to be removed)
+			[%(any)s\s] +?	# any or space (space to be removed)
 			%(spoutro)s     # outro w/ spaces
 			|		## or url in 1 line ##
 			\b		# start at word boundary
@@ -254,7 +259,7 @@ class Urlregex(Urlparser):
 			rawurl = self.getRaw()
 			self.url_re = re.compile(rawurl, re.IGNORECASE|re.VERBOSE)
 			if not self.nofind:
-				self.kill_re = re.compile('\s+|^url:', re.IGNORECASE) 
+				self.kill_re = re.compile('\s+?|^url:', re.IGNORECASE) 
 				if not self.decl:
 					self.proto_re = re.compile('^%s' % self.protocol, re.I)
 		elif self.decl:
@@ -272,8 +277,11 @@ class Urlregex(Urlparser):
 		elif type.startswith('text/'):
 			s = Urlparser.mailDeconstructor(self, data)
 			if not self.id:
-				wipe_re = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE)
-				s = wipe_re.sub('', s)
+				wipe_resub = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE), ''
+				cpan_resub = re.compile(r'CPAN:([A-Za-z]+?)'), CPAN 
+				ctan_resub = re.compile(r'CTAN:([A-Za-z]+?)'), CTAN
+				for resub in (wipe_resub, cpan_resub, ctan_resub):
+					s = resub[0].sub(resub[1], s)
 			urls = [u[0] for u in self.url_re.findall(s)]
 			if self.kill_re: urls = [self.kill_re.sub('', u) for u in urls]
 			if urls: self.items += urls
