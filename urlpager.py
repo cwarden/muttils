@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlpager_rcsid = '$Id: urlpager.py,v 1.19 2005/11/14 11:41:36 chris Exp $'
+urlpager_rcsid = '$Id: urlpager.py,v 1.20 2005/12/04 01:11:03 chris Exp $'
 
 ###
 # Caveat:
@@ -135,6 +135,9 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				Usage("wget doesn't retrieve local files")
 			cs = [getBin('wget'), "-P", self.getdir]
 		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
+			if not os.path.splitext(self.url)[1] \
+			and not self.url.endswith('/'):
+				self.url = self.url + '/'
 			if not self.ft: cs = ["ftp"]
 			else: cs = [self.ft]
 			self.nt = True
