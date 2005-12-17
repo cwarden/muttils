@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+# $Id: sigpager,v 1.1 2005/12/17 12:18:14 chris Exp $
+
+from tpager import sigpager
+
+sigpager.main()
+
+# EOF vim:ft=python
