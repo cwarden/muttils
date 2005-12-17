@@ -1,7 +1,7 @@
-# $Id: Tpager.py,v 1.6 2005/11/15 18:46:22 chris Exp $
+# $Id: Tpager.py,v 1.7 2005/12/17 15:54:56 chris Exp $
 from Pages import Pages
-from spl import sPl
-from valclamp import valClamp
+from cheutils.spl import sPl
+from cheutils.valclamp import valClamp
 
 # format default paging command
 pds = {-1:'Back', 1:'Forward'}

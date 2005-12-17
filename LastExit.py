@@ -1,7 +1,7 @@
-# $Id: LastExit.py,v 1.3 2005/09/05 15:27:06 chris Exp $
+# $Id: LastExit.py,v 1.4 2005/12/17 15:54:56 chris Exp $
 
 import os, sys
-from readwrite import writeFile, readLine
+from cheutils.readwrite import writeFile, readLine
 
 class Termplus:
 	"""
