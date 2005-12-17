@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-sigpager_rcsid = '$Id: sigpager.py,v 1.10 2005/11/15 18:54:12 chris Exp $'
+sigpager_rcsid = '$Id: sigpager.py,v 1.11 2005/12/17 12:11:33 chris Exp $'
 
 import getopt, os, re, readline, sys
 from random import shuffle
+from cheutils.readwrite import readFile, writeFile
 from LastExit import LastExit
-from Rcsparser import Rcsparser
 from Tpager import Tpager
-from readwrite import readFile, writeFile
 
 # defaults:
 sigdir = os.path.expanduser('~/.Sig')
@@ -19,15 +18,17 @@ optstring = "d:fhs:t:w"
 # s: defaultsig, t: sigtail, w [(over)write target file(s)]
 
 def Usage(msg=''):
+	from cheutils.Rcsparser import Rcsparser
 	rcs = Rcsparser(sigpager_rcsid)
 	print rcs.getVals(shortv=True)
 	if msg: print msg
 	print 'Usage:\n' \
-	'%(fn)s [-d <sigdir>][-f][-s <defaultsig>]' \
+	'%(exe)s [-d <sigdir>][-f][-s <defaultsig>]' \
 		'[-t <sigtail>][-]\n' \
-	'%(fn)s [-d <sigdir>][-f][-s <defaultsig>]' \
+	'%(exe)s [-d <sigdir>][-f][-s <defaultsig>]' \
 		'[-t <sigtail>][-w] <file> [<file> ...]\n' \
-	'%(fn)s -h (display this help)' % {'fn': rcs.rcsdict['rcsfile']}
+	'%(exe)s -h (display this help)' \
+	% {'exe': os.path.basename(sys.argv[0]) }
 	sys.exit(2)
 
 class Signature(Tpager, LastExit):
