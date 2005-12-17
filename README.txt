@@ -1,11 +1,17 @@
-$Id: README.txt,v 1.1 2005/12/17 12:05:58 chris Exp $
+$Id: README.txt,v 1.2 2005/12/17 12:59:44 chris Exp $
 
 Installation:
 -------------
-Add the urlregex directory to your PYTHONPATH environment, e.g.:
+Needs the cheutils package!
 
-export PYTHONPATH="~/lib/python/urlregex:$PYTHONPATH"
+Put the urlregex and cheutils directories in your PYTHONPATH, e.g.:
+
+$ mkdir -p ~/lib/python/urlregex ~/lib/python/cheutils
+$ cp urlregex/*.py ~/lib/python/urlregx/
+$ cp cheutils/*.py ~/lib/python/cheutils/
+$ export PYTHONPATH="~/lib/python:$PYTHONPATH"
 
 Copy the executables in the Exec directory in your PATH, e.g.:
 
-$ cp Exec/* ~/bin/
+$ cp urlregex/Exec/* cheutils/Exec/* ~/bin/
+$ export PATH="~/bin:$PATH"
