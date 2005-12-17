@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-Urlcollector_rcsid = '$Id: Urlcollector.py,v 1.4 2005/11/14 11:36:25 chris Exp $'
+Urlcollector_rcsid = '$Id: Urlcollector.py,v 1.5 2005/12/17 11:51:32 chris Exp $'
 
 import os, re, sys
-from datatype import dataType
-from LastExit import LastExit
-from Rcsparser import Rcsparser
+from tpager.LastExit import LastExit
+from cheutils.Rcsparser import Rcsparser
 from Urlregex import Urlregex
+from datatype import dataType
 
 rcs = Rcsparser(Urlcollector_rcsid)
 

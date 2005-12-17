@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.13 2005/11/14 11:39:13 chris Exp $'
+urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.14 2005/12/17 11:51:33 chris Exp $'
 
 ###
 # Caveat:
@@ -12,15 +12,14 @@ urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.13 2005/11/14 11:39:13 chris Exp $'
 ###
 
 import getopt, os, sys
+from cheutils.getbin import getBin
+from cheutils.spl import sPl
+from cheutils.selbrowser import selBrowser, local_re
+from cheutils.systemcall import systemCall
+from tpager.LastExit import LastExit
 from Urlcollector import Urlcollector
-from LastExit import LastExit
 from Urlregex import mailCheck, ftpCheck
-from getbin import getBin
 from kiosk import Kiosk
-from Rcsparser import Rcsparser
-from spl import sPl
-from selbrowser import selBrowser, local_re
-from systemcall import systemCall
 
 optstring = "d:D:ghiIk:lnr:Tw:x"
 
@@ -28,23 +27,24 @@ connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if os.path.exists(connyAS): connyAS = False
 
 def Usage(msg=''):
+	from cheutils.Rcsparser import Rcsparser
 	rcs = Rcsparser(urlbatcher_rcsid)
 	print rcs.getVals(shortv=True)
 	if msg: print msg
 	print 'Usage:\n' \
-	'%(sn)s [-x][-r <pattern>][file ...]\n' \
-	'%(sn)s -w <download dir> [-r <pattern]\n' \
-	'%(sn)s -i [-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -I [-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]]' \
+	'%(exe)s [-x][-r <pattern>][file ...]\n' \
+	'%(exe)s -w <download dir> [-r <pattern]\n' \
+	'%(exe)s -i [-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(exe)s -I [-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(exe)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(exe)s -d <mail hierarchy>[:<mail hierarchy>[:...]]' \
 		'[-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]]' \
+	'%(exe)s -D <mail hierarchy>[:<mail hierarchy>[:...]]' \
 		'[-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -n [-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -g [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -h' \
-	% { 'sn': rcs.rcsdict['rcsfile'] }
+	'%(exe)s -n [-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(exe)s -g [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(exe)s -h (display this help)' \
+	% { 'exe': os.path.basename(sys.argv[0]) }
 	sys.exit(2)
 
 

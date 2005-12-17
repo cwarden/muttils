@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlpager_rcsid = '$Id: urlpager.py,v 1.2 2005/12/17 11:46:20 chris Exp $'
+urlpager_rcsid = '$Id: urlpager.py,v 1.3 2005/12/17 11:51:33 chris Exp $'
 
 ###
 # Caveat:
@@ -12,15 +12,14 @@ urlpager_rcsid = '$Id: urlpager.py,v 1.2 2005/12/17 11:46:20 chris Exp $'
 ###
 
 import getopt, os, readline, sys
+from tpager.LastExit import LastExit
+from tpager.Tpager import Tpager
+from cheutils.getbin import getBin
+from cheutils.selbrowser import selBrowser, local_re
+from cheutils.systemcall import systemCall
 from Urlcollector import Urlcollector
-from LastExit import LastExit
-from Tpager import Tpager
 from Urlregex import mailCheck, ftpCheck
 from kiosk import Kiosk
-from getbin import getBin
-from Rcsparser import Rcsparser
-from selbrowser import selBrowser, local_re
-from systemcall import systemCall
 
 optstring = "bd:D:f:ghiIlnp:k:r:tTw:x"
 mailers = ('mutt', 'pine', 'elm', 'mail') 
@@ -28,23 +27,24 @@ connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if not os.path.exists(connyAS): connyAS = False
 
 def Usage(msg=''):
+	from cheutils.Rcsparser import Rcsparser
 	rcs = Rcsparser(urlpager_rcsid)
 	print rcs.getVals(shortv=True)
 	print 'Usage:\n' \
-	'%(sn)s [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]\n' \
-	'%(sn)s -w <download dir> [-r <pattern]\n' \
-	'%(sn)s -i [-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -I [-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -d <mail hierarchy>[:<mail hierarchy>[:...]] ' \
+	'%(exe)s [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]\n' \
+	'%(exe)s -w <download dir> [-r <pattern]\n' \
+	'%(exe)s -i [-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(exe)s -I [-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(exe)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
+	'%(exe)s -d <mail hierarchy>[:<mail hierarchy>[:...]] ' \
 		'[-I][-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -D <mail hierarchy>[:<mail hierarchy>[:...]] ' \
+	'%(exe)s -D <mail hierarchy>[:<mail hierarchy>[:...]] ' \
 		'[-I][-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -n [-r <pattern][-I][-l][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -g [-r <pattern][-I][-k <mbox>][<file> ...]\n' \
-	'%(sn)s -b [-r <pattern][-I][<file> ...]\n' \
-	'%(sn)s -h' \
-	% { 'sn': rcs.rcsdict['rcsfile'] }
+	'%(exe)s -n [-r <pattern][-I][-l][-k <mbox>][<file> ...]\n' \
+	'%(exe)s -g [-r <pattern][-I][-k <mbox>][<file> ...]\n' \
+	'%(exe)s -b [-r <pattern][-I][<file> ...]\n' \
+	'%(exe)s -h (display this help)' \
+	% { 'exe': os.path.basename(sys.argv[0]) }
 	sys.exit(2)
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-kiosk_rcsid = '$Id: kiosk.py,v 1.23 2005/09/19 19:49:52 chris Exp $'
+kiosk_rcsid = '$Id: kiosk.py,v 1.24 2005/12/17 11:51:33 chris Exp $'
 
 ###
 # needs python version 2.3 #
@@ -12,16 +12,12 @@ from email.Parser import HeaderParser
 from email.Utils import parseaddr, parsedate
 from tempfile import mkstemp
 from time import sleep, asctime
-from getbin import getBin
-from Leafnode import Leafnode
-from Rcsparser import Rcsparser
-from readwrite import readLine
-from selbrowser import selBrowser
-from spl import sPl
-from systemcall import systemCall, backQuote
-
-rcs = Rcsparser(kiosk_rcsid)
-shortversion = rcs.getVals(shortv=True)
+from cheutils.getbin import getBin
+from cheutils.readwrite import readLine
+from cheutils.selbrowser import selBrowser
+from cheutils.spl import sPl
+from cheutils.systemcall import systemCall, backQuote
+from slrnpy.Leafnode import Leafnode
 
 optstr = "bd:D:ghk:lm:ns:tTx"
 
@@ -46,30 +42,30 @@ def mutti(id): # uncollapse??
 			% (mutt, id)
 
 def Usage(err=''):
-	print shortversion
-	if err: print err
+	from cheutils.Rcsparser import Rcsparser
+	rcs = Rcsparser(kiosk_rcsid)
+	print rcs.getVals(shortv=True)
+	if err: print '\n%s\n' % err
 	print 'Usage:\n' \
-      	'%(fn)s [-l][-d <mail hierarchy>[:<mail hierarchy> ...]]' \
+      	'%(exe)s [-l][-d <mail hierarchy>[:<mail hierarchy> ...]]' \
 		'[-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]\n' \
-      	'%(fn)s [-l][-D <mail hierarchy>[:<mail hierarchy> ...]]' \
+      	'%(exe)s [-l][-D <mail hierarchy>[:<mail hierarchy> ...]]' \
 		'[-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]\n' \
-      	'%(fn)s -n [-l][-k <mbox>][-t] <ID> [<ID> ...]\n' \
-      	'%(fn)s -g [-k <mbox>][-t] <ID> [<ID> ...]\n' \
+      	'%(exe)s -n [-l][-k <mbox>][-t] <ID> [<ID> ...]\n' \
+      	'%(exe)s -g [-k <mbox>][-t] <ID> [<ID> ...]\n' \
 	'     *** -g: broken because plain text is inaccessible ***\n' \
-      	'%(fn)s -b <ID> [<ID> ...]\n' \
-      	'%(fn)s -h (display this help)' % { 'fn': rcs.rcsdict['rcsfile'] }
+      	'%(exe)s -b <ID> [<ID> ...]\n' \
+      	'%(exe)s -h (display this help)' \
+	% { 'exe': os.path.basename(sys.argv[0]) }
 	sys.exit(2)
 
 def regError(err, pat):
-	print shortversion
-	print '%s in pattern "%s"' % (err, pat)
-	sys.exit(2)
+	err = '%s in pattern "%s"' % (err, pat)
+	Usage(err)
 
 def fpError(strerror, fp):
 	fp.close()
-	print shortversion
-	print strerror
-	sys.exit(2)
+	Usage(strerror)
 
 def mailDir():
 	"""Returns either ~/Maildir or ~/Mail
