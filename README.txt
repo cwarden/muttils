@@ -1,12 +1,18 @@
-$Id: README.txt,v 1.1 2005/12/17 12:16:57 chris Exp $
+$Id: README.txt,v 1.2 2005/12/17 13:13:15 chris Exp $
 
 Installation:
 -------------
-Add the tpager directory to your PYTHONPATH environment, e.g.:
+Needs the cheutils package!
 
-export PYTHONPATH="~/lib/python/tpager:$PYTHONPATH"
+Put the tpager and cheutils directories in your PYTHONPATH, e.g.:
+
+$ mkdir -p ~/lib/python/tpager ~/lib/python/cheutils
+$ cp tpager/*.py ~/lib/python/urlregex/
+$ cp cheutils/*.py ~/lib/python/cheutils/
+$ export PYTHONPATH="~/lib/python:$PYTHONPATH"
 
 Copy the sigpager executable in the Exec directory in your PATH,
 e.g.:
 
-$ cp Exec/sigpager ~/bin/
+$ cp tpager/Exec/sigpager ~/bin/
+$ export PATH="~/bin:$PATH"
