@@ -1,5 +1,4 @@
-#! /usr/bin/env python
-# $Id: terminfo.py,v 1.2 2005/02/04 16:26:04 chris Exp $
+# $Id: terminfo.py,v 1.3 2005/12/29 16:50:25 chris Exp $
 
 import os
 
@@ -24,6 +23,3 @@ elif osname == 'Linux':
 def _test():
 	print 'This terminal has %d rows and %d columns.' \
 		% (t_rows, t_cols)
-
-if __name__ == '__main__':
-	_test()
