@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-urlpager_rcsid = '$Id: urlpager.py,v 1.3 2005/12/17 11:51:33 chris Exp $'
+urlpager_rcsid = '$Id: urlpager.py,v 1.4 2005/12/29 17:53:25 chris Exp $'
 
 ###
 # Caveat:
@@ -27,25 +25,27 @@ connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if not os.path.exists(connyAS): connyAS = False
 
 def Usage(msg=''):
-	from cheutils.Rcsparser import Rcsparser
-	rcs = Rcsparser(urlpager_rcsid)
-	print rcs.getVals(shortv=True)
-	print 'Usage:\n' \
-	'%(exe)s [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]\n' \
-	'%(exe)s -w <download dir> [-r <pattern]\n' \
-	'%(exe)s -i [-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -I [-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -d <mail hierarchy>[:<mail hierarchy>[:...]] ' \
-		'[-I][-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -D <mail hierarchy>[:<mail hierarchy>[:...]] ' \
-		'[-I][-l][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -n [-r <pattern][-I][-l][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -g [-r <pattern][-I][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -b [-r <pattern][-I][<file> ...]\n' \
-	'%(exe)s -h (display this help)' \
-	% { 'exe': os.path.basename(sys.argv[0]) }
-	sys.exit(2)
+	exe = os.path.basename(sys.argv[0])
+	if msg: print >>sys.stderr, '%s: %s' (exe, msg)
+	else:
+		from cheutils.Rcsparser import Rcsparser
+		rcs Rcsparser(urlpager_rcsid)
+		print rcs.getVals(shortv=True)
+	sys.exit("""Usage:
+%(exe)s [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]
+%(exe)s -w <download dir> [-r <pattern]
+%(exe)s -i [-r <pattern>][-k <mbox>][<file> ...]
+%(exe)s -I [-r <pattern>][-k <mbox>][<file> ...]
+%(exe)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]
+%(exe)s -d <mail hierarchy>[:<mail hierarchy>[:...]] \\
+            [-I][-l][-r <pattern>][-k <mbox>][<file> ...]
+%(exe)s -D <mail hierarchy>[:<mail hierarchy>[:...]] \\
+            [-I][-l][-r <pattern>][-k <mbox>][<file> ...]
+%(exe)s -n [-r <pattern][-I][-l][-k <mbox>][<file> ...]
+%(exe)s -g [-r <pattern][-I][-k <mbox>][<file> ...]
+%(exe)s -b [-r <pattern][-I][<file> ...]
+%(exe)s -h (display this help)"""
+		% { 'exe': exe })
 
 
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
@@ -155,7 +155,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 
 	def urlSearch(self):
 		if not self.files: self.nt = True
-		Urlcollector.urlCollect(self)
+		result = Urlcollector.urlCollect(self)
+		if result: Usage(result)
 		if self.nt: LastExit.termInit(self)
 		try:
 			self.urlPager()
@@ -168,11 +169,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		if self.nt: LastExit.reInit(self)
 
 
-def main():
+def run():
 	up = Urlpager()
 	up.argParser()
 	up.urlSearch()
-
-if __name__ == '__main__': main()
-
-# EOF vim:ft=python

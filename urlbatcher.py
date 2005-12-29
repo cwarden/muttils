@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.14 2005/12/17 11:51:33 chris Exp $'
+urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.15 2005/12/29 17:53:26 chris Exp $'
 
 ###
 # Caveat:
@@ -26,26 +26,27 @@ optstring = "d:D:ghiIk:lnr:Tw:x"
 connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if os.path.exists(connyAS): connyAS = False
 
-def Usage(msg=''):
-	from cheutils.Rcsparser import Rcsparser
-	rcs = Rcsparser(urlbatcher_rcsid)
-	print rcs.getVals(shortv=True)
-	if msg: print msg
-	print 'Usage:\n' \
-	'%(exe)s [-x][-r <pattern>][file ...]\n' \
-	'%(exe)s -w <download dir> [-r <pattern]\n' \
-	'%(exe)s -i [-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -I [-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -d <mail hierarchy>[:<mail hierarchy>[:...]]' \
-		'[-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -D <mail hierarchy>[:<mail hierarchy>[:...]]' \
-		'[-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -n [-l][-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -g [-I][-r <pattern>][-k <mbox>][<file> ...]\n' \
-	'%(exe)s -h (display this help)' \
-	% { 'exe': os.path.basename(sys.argv[0]) }
-	sys.exit(2)
+def Usage(err=''):
+	exe = os.path.basename(sys.argv[0])
+	if err: print >>sys.stderr, '%s: %s' % (exe, err)
+	else:
+		from cheutils.Rcsparser import Rcsparser
+		rcs = Rcsparser(urlbatcher_rcsid)
+		print rcs.getVals(shortv=True)
+	sys.exit("""Usage:
+%(exe)s [-x][-r <pattern>][file ...]
+%(exe)s -w <download dir> [-r <pattern]
+%(exe)s -i [-r <pattern>][-k <mbox>][<file> ...]
+%(exe)s -I [-r <pattern>][-k <mbox>][<file> ...]
+%(exe)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]
+%(exe)s -d <mail hierarchy>[:<mail hierarchy>[:...]]' \\
+            [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
+%(exe)s -D <mail hierarchy>[:<mail hierarchy>[:...]] \\
+            [-l][-I][-r <pattern>][-k <mbox>][<file> ...]
+%(exe)s -n [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
+%(exe)s -g [-I][-r <pattern>][-k <mbox>][<file> ...]
+%(exe)s -h (display this help)"""
+	% { 'exe': exe } )
 
 
 class Urlbatcher(Urlcollector, Kiosk, LastExit):
@@ -136,11 +137,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 		if self.nt: LastExit.reInit(self)
 
 
-def main():
+def run():
 	up = Urlbatcher()
 	up.argParser()
 	up.urlSearch()
-
-if __name__ == '__main__': main()
-
-# EOF vim:ft=python

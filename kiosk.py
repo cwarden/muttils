@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-kiosk_rcsid = '$Id: kiosk.py,v 1.24 2005/12/17 11:51:33 chris Exp $'
+kiosk_rcsid = '$Id: kiosk.py,v 1.25 2005/12/29 17:53:25 chris Exp $'
 
 ###
 # needs python version 2.3 #
@@ -42,22 +42,23 @@ def mutti(id): # uncollapse??
 			% (mutt, id)
 
 def Usage(err=''):
-	from cheutils.Rcsparser import Rcsparser
-	rcs = Rcsparser(kiosk_rcsid)
-	print rcs.getVals(shortv=True)
-	if err: print '\n%s\n' % err
-	print 'Usage:\n' \
-      	'%(exe)s [-l][-d <mail hierarchy>[:<mail hierarchy> ...]]' \
-		'[-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]\n' \
-      	'%(exe)s [-l][-D <mail hierarchy>[:<mail hierarchy> ...]]' \
-		'[-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]\n' \
-      	'%(exe)s -n [-l][-k <mbox>][-t] <ID> [<ID> ...]\n' \
-      	'%(exe)s -g [-k <mbox>][-t] <ID> [<ID> ...]\n' \
-	'     *** -g: broken because plain text is inaccessible ***\n' \
-      	'%(exe)s -b <ID> [<ID> ...]\n' \
-      	'%(exe)s -h (display this help)' \
-	% { 'exe': os.path.basename(sys.argv[0]) }
-	sys.exit(2)
+	exe = os.path.basename(sys.argv[0])
+	if err: print >>sys.stderr, '%s: %s' % (exe, err)
+	else:
+		from cheutils.Rcsparser import Rcsparser
+		rcs = Rcsparser(kiosk_rcsid)
+		print rcs.getVals(shortv=True)
+	sys.exit("""Usage:
+%(exe)s [-l][-d <mail hierarchy>[:<mail hierarchy> ...]]' \\
+      [-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]
+%(exe)s [-l][-D <mail hierarchy>[:<mail hierarchy> ...]]' \\
+      [-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]
+%(exe)s -n [-l][-k <mbox>][-t] <ID> [<ID> ...]
+%(exe)s -g [-k <mbox>][-t] <ID> [<ID> ...]
+     *** -g: broken because plain text is inaccessible ***
+%(exe)s -b <ID> [<ID> ...]
+%(exe)s -h (display this help)"""
+	% { 'exe': exe } )
 
 def regError(err, pat):
 	err = '%s in pattern "%s"' % (err, pat)
@@ -334,11 +335,7 @@ class Kiosk(Leafnode):
 			os.remove(self.kiosk)
 
 
-def main():
+def run():
 	k = Kiosk()
 	k.argParser()
 	k.kioskStore()
-
-if __name__ == '__main__': main()
-
-# EOF vim:ft=python
