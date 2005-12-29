@@ -1,4 +1,4 @@
-urlpager_rcsid = '$Id: urlpager.py,v 1.4 2005/12/29 17:53:25 chris Exp $'
+urlpager_rcsid = '$Id: urlpager.py,v 1.5 2005/12/29 17:59:10 chris Exp $'
 
 ###
 # Caveat:
@@ -29,7 +29,7 @@ def Usage(msg=''):
 	if msg: print >>sys.stderr, '%s: %s' (exe, msg)
 	else:
 		from cheutils.Rcsparser import Rcsparser
-		rcs Rcsparser(urlpager_rcsid)
+		rcs = Rcsparser(urlpager_rcsid)
 		print rcs.getVals(shortv=True)
 	sys.exit("""Usage:
 %(exe)s [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]
