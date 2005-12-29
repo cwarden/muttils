@@ -1,4 +1,5 @@
-# $Id: Pages.py,v 1.2 2005/02/04 16:26:04 chris Exp $
+# $Id: Pages.py,v 1.3 2005/12/29 16:48:31 chris Exp $
+
 from Tformat import Tformat
 from terminfo import t_rows, t_cols
 	
