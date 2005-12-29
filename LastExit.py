@@ -1,4 +1,4 @@
-# $Id: LastExit.py,v 1.4 2005/12/17 15:54:56 chris Exp $
+# $Id: LastExit.py,v 1.5 2005/12/29 16:47:44 chris Exp $
 
 import os, sys
 from cheutils.readwrite import writeFile, readLine
@@ -32,5 +32,3 @@ class LastExit(Termplus):
 	def reInit(self):
 		"""Switches back to previous term."""
 		sys.stdin, sys.stdout = self.iostack.pop()
-
-# EOF vim:ft=python
