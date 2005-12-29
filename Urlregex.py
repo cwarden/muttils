@@ -1,8 +1,6 @@
-#!/usr/bin/env python
+Urlregex_rcsid = '$Id: Urlregex.py,v 1.20 2005/12/29 17:46:54 chris Exp $'
 
-Urlregex_rcsid = '$Id: Urlregex.py,v 1.19 2005/12/04 01:08:54 chris Exp $'
-
-import os.path, re, sys
+import re
 from HTMLParser import HTMLParseError
 from Urlparser import Urlparser
 from unilist import uniList_o
@@ -304,7 +302,3 @@ trash.org> Can you find them?
 	ur.findUrls(sample)
 	print "Here's what we found:"
 	print ur.items
-
-if __name__ == '__main__': _test()
-
-# EOF vim:ft=python

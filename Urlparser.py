@@ -1,6 +1,4 @@
-#! /usr/bin/env python
-
-# $Id: Urlparser.py,v 1.8 2005/11/14 11:31:40 chris Exp $
+# $Id: Urlparser.py,v 1.9 2005/12/29 17:46:18 chris Exp $
 
 import email, email.Errors, os.path, re, sys
 from email.Utils import getaddresses
@@ -120,5 +118,3 @@ class Urlparser(HTMLParser):
 						self.ugly = True
 						pass
 		return sl
-
-# EOF vim:ft=python
