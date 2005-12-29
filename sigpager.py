@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-sigpager_rcsid = '$Id: sigpager.py,v 1.11 2005/12/17 12:11:33 chris Exp $'
+sigpager_rcsid = '$Id: sigpager.py,v 1.12 2005/12/29 16:54:14 chris Exp $'
 
 import getopt, os, re, readline, sys
 from random import shuffle
@@ -18,18 +16,19 @@ optstring = "d:fhs:t:w"
 # s: defaultsig, t: sigtail, w [(over)write target file(s)]
 
 def Usage(msg=''):
-	from cheutils.Rcsparser import Rcsparser
-	rcs = Rcsparser(sigpager_rcsid)
-	print rcs.getVals(shortv=True)
-	if msg: print msg
-	print 'Usage:\n' \
-	'%(exe)s [-d <sigdir>][-f][-s <defaultsig>]' \
-		'[-t <sigtail>][-]\n' \
-	'%(exe)s [-d <sigdir>][-f][-s <defaultsig>]' \
-		'[-t <sigtail>][-w] <file> [<file> ...]\n' \
-	'%(exe)s -h (display this help)' \
-	% {'exe': os.path.basename(sys.argv[0]) }
-	sys.exit(2)
+	exe = os.path.basename(sys.argv[0])
+	if msg: print >>sys.stderr, '%s: %s' (exe, msg)
+	else:
+		from cheutils.Rcsparser import Rcsparser
+		rcs = Rcsparser(sigpager_rcsid)
+		print rcs.getVals(shortv=True)
+	sys.exit("""Usage:
+%(exe)s [-d <sigdir>][-f][-s <defaultsig>] \\
+         [-t <sigtail>][-]
+%(exe)s [-d <sigdir>][-f][-s <defaultsig>] \\
+         [-t <sigtail>][-w] <file> [<file> ...]
+%(exe)s -h (display this help)"""
+	% {'exe': exe })
 
 class Signature(Tpager, LastExit):
 	"""
@@ -54,7 +53,7 @@ class Signature(Tpager, LastExit):
 
 	def argParser(self):
 		try: opts, args = getopt.getopt(sys.argv[1:], optstring)
-		except getopt.GetoptError, msg: Usage(msg)
+		except getopt.GetoptError, e: Usage(e)
 		for o, a in opts:
 			if o == '-d': self.sdir = a
 			elif o == '-f': self.full = True
@@ -81,10 +80,9 @@ class Signature(Tpager, LastExit):
 		except KeyboardInterrupt: self.sign = None
 
 	def checkPattern(self):
-		try: self.pat = re.compile(r'%s' % self.pat, re.IGNORECASE)
-		except re.error, strerror:
-			print 'Error in regular expression\n' \
-			      '%s\n%s' % (self.pat, strerror)
+		try: self.pat = re.compile(r'%s' % self.pat, re.I)
+		except re.error, e:
+			print '%s in pattern %s' % (e, self.pat)
 			self.pat = None
 			self.getPattern()
 
@@ -124,11 +122,7 @@ class Signature(Tpager, LastExit):
 		elif self.targets: print
 
 
-def main():
+def run():
 	siggi = Signature()
 	siggi.argParser()
 	siggi.underSign()
-
-if __name__ == '__main__': main()
-
-# EOF vim:ft=python
