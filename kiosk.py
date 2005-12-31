@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-kiosk_rcsid = '$Id: kiosk.py,v 1.25 2005/12/29 17:53:25 chris Exp $'
+kiosk_rcsid = '$Id: kiosk.py,v 1.26 2005/12/31 14:03:11 chris Exp $'
 
 ###
 # needs python version 2.3 #
@@ -42,7 +40,8 @@ def mutti(id): # uncollapse??
 			% (mutt, id)
 
 def Usage(err=''):
-	exe = os.path.basename(sys.argv[0])
+	from cheutils.exnam import exNam()
+	exe = exNam()
 	if err: print >>sys.stderr, '%s: %s' % (exe, err)
 	else:
 		from cheutils.Rcsparser import Rcsparser
@@ -58,7 +57,7 @@ def Usage(err=''):
      *** -g: broken because plain text is inaccessible ***
 %(exe)s -b <ID> [<ID> ...]
 %(exe)s -h (display this help)"""
-	% { 'exe': exe } )
+	% vars () )
 
 def regError(err, pat):
 	err = '%s in pattern "%s"' % (err, pat)
