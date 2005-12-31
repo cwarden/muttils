@@ -1,4 +1,4 @@
-sigpager_rcsid = '$Id: sigpager.py,v 1.12 2005/12/29 16:54:14 chris Exp $'
+sigpager_rcsid = '$Id: sigpager.py,v 1.13 2005/12/31 12:34:05 chris Exp $'
 
 import getopt, os, re, readline, sys
 from random import shuffle
@@ -16,7 +16,8 @@ optstring = "d:fhs:t:w"
 # s: defaultsig, t: sigtail, w [(over)write target file(s)]
 
 def Usage(msg=''):
-	exe = os.path.basename(sys.argv[0])
+	from cheutils.exnam import exNam
+	exe = exNam()
 	if msg: print >>sys.stderr, '%s: %s' (exe, msg)
 	else:
 		from cheutils.Rcsparser import Rcsparser
@@ -28,7 +29,7 @@ def Usage(msg=''):
 %(exe)s [-d <sigdir>][-f][-s <defaultsig>] \\
          [-t <sigtail>][-w] <file> [<file> ...]
 %(exe)s -h (display this help)"""
-	% {'exe': exe })
+	% vars () )
 
 class Signature(Tpager, LastExit):
 	"""
