@@ -1,11 +1,10 @@
-# $Id: Urlcollector.py,v 1.6 2005/12/29 17:50:10 chris Exp $
+# $Id: Urlcollector.py,v 1.7 2005/12/31 14:11:51 chris Exp $
 
 import os.path, re, sys
 from tpager.LastExit import LastExit
 from Urlregex import Urlregex
 from datatype import dataType
-
-def exNam(): return os.path.basename(sys.argv[0])
+from cheutils.exnam import exNam
 
 class Urlcollector(Urlregex, LastExit):
 	"""
