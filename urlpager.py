@@ -1,4 +1,4 @@
-urlpager_rcsid = '$Id: urlpager.py,v 1.5 2005/12/29 17:59:10 chris Exp $'
+urlpager_rcsid = '$Id: urlpager.py,v 1.6 2005/12/31 13:32:17 chris Exp $'
 
 ###
 # Caveat:
@@ -25,7 +25,8 @@ connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if not os.path.exists(connyAS): connyAS = False
 
 def Usage(msg=''):
-	exe = os.path.basename(sys.argv[0])
+	from cheutils.exnam import exNam
+	exe = exNam()
 	if msg: print >>sys.stderr, '%s: %s' (exe, msg)
 	else:
 		from cheutils.Rcsparser import Rcsparser
@@ -45,7 +46,7 @@ def Usage(msg=''):
 %(exe)s -g [-r <pattern][-I][-k <mbox>][<file> ...]
 %(exe)s -b [-r <pattern][-I][<file> ...]
 %(exe)s -h (display this help)"""
-		% { 'exe': exe })
+		% vars () )
 
 
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
