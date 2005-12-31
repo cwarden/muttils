@@ -1,4 +1,4 @@
-kiosk_rcsid = '$Id: kiosk.py,v 1.26 2005/12/31 14:03:11 chris Exp $'
+kiosk_rcsid = '$Id: kiosk.py,v 1.27 2005/12/31 14:05:24 chris Exp $'
 
 ###
 # needs python version 2.3 #
@@ -40,7 +40,7 @@ def mutti(id): # uncollapse??
 			% (mutt, id)
 
 def Usage(err=''):
-	from cheutils.exnam import exNam()
+	from cheutils.exnam import exNam
 	exe = exNam()
 	if err: print >>sys.stderr, '%s: %s' % (exe, err)
 	else:
