@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.15 2005/12/29 17:53:26 chris Exp $'
+urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.16 2005/12/31 14:09:28 chris Exp $'
 
 ###
 # Caveat:
@@ -27,7 +25,8 @@ connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if os.path.exists(connyAS): connyAS = False
 
 def Usage(err=''):
-	exe = os.path.basename(sys.argv[0])
+	from cheutils.exnam import exNam
+	exe = exNam()
 	if err: print >>sys.stderr, '%s: %s' % (exe, err)
 	else:
 		from cheutils.Rcsparser import Rcsparser
@@ -46,7 +45,7 @@ def Usage(err=''):
 %(exe)s -n [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
 %(exe)s -g [-I][-r <pattern>][-k <mbox>][<file> ...]
 %(exe)s -h (display this help)"""
-	% { 'exe': exe } )
+	% vars () )
 
 
 class Urlbatcher(Urlcollector, Kiosk, LastExit):
