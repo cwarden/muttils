@@ -1,4 +1,5 @@
-# $Id: Tpager.py,v 1.7 2005/12/17 15:54:56 chris Exp $
+# $Id: Tpager.py,v 1.8 2005/12/31 12:38:45 chris Exp $
+
 from Pages import Pages
 from cheutils.spl import sPl
 from cheutils.valclamp import valClamp
