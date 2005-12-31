@@ -1,10 +1,11 @@
-# $Id: Urlparser.py,v 1.9 2005/12/29 17:46:18 chris Exp $
+# $Id: Urlparser.py,v 1.10 2005/12/31 14:18:43 chris Exp $
 
-import email, email.Errors, os.path, re, sys
+import email, email.Errors, re, sys
 from email.Utils import getaddresses
 from cStringIO import StringIO
 from HTMLParser import HTMLParser, HTMLParseError
 from mailbox import PortableUnixMailbox
+from cheutils.exnam import exNam
 
 protos = ('all', 'web', 'http', 'mailto',
 	  'ftp', 'finger', 'telnet')
@@ -50,11 +51,10 @@ class Urlparser(HTMLParser):
 
 	def protoTest(self):
 		if self.proto in protos: return
-		print '%s: invalid protocol specification for %s\n' \
-		      'Use one of: %s' \
-		      % (self.proto, os.path.basename(sys.argv[0]),
-			', '.join(protos))
-		sys.exit(2)
+		err = "%s: invalid protocol specification `%s'\n" \
+		      "Use one of: %s" \
+		      % (exNam(), self.proto, ', '.join(protos))
+		sys.exit(err)
 
 	def handle_starttag(self, tag, attrs):
 		if tag in ('a', 'img'):
