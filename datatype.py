@@ -1,16 +1,12 @@
-# $Id: datatype.py,v 1.4 2005/12/31 14:11:28 chris Exp $
+# $Id: datatype.py,v 1.5 2005/12/31 14:29:58 chris Exp $
 
 import os.path
 import urllib
-
-def fileErr(path):
-	import sys
-	exe = os.path.basename(sys.argv[0])
-	sys.exit('%s: %s: not a regular file.' % (exe, path))
+from cheutils.filecheck import fileCheck
 
 def dataType(f):
 	path = os.path.abspath(os.path.expanduser(f))
-	if not os.path.isfile(path): fileErr(path)
+	fileCheck(path)
 	# urllib uses the deprecated mimelib
 	# but email does not work for type detection
 	# on local files
