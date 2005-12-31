@@ -1,4 +1,4 @@
-# $Id: datatype.py,v 1.3 2005/12/29 17:51:37 chris Exp $
+# $Id: datatype.py,v 1.4 2005/12/31 14:11:28 chris Exp $
 
 import os.path
 import urllib
@@ -20,5 +20,3 @@ def dataType(f):
 		data = fp.read()
 	finally: fp.close()
 	return data, type
-
-# EOF vim:ft=python
