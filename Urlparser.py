@@ -1,11 +1,5 @@
-# $Id: Urlparser.py,v 1.10 2005/12/31 14:18:43 chris Exp $
-
-import email, email.Errors, re, sys
-from email.Utils import getaddresses
-from cStringIO import StringIO
-from HTMLParser import HTMLParser, HTMLParseError
-from mailbox import PortableUnixMailbox
-from cheutils.exnam import exNam
+import email, email.Errors, re
+from HTMLParser import HTMLParser
 
 protos = ('all', 'web', 'http', 'mailto',
 	  'ftp', 'finger', 'telnet')
@@ -51,10 +45,12 @@ class Urlparser(HTMLParser):
 
 	def protoTest(self):
 		if self.proto in protos: return
+		from sys import exit
+		from cheutils.exnam import exNam
 		err = "%s: invalid protocol specification `%s'\n" \
 		      "Use one of: %s" \
 		      % (exNam(), self.proto, ', '.join(protos))
-		sys.exit(err)
+		exit(err)
 
 	def handle_starttag(self, tag, attrs):
 		if tag in ('a', 'img'):
@@ -68,6 +64,7 @@ class Urlparser(HTMLParser):
 		self.close()
 
 	def headParser(self, keys):
+		from email.Utils import getaddresses
 		for key in keys:
 			vals = self.msg.get_all(key)
 			if vals:
@@ -90,6 +87,8 @@ class Urlparser(HTMLParser):
 		if not self.msg.get_unixfrom():
 			sl = self.msgDeconstructor()
 		else: # treat s like a mailbox because it might be one
+			from cStringIO import StringIO
+			from mailbox import PortableUnixMailbox
 			sl = [] # list of strings to search
 			fp = StringIO()
 			fp.write(s)
@@ -113,6 +112,7 @@ class Urlparser(HTMLParser):
 				if subtype == 'plain':
 					sl.append(text)
 				elif subtype.startswith('htm'):
+					from HTMLParser import HTMLParseError
 					try: self.makeUrlist(text)
 					except HTMLParseError, AssertionError:
 						self.ugly = True
