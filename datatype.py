@@ -1,5 +1,3 @@
-# $Id: datatype.py,v 1.5 2005/12/31 14:29:58 chris Exp $
-
 import os.path
 import urllib
 from cheutils.filecheck import fileCheck
