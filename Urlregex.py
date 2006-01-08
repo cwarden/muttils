@@ -1,9 +1,7 @@
 Urlregex_rcsid = '$Id: Urlregex.py,v 1.20 2005/12/29 17:46:54 chris Exp $'
 
 import re
-from HTMLParser import HTMLParseError
 from Urlparser import Urlparser
-from unilist import uniList_o
 
 def orJoin(s):
 	return '(%s)' % '|'.join(s.split())
@@ -242,7 +240,8 @@ class Urlregex(Urlparser):
 		if not self.decl and self.proto in filterdict:
 			self.items = filter(filterdict[self.proto], self.items)
 		if self.uni:
-			self.items = uniList_o(self.items)
+			from cheutils.unilist import uniList_no
+			self.items = uniList_no(self.items)
 			if not self.id and not self.decl:
 				self.uniDeluxe()
 
@@ -268,6 +267,7 @@ class Urlregex(Urlparser):
 	def findUrls(self, data, type='text/plain'):
 		self.urlObjects() # compile url_re
 		if type == 'text/html':
+			from HTMLParser import HTMLParseError
 			try: Urlparser.makeUrlist(self, data)
 			except HTMLParseError, AssertionError:
 				self.ugly = True
