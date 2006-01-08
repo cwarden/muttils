@@ -1,10 +1,12 @@
-# $Id: Urlcollector.py,v 1.7 2005/12/31 14:11:51 chris Exp $
-
-import os.path, re, sys
+import re
 from tpager.LastExit import LastExit
 from Urlregex import Urlregex
-from datatype import dataType
-from cheutils.exnam import exNam
+
+def collectErr(err):
+	from sys import exit
+	from cheutils.exnam import exNam
+	exit('%s: %s' % (exNam(), err))
+
 
 class Urlcollector(Urlregex, LastExit):
 	"""
@@ -19,6 +21,7 @@ class Urlcollector(Urlregex, LastExit):
 		self.nt = False         # needs terminal
 
 	def parseError(self):
+		from cheutils.exnam import exNam
 		errmsg = '%s: encountered malformed html!\n' \
 			 'Might be unable to retrieve every url.\n' \
 			 'Continue? [Yes], no ' % exNam()
@@ -29,13 +32,13 @@ class Urlcollector(Urlregex, LastExit):
 
 	def urlCollect(self):
 		if not self.files: # read from stdin
-			try: data = sys.stdin.read()
+			from sys import stdin
+			try: data = stdin.read()
 			except KeyboardInterrupt:
-				err = '\n%s: needs stdin or filename(s)' \
-						% exNam()
-				sys.exit(err)
+				collectErr('needs stdin or filename(s)')
 			Urlregex.findUrls(self, data)
 		else:
+			from datatype import dataType
 			for f in self.files:
 				data, type = dataType(f)
 				Urlregex.findUrls(self, data, type)
@@ -43,8 +46,6 @@ class Urlcollector(Urlregex, LastExit):
 		if self.pat and self.items:
 			try: self.pat = re.compile(r'%s' % self.pat, re.I)
 			except re.error, e:
-				err = '%s: %s in pattern %s' \
-						% (exNam(), e, self.pat)
-				sys.exit(err)
+				collectErr("%s in pattern `%s'" % (e, self.pat))
 			self.items = filter(lambda i: self.pat.search(i),
 					self.items)
