@@ -141,9 +141,9 @@ class Urlregex(Urlparser):
 	and urls spanning more than 1 line
 	if they are enclosed in "<>".
 	"""
-	def __init__(self, proto='all', nofind=0):
+	def __init__(self, proto='all', find=True):
 		Urlparser.__init__(self, proto) # <- id, proto, items, url_re, ugly
-		self.nofind = nofind    # for grabbing regexes only
+		self.find = find    	# for grabbing regexes only
 		self.decl = False       # list only declared urls
 		self.uni = True         # list only unique urls
 		self.kill_re = None	# customized pattern to find non url chars
@@ -255,13 +255,13 @@ class Urlregex(Urlparser):
 			self.setStrings()
 			rawurl = self.getRaw()
 			self.url_re = re.compile(rawurl, re.IGNORECASE|re.VERBOSE)
-			if not self.nofind:
+			if self.find:
 				self.kill_re = re.compile('\s+?|^url:', re.IGNORECASE) 
 				if not self.decl:
 					self.proto_re = re.compile('^%s' % self.protocol, re.I)
 		elif self.decl:
 			self.url_re = re.compile(declid, re.IGNORECASE|re.VERBOSE)
-			if not self.nofind: self.kill_re = re.compile(nproto, re.I)
+			if self.find: self.kill_re = re.compile(nproto, re.I)
 		else: self.url_re = re.compile(simplid, re.IGNORECASE|re.VERBOSE)
 
 	def findUrls(self, data, type='text/plain'):
