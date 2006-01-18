@@ -1,4 +1,4 @@
-$Id: README.txt,v 1.3 2005/12/17 13:13:16 chris Exp $
+$Hg: README.txt,v$
 
 Installation:
 -------------
