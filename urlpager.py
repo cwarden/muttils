@@ -167,7 +167,9 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 					self.items = [self.url]
 					Kiosk.kioskStore(self)
 		except KeyboardInterrupt: pass
-		if self.nt: LastExit.reInit(self)
+		if self.nt:
+			try: LastExit.reInit(self)
+			except IndexError: pass
 
 
 def run():
