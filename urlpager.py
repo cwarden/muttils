@@ -1,4 +1,4 @@
-urlpager_rcsid = '$Id: urlpager.py,v 1.6 2005/12/31 13:32:17 chris Exp $'
+urlpager_cset = '$Hg: urlpager.py,v$'
 
 ###
 # Caveat:
@@ -9,7 +9,9 @@ urlpager_rcsid = '$Id: urlpager.py,v 1.6 2005/12/31 13:32:17 chris Exp $'
 # input is checked anew for each file.
 ###
 
-import getopt, os, readline, sys
+from sys import argv
+import os, readline
+from getopt import getopt, GetoptError
 from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
 from cheutils.getbin import getBin
@@ -24,29 +26,25 @@ mailers = ('mutt', 'pine', 'elm', 'mail')
 connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
 if not os.path.exists(connyAS): connyAS = False
 
-def Usage(msg=''):
-	from cheutils.exnam import exNam
-	exe = exNam()
-	if msg: print >>sys.stderr, '%s: %s' (exe, msg)
-	else:
-		from cheutils.Rcsparser import Rcsparser
-		rcs = Rcsparser(urlpager_rcsid)
-		print rcs.getVals(shortv=True)
-	sys.exit("""Usage:
-%(exe)s [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]
-%(exe)s -w <download dir> [-r <pattern]
-%(exe)s -i [-r <pattern>][-k <mbox>][<file> ...]
-%(exe)s -I [-r <pattern>][-k <mbox>][<file> ...]
-%(exe)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]
-%(exe)s -d <mail hierarchy>[:<mail hierarchy>[:...]] \\
+urlpager_help = """
+[-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]
+-w <download dir> [-r <pattern]
+-i [-r <pattern>][-k <mbox>][<file> ...]
+-I [-r <pattern>][-k <mbox>][<file> ...]
+-l [-I][-r <pattern>][-k <mbox>][<file> ...]
+-d <mail hierarchy>[:<mail hierarchy>[:...]] \\
             [-I][-l][-r <pattern>][-k <mbox>][<file> ...]
-%(exe)s -D <mail hierarchy>[:<mail hierarchy>[:...]] \\
+-D <mail hierarchy>[:<mail hierarchy>[:...]] \\
             [-I][-l][-r <pattern>][-k <mbox>][<file> ...]
-%(exe)s -n [-r <pattern][-I][-l][-k <mbox>][<file> ...]
-%(exe)s -g [-r <pattern][-I][-k <mbox>][<file> ...]
-%(exe)s -b [-r <pattern][-I][<file> ...]
-%(exe)s -h (display this help)"""
-		% vars () )
+-n [-r <pattern][-I][-l][-k <mbox>][<file> ...]
+-g [-r <pattern][-I][-k <mbox>][<file> ...]
+-b [-r <pattern][-I][<file> ...]
+-h (display this help)"""
+
+def userHelp(error=""):
+	from cheutils.exnam import Usage
+	u = Usage(help=urlpager_help, rcsid=urlpager_cset)
+	u.printHelp(err=error)
 
 
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
@@ -60,8 +58,10 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		self.getdir = ''   # download in dir via wget
 
 	def argParser(self):
-		try: opts, self.files = getopt.getopt(sys.argv[1:], optstring)
-		except getopt.GetoptError, msg: Usage(msg)
+		try:
+			opts, self.files = getopt(argv[1:], optstring)
+		except GetoptError, msg:
+			userHelp(msg)
 		for o, a in opts:
 			if o == '-b': # don't look up msgs locally
 				self.browse, self.id, self.google = True, True, True
@@ -80,7 +80,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			elif o == '-g': # don't look up msgs locally
 				self.id, self.google = True, True
 				self.mdirs = []
-			elif o == '-h': Usage()
+			elif o == '-h': userHelp()
 			elif o == '-I': # look for declared message-ids
 				self.id, self.decl = True, True
 				self.getdir = ''
@@ -114,7 +114,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				self.getdir = a
 				self.getdir = os.path.abspath(os.path.expanduser(self.getdir))
 				if not os.path.isdir(self.getdir):
-					Usage('%s: not a directory' % self.getdir)
+					userHelp('%s: not a directory' % self.getdir)
 				self.id = False
 
 	def urlPager(self):
@@ -133,7 +133,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			conny = False
 		elif self.getdir:
 			if not conny:
-				Usage("wget doesn't retrieve local files")
+				userHelp("wget doesn't retrieve local files")
 			cs = [getBin('wget'), "-P", self.getdir]
 		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
 			if not os.path.splitext(self.url)[1] \
@@ -157,7 +157,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def urlSearch(self):
 		if not self.files: self.nt = True
 		result = Urlcollector.urlCollect(self)
-		if result: Usage(result)
+		if result: userHelp(result)
 		if self.nt: LastExit.termInit(self)
 		try:
 			self.urlPager()
