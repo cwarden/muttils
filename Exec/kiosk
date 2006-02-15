@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: kiosk,v 1.2 2005/12/29 17:55:14 chris Exp $
+# $Hg: kiosk,v$
 
 from urlregex import kiosk
 kiosk.run()

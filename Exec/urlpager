@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: urlpager,v 1.2 2005/12/29 17:55:14 chris Exp $
+# $Hg: urlpager,v$
 
 from urlregex import urlpager
 urlpager.run()
