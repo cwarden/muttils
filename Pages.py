@@ -1,4 +1,4 @@
-# $Id: Pages.py,v 1.3 2005/12/29 16:48:31 chris Exp $
+# $Hg: Pages.py,v$
 
 from Tformat import Tformat
 from terminfo import t_rows, t_cols
@@ -8,15 +8,15 @@ class Pages(Tformat):
 	Subclass for Tpager.
 	Provides items, ilen, pages, itemsdict, cols.
 	"""
-	def __init__(self, format='sf'):
+	def __init__(self, format="sf"):
 		Tformat.__init__(self) # <- format, itemsdict, keys
 		self.format = format
 		self.items = []	     # (text) items to choose from
 		self.ilen = 0	     # length of items' list
 		self.pages =  {}     # dictionary of pages
-		self.item = ''	     # current text item
+		self.item = ""	     # current text item
 		self.pn = 0          # current page/key of pages
-		self.buff = ''	     # current page string buffer
+		self.buff = ""	     # current page string buffer
 		self.lines = 0	     # current amount of lines
 		self.cols = t_cols+1 # needs 1 extra when lines are broken
 		# retain 2 lines for header & 1 for menu
@@ -32,7 +32,7 @@ class Pages(Tformat):
 	def softCount(self):
 		"""Counts lines of item as displayed in
 		a terminal with cols columns."""
-		lines = self.item.split('\n')[:-1] # skip trailing newline
+		lines = self.item.split("\n")[:-1] # skip trailing newline
 		return reduce(lambda a, b: a+b,
 			[len(line)/self.cols + 1 for line in lines])
 
@@ -40,7 +40,7 @@ class Pages(Tformat):
 		"""Adds a page to pages."""
 		self.pn += 1
 		# fill page with newlines
-		self.buff += '\n'*(self.rows-self.lines-1)
+		self.buff += "\n" * (self.rows-self.lines-1)
 		self.pages[self.pn] = self.buff
 
 	def pagesDict(self):

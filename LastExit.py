@@ -1,6 +1,7 @@
-# $Id: LastExit.py,v 1.5 2005/12/29 16:47:44 chris Exp $
+# $Hg: LastExit.py,v$
 
-import os, sys
+import sys
+from os import ctermid
 from cheutils.readwrite import writeFile, readLine
 
 class Termplus:
@@ -9,7 +10,7 @@ class Termplus:
 	for an interactive terminal device.
 	"""
 	def __init__(self):
-		self.dev = os.ctermid()
+		self.dev = ctermid()
 
 	def write(self, o):
 		writeFile(self.dev, o)
@@ -27,7 +28,7 @@ class LastExit(Termplus):
 
 	def termInit(self):
 		self.iostack.append((sys.stdin, sys.stdout))
-		sys.stdin, sys.stdout = Termplus(), Termplus()
+		stdin, stdout = Termplus(), Termplus()
 
 	def reInit(self):
 		"""Switches back to previous term."""
