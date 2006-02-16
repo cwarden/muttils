@@ -28,7 +28,7 @@ class LastExit(Termplus):
 
 	def termInit(self):
 		self.iostack.append((sys.stdin, sys.stdout))
-		stdin, stdout = Termplus(), Termplus()
+		sys.stdin, sys.stdout = Termplus(), Termplus()
 
 	def reInit(self):
 		"""Switches back to previous term."""
