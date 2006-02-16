@@ -1,4 +1,4 @@
-urlpager_cset = '$Hg: urlpager.py,v$'
+urlpager_cset = "$Hg: urlpager.py,v$"
 
 ###
 # Caveat:
@@ -9,9 +9,7 @@ urlpager_cset = '$Hg: urlpager.py,v$'
 # input is checked anew for each file.
 ###
 
-from sys import argv
 import os, readline
-from getopt import getopt, GetoptError
 from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
 from cheutils.getbin import getBin
@@ -22,8 +20,8 @@ from Urlregex import mailCheck, ftpCheck
 from kiosk import Kiosk
 
 optstring = "bd:D:f:ghiIlnp:k:r:tTw:x"
-mailers = ('mutt', 'pine', 'elm', 'mail') 
-connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
+mailers = ("mutt", "pine", "elm", "mail") 
+connyAS = os.path.join(os.environ["HOME"], "AS", "conny.applescript")
 if not os.path.exists(connyAS): connyAS = False
 
 urlpager_help = """
@@ -51,94 +49,96 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def __init__(self):
 		Urlcollector.__init__(self) # <- nt, proto, id, laxid, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mdirs, local, xb, tb
-		Tpager.__init__(self, name='url') # <- items, name
+		Tpager.__init__(self, name="url") # <- items, name
 		LastExit.__init__(self)
-		self.ft = ''	   # ftpclient
-		self.url = ''	   # selected url
-		self.getdir = ''   # download in dir via wget
+		self.ft = ""	   # ftpclient
+		self.url = ""	   # selected url
+		self.getdir = ""   # download in dir via wget
 
 	def argParser(self):
+		from sys import argv
+		from getopt import getopt, GetoptError
 		try:
 			opts, self.files = getopt(argv[1:], optstring)
 		except GetoptError, msg:
 			userHelp(msg)
 		for o, a in opts:
-			if o == '-b': # don't look up msgs locally
+			if o == "-b": # don't look up msgs locally
 				self.browse, self.id, self.google = True, True, True
 				self.mdirs = []
-				self.getdir = ''
-			elif o == '-d': # add specific mail hierarchies
+				self.getdir = ""
+			if o == "-d": # add specific mail hierarchies
 				self.id = True
-				self.mdirs = self.mdirs + a.split(':')
-				self.getdir = ''
-			elif o == '-D': # specific mail hierarchies
+				self.mdirs = self.mdirs + a.split(":")
+				self.getdir = ""
+			if o == "-D": # specific mail hierarchies
 				self.id = True
-				self.mdirs = a.split(':')
-				self.getdir = ''
-			elif o == '-f': # ftp client
+				self.mdirs = a.split(":")
+				self.getdir = ""
+			if o == "-f": # ftp client
 				self.ft = getBin(a)
-			elif o == '-g': # don't look up msgs locally
+			if o == "-g": # don't look up msgs locally
 				self.id, self.google = True, True
 				self.mdirs = []
-			elif o == '-h': userHelp()
-			elif o == '-I': # look for declared message-ids
+			if o == "-h": userHelp()
+			if o == "-I": # look for declared message-ids
 				self.id, self.decl = True, True
-				self.getdir = ''
-			elif o == '-i': # look for ids, in text w/o prot (email false positives)
+				self.getdir = ""
+			if o == "-i": # look for ids, in text w/o prot (email false positives)
 				self.id = True
-				self.getdir = ''
-			elif o == '-k': # mailbox to store retrieved message
+				self.getdir = ""
+			if o == "-k": # mailbox to store retrieved message
 				self.id = True
 				self.kiosk = a
-				self.getdir = ''
-			elif o == '-l': # only local search for message-ids
+				self.getdir = ""
+			if o == "-l": # only local search for message-ids
 				self.local, self.id = True, True
-				self.getdir = ''
-			elif o == '-n': # don't search mailboxes for message-ids
+				self.getdir = ""
+			if o == "-n": # don't search mailboxes for message-ids
 				self.id = True
 				self.mdirs = []
-				self.getdir = ''
-			elif o == '-p': # protocol(s)
+				self.getdir = ""
+			if o == "-p": # protocol(s)
 				self.proto = a
 				self.id = False
-			elif o == '-r': # regex pattern to match urls against
+			if o == "-r": # regex pattern to match urls against
 				self.pat = a
-			elif o == '-x': # xbrowser
+			if o == "-x": # xbrowser
 				self.xb = True
-			elif o == '-t': # text browser command
+			if o == "-t": # text browser command
 				self.tb = True
-			elif o == '-T': # needs terminal (at end of pipe e.g)
+			if o == "-T": # needs terminal (at end of pipe e.g)
 				self.nt = True
-			elif o == '-w': # download dir for wget
-				self.proto = 'web'
+			if o == "-w": # download dir for wget
+				self.proto = "web"
 				self.getdir = a
 				self.getdir = os.path.abspath(os.path.expanduser(self.getdir))
 				if not os.path.isdir(self.getdir):
-					userHelp('%s: not a directory' % self.getdir)
+					userHelp("%s: not a directory" % self.getdir)
 				self.id = False
 
 	def urlPager(self):
-		if not self.id and self.proto != 'all':
-			self.name = '%s %s' % (self.proto, self.name)
-		elif self.id: self.name = 'message-id'
-		self.name = 'unique %s' % self.name
+		if not self.id and self.proto != "all":
+			self.name = "%s %s" % (self.proto, self.name)
+		elif self.id: self.name = "message-id"
+		self.name = "unique %s" % self.name
 		self.url = Tpager.interAct(self)
 
 	def urlGo(self):
 		cs = []
 		conny = local_re.search(self.url) == None
-		if self.proto == 'mailto' \
-		or self.proto == 'all' and mailCheck(self.url):
+		if self.proto == "mailto" \
+		or self.proto == "all" and mailCheck(self.url):
 			cs = [getBin(mailers)]
 			conny = False
 		elif self.getdir:
 			if not conny:
 				userHelp("wget doesn't retrieve local files")
-			cs = [getBin('wget'), "-P", self.getdir]
-		elif self.proto == 'ftp' or self.ft or ftpCheck(self.url):
+			cs = [getBin("wget"), "-P", self.getdir]
+		elif self.proto == "ftp" or self.ft or ftpCheck(self.url):
 			if not os.path.splitext(self.url)[1] \
-			and not self.url.endswith('/'):
-				self.url = self.url + '/'
+			and not self.url.endswith("/"):
+				self.url = self.url + "/"
 			if not self.ft: cs = ["ftp"]
 			else: cs = [self.ft]
 			self.nt = True
@@ -148,7 +148,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			if not self.getdir or self.nt: # program needs terminal
 				tty = os.ctermid()
 				cs = cs + [self.url, "<", tty, ">", tty]
-				cs = ' '.join(cs)
+				cs = " ".join(cs)
 				systemCall(cs, sh=True)
 			else:
 				cs.append(self.url)
