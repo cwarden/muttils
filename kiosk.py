@@ -386,5 +386,5 @@ def run():
 	try:
 		k.argParser()
 		k.kioskStore()
-	except KeybordInterrupt:
+	except KeyboardInterrupt:
 		pass
