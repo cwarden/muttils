@@ -3,5 +3,3 @@
 
 from urlregex import urlpager
 urlpager.run()
-
-# EOF vim:ft=python

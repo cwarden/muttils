@@ -3,5 +3,3 @@
 
 from urlregex import urlbatcher
 urlbatcher.run()
-
-# EOF vim:ft=python
