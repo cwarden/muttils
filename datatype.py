@@ -1,5 +1,7 @@
+# $Hg: datatype.py,v$
+
 import os.path
-import urllib
+from urllib import urlopen
 from cheutils.filecheck import fileCheck
 
 def dataType(f):
@@ -8,9 +10,11 @@ def dataType(f):
 	# urllib uses the deprecated mimelib
 	# but email does not work for type detection
 	# on local files
+	# [ use urllib2? but then will have do revamp kiosk.py ]
 	try:
-		fp = urllib.urlopen('file://%s' % path)
+		fp = urlopen('file://%s' % path)
 		type = fp.info().gettype()
 		data = fp.read()
-	finally: fp.close()
+	finally:
+		fp.close()
 	return data, type

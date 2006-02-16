@@ -1,32 +1,38 @@
-import email, email.Errors, re
-from HTMLParser import HTMLParser
+# $Hg: Urlparser.py,v$
 
-protos = ('all', 'web', 'http', 'mailto',
-	  'ftp', 'finger', 'telnet')
+import re
+from email import message_from_file, message_from_string
+from email.Errors import MessageParseError
+from HTMLParser import HTMLParser, HTMLParseError
 
-# header lists (to be extended)
-searchkeys = ['subject', 'organization',
-	      'user-agent', 'x-mailer', 'x-newsreader',
-	      'list-id', 'list-subscribe', 'list-unsubscribe',
-	      'list-help', 'list-archive', 'list-url',
-	      'mailing-list', 'x-habeas-swe-9'] 
+protos = ("all", "web", "http", "mailto",
+	  "ftp", "finger", "telnet")
 
-refkeys = ['references', 'in-reply-to', 'message-id',
-	   'original-message-id']
+# header tuples (to be extended)
+searchkeys = ("subject", "organization",
+	      "user-agent", "x-mailer", "x-newsreader",
+	      "list-id", "list-subscribe", "list-unsubscribe",
+	      "list-help", "list-archive", "list-url",
+	      "mailing-list", "x-habeas-swe-9")
 
-addrkeys = ['from', 'to', 'reply-to', 'cc',
-	    'sender', 'x-sender', 'mail-followup-to',
-	    'x-apparently-to',
-	    'errors-to', 'x-complaints-to', 'x-beenthere']
+refkeys = ("references", "in-reply-to", "message-id",
+	   "original-message-id")
 
-quote_re = re.compile(r'^(> ?)+', re.MULTILINE)
+addrkeys = ("from", "to", "reply-to", "cc",
+	    "sender", "x-sender", "mail-followup-to",
+	    "x-apparently-to",
+	    "errors-to", "x-complaints-to", "x-beenthere")
+
+quote_re = re.compile(r"^(> ?)+", re.MULTILINE)
 
 def msgFactory(fp):
-	try: return email.message_from_file(fp)
-	except email.Errors.MessageParseError: return ''
+	try:
+		return message_from_file(fp)
+	except MessageParseError:
+		return ""
 
 def unQuote(s):
-	return quote_re.sub('', s)
+	return quote_re.sub("", s)
 
 class Urlparser(HTMLParser):
 	"""
@@ -34,34 +40,39 @@ class Urlparser(HTMLParser):
 	Extracts urls from html text
 	messages or mailboxes.
 	"""
-	def __init__(self, proto='all'):
+	def __init__(self, proto="all"):
 		HTMLParser.__init__(self)
 		self.proto = proto
-		self.id = 0             # search only for message-ids
+		self.id = False         # search only for message-ids
 		self.url_re = None
 		self.items = []
-		self.msg = ''
-		self.ugly = 0
+		self.msg = ""
+		self.ugly = False
 
 	def protoTest(self):
-		if self.proto in protos: return
+		if self.proto in protos:
+			return
 		from sys import exit
 		from cheutils.exnam import exNam
 		err = "%s: invalid protocol specification `%s'\n" \
 		      "Use one of: %s" \
-		      % (exNam(), self.proto, ', '.join(protos))
+		      % (exNam(), self.proto, ", ".join(protos))
 		exit(err)
 
 	def handle_starttag(self, tag, attrs):
-		if tag in ('a', 'img'):
+		if tag in ("a", "img"):
 			for name, value in attrs:
-				if name in ('href', 'src') \
+				if name in ("href", "src") \
 				and self.url_re.match(value):
 					self.items.append(value)
 	
 	def makeUrlist(self, text):
-		self.feed(text)
-		self.close()
+		try:
+			self.feed(text)
+			self.close()
+		except HTMLParseError, AssertionError:
+			self.ugly = True
+			pass
 
 	def headParser(self, keys):
 		from email.Utils import getaddresses
@@ -80,10 +91,13 @@ class Urlparser(HTMLParser):
 				self.items += urls
 
 	def mailDeconstructor(self, s):
-		try: self.msg = email.message_from_string(s)
-		except email.Errors.MessageParseError: return s
-		if not self.msg or not self.msg['Message-ID']: return s
-		# else it's a message or a mailbox
+		try:
+			self.msg = message_from_string(s)
+		except MessageParseError:
+			return s
+		if not self.msg or not self.msg["Message-ID"]:
+			return s
+		# else it"s a message or a mailbox
 		if not self.msg.get_unixfrom():
 			sl = self.msgDeconstructor()
 		else: # treat s like a mailbox because it might be one
@@ -95,26 +109,27 @@ class Urlparser(HTMLParser):
 			mbox = PortableUnixMailbox(fp, msgFactory)
 			while self.msg != None:
 				self.msg = mbox.next()
-				if self.msg: sl = self.msgDeconstructor(sl)
+				if self.msg:
+					sl = self.msgDeconstructor(sl)
 			fp.close()
-		s = '\n'.join(sl)
+		s = "\n".join(sl)
 		return unQuote(s) # get quoted urls spanning more than 1 line
 
 	def msgDeconstructor(self, sl=None):
-		if sl == None: sl = []
-		if self.id: self.headParser(refkeys)
-		elif self.proto in ('all', 'mailto'): self.headParser(addrkeys)
-		if not self.id: self.headSearcher()
+		if sl == None:
+			sl = []
+		if self.id:
+			self.headParser(refkeys)
+		elif self.proto in ("all", "mailto"):
+			self.headParser(addrkeys)
+		if not self.id:
+			self.headSearcher()
 		for part in self.msg.walk(): # use email.Iterator?
-			if part.get_content_maintype() == 'text':
+			if part.get_content_maintype() == "text":
 				text = part.get_payload(decode=True)
 				subtype = part.get_content_subtype()
-				if subtype == 'plain':
+				if subtype == "plain":
 					sl.append(text)
-				elif subtype.startswith('htm'):
-					from HTMLParser import HTMLParseError
-					try: self.makeUrlist(text)
-					except HTMLParseError, AssertionError:
-						self.ugly = True
-						pass
+				elif subtype.startswith("htm"):
+					self.makeUrlist(text)
 		return sl

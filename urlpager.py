@@ -60,8 +60,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		from getopt import getopt, GetoptError
 		try:
 			opts, self.files = getopt(argv[1:], optstring)
-		except GetoptError, msg:
-			userHelp(msg)
+		except GetoptError, e:
+			userHelp(e)
 		for o, a in opts:
 			if o == "-b": # don't look up msgs locally
 				self.browse, self.id, self.google = True, True, True
@@ -157,22 +157,28 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def urlSearch(self):
 		if not self.files: self.nt = True
 		result = Urlcollector.urlCollect(self)
-		if result: userHelp(result)
-		if self.nt: LastExit.termInit(self)
-		try:
-			self.urlPager()
-			if self.url:
-				if not self.id: self.urlGo()
-				else:
-					self.items = [self.url]
-					Kiosk.kioskStore(self)
-		except KeyboardInterrupt: pass
+		if result:
+			userHelp(result)
 		if self.nt:
-			try: LastExit.reInit(self)
-			except IndexError: pass
+			LastExit.termInit(self)
+		self.urlPager()
+		if self.url:
+			if not self.id:
+				self.urlGo()
+			else:
+				self.items = [self.url]
+				Kiosk.kioskStore(self)
+		if self.nt:
+			try:
+				LastExit.reInit(self)
+			except IndexError:
+				pass
 
 
 def run():
 	up = Urlpager()
-	up.argParser()
-	up.urlSearch()
+	try:
+		up.argParser()
+		up.urlSearch()
+	except KeyboardInterrupt:
+		pass

@@ -1,18 +1,18 @@
-Urlregex_rcsid = '$Id: Urlregex.py,v 1.20 2005/12/29 17:46:54 chris Exp $'
+urlregex_cset = "$Hg: Urlregex.py,v$"
 
 import re
 from Urlparser import Urlparser
 
 def orJoin(s):
-	return '(%s)' % '|'.join(s.split())
+	return "(%s)" % "|".join(s.split())
 
 # and now to the url parts
-#any = '_a-z0-9/#~:.?+=&%!@\-'   # valid url-chars
-any = '-._a-z0-9/#~:,?+=&%!@()' # valid url-chars + comma + parenthesises
+#any = "_a-z0-9/#~:.?+=&%!@\-"   # valid url-chars
+any = "-._a-z0-9/#~:,?+=&%!@()" # valid url-chars + comma + parenthesises
 			        # Message-ID: <10rb6mngqccs018@corp.supernews.com>
                                 # Message-id: <20050702131039.GA10840@oreka.com>
-idy = '-._a-z0-9#~?+=&%!$\]['   # valid message-id-chars ### w/o ":/"?
-delim = '-.,:?!)('		        # punctuation (how 'bout "!"?)
+idy = "-._a-z0-9#~?+=&%!$\]["   # valid message-id-chars ### w/o ":/"?
+delim = "-.,:?!)("		        # punctuation (how 'bout "!"?)
 
 # top level domains
 tops =	"a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
@@ -26,12 +26,12 @@ tops =	"a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
 	"t[cdfghjkmnoprtvwz] u[agkmsyz] " \
 	"v[acegivu] w[fs] y[etu] z[amw] " \
 	"arpa com edu gov int mil net org aero biz coop info name pro"
-top = '\.%s' % orJoin(tops)
+top = "\.%s" % orJoin(tops)
 
-#CPAN = 'ftp://ftp.cpan.org/pub/CPAN/'
-CPAN = r'ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1'
-#CTAN = 'ftp://ftp.ctan.org/tex-archive/'
-CTAN = r'ftp://ftp.dante.de/tex-archive/\1'
+#CPAN = "ftp://ftp.cpan.org/pub/CPAN/"
+CPAN = r"ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1"
+#CTAN = "ftp://ftp.ctan.org/tex-archive/"
+CTAN = r"ftp://ftp.dante.de/tex-archive/\1"
 
 ### outro ###
 outro = r"""
@@ -81,7 +81,7 @@ headsoff = r"""
 	""" % head
 
 # attributions:
-nproto = '(msgid|news|nntp|message(-id)?|article|MID)(:\s*?|\s+?)<{,2}'
+nproto = "(msgid|news|nntp|message(-id)?|article|MID)(:\s*?|\s+?)<{,2}"
 
 mid = r"""
 	[%(idy)s] +?            # one or more valid id char
@@ -91,15 +91,15 @@ mid = r"""
 	\b
 	""" % vars()
 
-declid = r'(%(nproto)s%(mid)s)' % vars()
-simplid = r'(\b%(mid)s)' % vars()
+declid = r"(%(nproto)s%(mid)s)" % vars()
+simplid = r"(\b%(mid)s)" % vars()
 
-rawwipe = r'(%(declid)s)|(%(headsoff)s)' % vars()
+rawwipe = r"(%(declid)s)|(%(headsoff)s)" % vars()
 
 ## precompiled regexes ##
-ftp_re = re.compile('ftp(://|\.)', re.IGNORECASE)
+ftp_re = re.compile("ftp(://|\.)", re.IGNORECASE)
 
-address = '[-._a-z0-9]+@[-._a-z0-9]+%s' % top
+address = "[-._a-z0-9]+@[-._a-z0-9]+%s" % top
 mail = r"""
 	\b(			# word boundary and group open
 		mailto:
@@ -128,64 +128,65 @@ def httpCheck(url):
 def mailCheck(url):
 	return mail_re.match(url)
 
-filterdict = {	'web':	mailKill,
-		'ftp':	ftpCheck,
-		'http':	httpCheck,
-		'mailto': mailCheck }
+filterdict = {	"web":	mailKill,
+		"ftp":	ftpCheck,
+		"http":	httpCheck,
+		"mailto": mailCheck }
 
 class Urlregex(Urlparser):
 	"""
 	Provides functions to extract urls from text,
 	customized by attributes.
-	Detects also www-urls that don't start with a protocol
+	Detects also www-urls that don"t start with a protocol
 	and urls spanning more than 1 line
 	if they are enclosed in "<>".
 	"""
-	def __init__(self, proto='all', find=True):
+	def __init__(self, proto="all", find=True):
 		Urlparser.__init__(self, proto) # <- id, proto, items, url_re, ugly
 		self.find = find    	# for grabbing regexes only
 		self.decl = False       # list only declared urls
 		self.uni = True         # list only unique urls
 		self.kill_re = None	# customized pattern to find non url chars
-		self.intro = ''
-		self.protocol = ''	# pragmatic proto (may include www., ftp.)
+		self.intro = ""
+		self.protocol = ""	# pragmatic proto (may include www., ftp.)
 		self.proto_re = None
 
 	def httpAdd(self, url):
 		if not re.match(self.protocol, url):
-			return 'http://%s' % url
+			return "http://%s" % url
 		return url
 
 	def urlCheck(self, s):
 		self.urlObjects()
-		url = self.kill_re.sub('', s)
+		url = self.kill_re.sub("", s)
 		return self.url_re.match(url)
 
 
 	def setStrings(self):
 		### intro ###
-		if self.proto in ('all', 'web'): ## groups
+		if self.proto in ("all", "web"): ## groups
 			protocols = "(www|ftp)\. https?:// " \
 				"finger:// ftp:// telnet:// mailto:".split()
 #                                "(file://(localhost)?/|http://(localhost|127\.) " \
 				# TO DO: local switch!
 			# gopher? wais?
-			if self.proto == 'web':
+			if self.proto == "web":
 				protocols = protocols[:-1] # web only
-			intros = '%s' % '|'.join(protocols)
-			protocols = '%s' % '|'.join(protocols[1:])
-			self.intro = '(%s)' % intros
-			self.protocol = '(%s)' % protocols
+			intros = "%s" % "|".join(protocols)
+			protocols = "%s" % "|".join(protocols[1:])
+			self.intro = "(%s)" % intros
+			self.protocol = "(%s)" % protocols
 
 		else:				  ## singles
 			self.decl = True
-			self.protocol = '%s://' % self.proto
-			if self.proto == 'http':
-				self.intro = '(https?://|www\.)'
-			elif self.proto == 'ftp':
-				self.intro = 'ftp(://|\.)'
-			else: self.intro = self.protocol
-		self.intro = '(url:)?%s' % self.intro
+			self.protocol = "%s://" % self.proto
+			if self.proto == "http":
+				self.intro = "(https?://|www\.)"
+			elif self.proto == "ftp":
+				self.intro = "ftp(://|\.)"
+			else:
+				self.intro = self.protocol
+		self.intro = "(url:)?%s" % self.intro
 
 	def getRaw(self):
 
@@ -199,12 +200,13 @@ class Urlregex(Urlparser):
 			%(intro)s	# intro
 			[%(any)s] +?	# followed by 1 or more valid url char
 			%(outro)s	# outro
-			""" % { 'intro':   self.intro,
-			        'any':     any,
-                                'spoutro': spoutro,
-				'outro':   outro }
+			""" % { "intro":   self.intro,
+			        "any":     any,
+                                "spoutro": spoutro,
+				"outro":   outro }
 
-		if self.decl: return '(%s)' % proto_url
+		if self.decl:
+			return "(%s)" % proto_url
 
 		## follows an attempt to comprise as much urls as possible
 		## some bad formatted stuff too
@@ -216,17 +218,17 @@ class Urlregex(Urlparser):
 			\b		# start at word boundary
 			[%(any)s] +?	# one or more valid characters
 			%(outro)s	# outro
-			""" % { 'any':     any,
-				'spoutro': spoutro,
-				'outro':   outro }
+			""" % { "any":     any,
+				"spoutro": spoutro,
+				"outro":   outro }
 		
-		return '(%s|%s)' % (proto_url, any_url)
+		return "(%s|%s)" % (proto_url, any_url)
 
 	def uniDeluxe(self):
 		"""remove duplicates deluxe:
 		of http://www.blacktrash.org, www.blacktrash.org
 		keep only the first, declared version."""
-		truncs = [self.proto_re.sub('', u) for u in self.items]
+		truncs = [self.proto_re.sub("", u) for u in self.items]
 		deluxurls = []
 		for i in range(len(self.items)):
 			url = self.items[i]
@@ -248,47 +250,47 @@ class Urlregex(Urlparser):
 	def urlObjects(self):
 		"""Creates customized regex objects of url."""
 		Urlparser.protoTest(self)
-		if self.proto == 'mailto':# be pragmatic and list not only declared
+		if self.proto == "mailto":# be pragmatic and list not only declared
 			self.url_re = mail_re
-			self.proto_re = re.compile('^mailto:')
+			self.proto_re = re.compile("^mailto:")
 		elif not self.id:
 			self.setStrings()
 			rawurl = self.getRaw()
 			self.url_re = re.compile(rawurl, re.IGNORECASE|re.VERBOSE)
 			if self.find:
-				self.kill_re = re.compile('\s+?|^url:', re.IGNORECASE) 
+				self.kill_re = re.compile("\s+?|^url:", re.IGNORECASE) 
 				if not self.decl:
-					self.proto_re = re.compile('^%s' % self.protocol, re.I)
+					self.proto_re = re.compile("^%s" % self.protocol, re.I)
 		elif self.decl:
 			self.url_re = re.compile(declid, re.IGNORECASE|re.VERBOSE)
-			if self.find: self.kill_re = re.compile(nproto, re.I)
-		else: self.url_re = re.compile(simplid, re.IGNORECASE|re.VERBOSE)
+			if self.find:
+				self.kill_re = re.compile(nproto, re.I)
+		else:
+			self.url_re = re.compile(simplid, re.IGNORECASE|re.VERBOSE)
 
-	def findUrls(self, data, type='text/plain'):
+	def findUrls(self, data, type="text/plain"):
 		self.urlObjects() # compile url_re
-		if type == 'text/html':
-			from HTMLParser import HTMLParseError
-			try: Urlparser.makeUrlist(self, data)
-			except HTMLParseError, AssertionError:
-				self.ugly = True
-				pass
-		elif type.startswith('text/'):
+		if type == "text/html":
+			Urlparser.makeUrlist(self, data)
+		elif type.startswith("text/"):
 			s = Urlparser.mailDeconstructor(self, data)
 			if not self.id:
-				wipe_resub = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE), ''
-				cpan_resub = re.compile(r'CPAN:([A-Za-z]+?)'), CPAN 
-				ctan_resub = re.compile(r'CTAN:([A-Za-z]+?)'), CTAN
+				wipe_resub = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE), ""
+				cpan_resub = re.compile(r"CPAN:([A-Za-z]+?)"), CPAN 
+				ctan_resub = re.compile(r"CTAN:([A-Za-z]+?)"), CTAN
 				for resub in (wipe_resub, cpan_resub, ctan_resub):
 					s = resub[0].sub(resub[1], s)
 			urls = [u[0] for u in self.url_re.findall(s)]
-			if self.kill_re: urls = [self.kill_re.sub('', u) for u in urls]
-			if urls: self.items += urls
+			if self.kill_re:
+				urls = [self.kill_re.sub("", u) for u in urls]
+			if urls:
+				self.items += urls
 		self.urlFilter()
 
 
 def _test():
-	from Rcsparser import Rcsparser
-	rcs = Rcsparser(Urlregex_rcsid)
+	from cheutils.exnam import Usage
+	cset = Usage(rcsid=urlregex_cset)
 	sample = """
 hello world, these are 3 urls:
 cis.tarzisius.net
@@ -296,7 +298,7 @@ www.python.org.
 <www.black
 trash.org> Can you find them?
 """
-	print rcs.getVals(shortv=True)
+	print cset.getCset()
 	print sample
 	ur = Urlregex()
 	ur.findUrls(sample)
