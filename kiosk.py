@@ -84,7 +84,7 @@ def msgFactory(fp):
 
 def nakHead(header):
 	"""Strips Message-ID header down to pure ID."""
-	return header.split(">")[0].split("<")[-1]
+	return header.split("<")[-1].strip(">")
 
 def mkUnixfrom(msg):
 	"""Creates missing unixfrom."""
