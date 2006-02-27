@@ -4,7 +4,7 @@ kiosk_cset = "$Hg: kiosk.py,v$"
 # needs python version 2.3 #
 ###
 
-import os, re, sys
+import os, re
 from email import message_from_file, message_from_string
 from email.Errors import MessageParseError, HeaderParseError
 from email.Generator import Generator
@@ -140,9 +140,10 @@ class Kiosk(Leafnode):
 		self.mspool = mailspool
 
 	def argParser(self):
+		from sys import argv
 		from getopt import getopt, GetoptError
 		try:
-			opts, self.items = getopt(sys.argv[1:], optstr)
+			opts, self.items = getopt(argv[1:], optstr)
 		except GetoptError, e:
 			userHelp(e)
 		for o, a in opts:
@@ -220,8 +221,9 @@ class Kiosk(Leafnode):
 		print "Going google ..."
 		self.items = [self.makeQuery(id) for id in self.items]
 		if self.browse:
+			from sys import exit
 			selBrowser(self.items, self.tb, self.xb)
-			sys.exit()
+			exit()
 		if connyAS:
 			systemCall(["osascript", connyAS])
 		found = []
@@ -324,11 +326,31 @@ class Kiosk(Leafnode):
 		except re.error, e:
 			regError(e, self.mask)
 
+	def openKiosk(self):
+		"""Opens mutt on kiosk mailbox."""
+		outfp = open(self.kiosk, "ab")
+		g = Generator(outfp, maxheaderlen=0)
+		for msg in self.msgs:
+			msg.__delitem__("status") # show msg as new in mutt
+			msg.__delitem__("xref") # delete server info
+			if not msg.get_unixfrom():
+				msg = mkUnixfrom(msg)
+			g.flatten(msg, unixfrom=True)
+		outfp.close()
+		if len(self.msgs) == 1 and self.muttone:
+			cmd = "%s '%s'" % (muttone, self.kiosk)
+		else:
+			cmd = "%s '%s'" % (mutti(firstid), self.kiosk)
+		if self.nt:
+			tty = os.ctermid()
+			cmd = "%(cmd)s <%(tty)s >%(tty)s" % vars()
+		systemCall(cmd, sh=True)
+		if self.tmp and os.path.isfile(self.kiosk):
+			os.remove(self.kiosk)
+
 	def kioskStore(self):
-		"""Displays messages identified by ID either
-		by retrieving them locally or from GoogleGroups
-		and opening mutt on the kiosk mailbox -- or
-		online with a text browser."""
+		"""Collects messages identified by ID either
+		by retrieving them locally or from GoogleGroups."""
 		self.items = [nakHead(item) for item in self.items]
 		if not self.items:
 			userHelp("needs Message-ID(s) as mandatory argument(s)")
@@ -358,27 +380,8 @@ class Kiosk(Leafnode):
 				% sPl(len(self.items), "message")
 			if self.msgs:
 				sleep(5)
-		if not self.msgs:
-			sys.exit()
-		outfp = open(self.kiosk, "ab")
-		g = Generator(outfp, maxheaderlen=0)
-		for msg in self.msgs:
-			msg.__delitem__("status") # show msg as new in mutt
-			msg.__delitem__("xref") # delete server info
-			if not msg.get_unixfrom():
-				msg = mkUnixfrom(msg)
-			g.flatten(msg, unixfrom=True)
-		outfp.close()
-		if len(self.msgs) == 1 and self.muttone:
-			cmd = "%s '%s'" % (muttone, self.kiosk)
-		else:
-			cmd = "%s '%s'" % (mutti(firstid), self.kiosk)
-		if self.nt:
-			tty = os.ctermid()
-			cmd = "%(cmd)s <%(tty)s >%(tty)s" % vars()
-		systemCall(cmd, sh=True)
-		if self.tmp and os.path.isfile(self.kiosk):
-			os.remove(self.kiosk)
+		if self.msgs:
+			self.openKiosk()
 
 
 def run():
