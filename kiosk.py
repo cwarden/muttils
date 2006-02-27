@@ -188,15 +188,13 @@ class Kiosk(Leafnode):
 		if not os.path.exists(self.kiosk):
 			return
 		if not os.path.isfile(self.kiosk):
-			err = "%s: not a regular file" % self.kiosk
-			userHelp(err)
+			userHelp("%s: not a regular file" % self.kiosk)
 		testline = readLine(self.kiosk, "rb")
 		if not testline:
 			return # empty is fine
 		test = message_from_string(testline)
 		if not test.get_unixfrom():
-			err = "%s: not a unix mailbox" % self.kiosk
-			userHelp(err)
+			userHelp("%s: not a unix mailbox" % self.kiosk)
 		else:
 			self.muttone = False
 
