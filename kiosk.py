@@ -31,10 +31,6 @@ if not mailspool:
 elif mailspool.endswith("/"):
 	mailspool = mailspool[:-1] # ~/Maildir/-INBOX[/]
 
-connyAS = os.path.join(os.environ["HOME"], "AS", "conny.applescript")
-if not os.path.isfile(connyAS):
-	connyAS = False
-
 mutt = getBin("mutt", "muttng")
 muttone = "%s -e 'set pager_index_lines=0' " \
 	       "-e 'set quit=yes' -e 'bind pager q quit' " \
@@ -44,6 +40,13 @@ def mutti(id): # uncollapse??
 	"""Opens kiosk mailbox and goes to id."""
 	return "%s -e 'push <search>\"~i\ \'%s\'\"<return>' -f" \
 			% (mutt, id)
+
+def goOnline():
+	try:
+		from cheutils.conny import appleConnect
+		appleConnect()
+	except ImportError:
+		pass
 
 kiosk_help = """
 [-l][-d <mail hierarchy>[:<mail hierarchy> ...]]' \\
@@ -222,8 +225,7 @@ class Kiosk(Leafnode):
 			from sys import exit
 			selBrowser(self.items, self.tb, self.xb)
 			exit()
-		if connyAS:
-			systemCall(["osascript", connyAS])
+		goOnline()
 		found = []
 		for item in self.items:
 			fp = urlopen(item)
