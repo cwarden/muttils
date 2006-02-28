@@ -125,7 +125,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def urlPager(self):
 		if not self.id and self.proto != "all":
 			self.name = "%s %s" % (self.proto, self.name)
-		elif self.id: self.name = "message-id"
+		elif self.id:
+			self.name = "message-id"
 		self.name = "unique %s" % self.name
 		self.url = Tpager.interAct(self)
 
@@ -133,7 +134,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		cs = []
 		conny = local_re.search(self.url) == None
 		if self.proto == "mailto" \
-		or self.proto == "all" and mailCheck(self.url):
+				or self.proto == "all" and mailCheck(self.url):
 			cs = [getBin(mailers)]
 			conny = False
 		elif self.getdir:
@@ -142,10 +143,12 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			cs = [getBin("wget"), "-P", self.getdir]
 		elif self.proto == "ftp" or self.ft or ftpCheck(self.url):
 			if not os.path.splitext(self.url)[1] \
-			and not self.url.endswith("/"):
+					and not self.url.endswith("/"):
 				self.url = self.url + "/"
-			if not self.ft: cs = ["ftp"]
-			else: cs = [self.ft]
+			if not self.ft:
+				cs = ["ftp"]
+			else:
+				cs = [self.ft]
 			self.nt = True
 		if not cs:
 			selBrowser(self.url, tb=self.tb, xb=self.xb)
@@ -162,7 +165,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				systemCall(cs)
 
 	def urlSearch(self):
-		if not self.files: self.nt = True
+		if not self.files:
+			self.nt = True
 		issue = Urlcollector.urlCollect(self)
 		if issue:
 			userHelp(issue)
