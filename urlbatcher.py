@@ -1,4 +1,4 @@
-urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.16 2005/12/31 14:09:28 chris Exp $'
+urlbatcher_cset = "$Id: urlbatcher.py,v$"
 
 ###
 # Caveat:
@@ -10,7 +10,6 @@ urlbatcher_rcsid = '$Id: urlbatcher.py,v 1.16 2005/12/31 14:09:28 chris Exp $'
 ###
 
 import getopt, os, sys
-from cheutils.getbin import getBin
 from cheutils.spl import sPl
 from cheutils.selbrowser import selBrowser, local_re
 from cheutils.systemcall import systemCall
@@ -21,31 +20,31 @@ from kiosk import Kiosk
 
 optstring = "d:D:ghiIk:lnr:Tw:x"
 
-connyAS = os.path.join(os.environ["HOME"], 'AS', 'conny.applescript')
-if os.path.exists(connyAS): connyAS = False
-
-def Usage(err=''):
-	from cheutils.exnam import exNam
-	exe = exNam()
-	if err: print >>sys.stderr, '%s: %s' % (exe, err)
-	else:
-		from cheutils.Rcsparser import Rcsparser
-		rcs = Rcsparser(urlbatcher_rcsid)
-		print rcs.getVals(shortv=True)
-	sys.exit("""Usage:
-%(exe)s [-x][-r <pattern>][file ...]
-%(exe)s -w <download dir> [-r <pattern]
-%(exe)s -i [-r <pattern>][-k <mbox>][<file> ...]
-%(exe)s -I [-r <pattern>][-k <mbox>][<file> ...]
-%(exe)s -l [-I][-r <pattern>][-k <mbox>][<file> ...]
-%(exe)s -d <mail hierarchy>[:<mail hierarchy>[:...]]' \\
+urlbatcher_help = """
+[-x][-r <pattern>][file ...]
+-w <download dir> [-r <pattern]
+-i [-r <pattern>][-k <mbox>][<file> ...]
+-I [-r <pattern>][-k <mbox>][<file> ...]
+-l [-I][-r <pattern>][-k <mbox>][<file> ...]
+-d <mail hierarchy>[:<mail hierarchy>[:...]]' \\
             [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
-%(exe)s -D <mail hierarchy>[:<mail hierarchy>[:...]] \\
+-D <mail hierarchy>[:<mail hierarchy>[:...]] \\
             [-l][-I][-r <pattern>][-k <mbox>][<file> ...]
-%(exe)s -n [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
-%(exe)s -g [-I][-r <pattern>][-k <mbox>][<file> ...]
-%(exe)s -h (display this help)"""
-	% vars () )
+-n [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
+-g [-I][-r <pattern>][-k <mbox>][<file> ...]
+-h (display this help)"""
+
+def userHelp(error=""):
+	from cheutils.exnam import Usage
+	u = Usage(help=urlbatcher_help, rcsid=urlbatcher_cset)
+	u.printHelp(err=error)
+
+def goOnline():
+	try:
+		from cheutils.conny import appleConnect
+		appleConnect()
+	except ImportError:
+		pass
 
 
 class Urlbatcher(Urlcollector, Kiosk, LastExit):
@@ -62,7 +61,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 
 	def argParser(self):
 		try: opts, self.files = getopt.getopt(sys.argv[1:], optstring)
-		except getopt.GetoptError, msg: Usage(msg)
+		except getopt.GetoptError, msg: userHelp(msg)
 		for o, a in opts:
 			if o == '-d': # add specific mail hierarchies
 				self.id = 1
@@ -72,7 +71,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 				self.id = 1
 				self.mdirs = a.split(':')
 				self.getdir = ''
-			elif o == '-h': Usage()
+			elif o == '-h': userHelp()
 			elif o == '-g': # go to google directly for message-ids
 				self.id, self.google, self.mdirs = 1, 1, []
 				self.getdir = ''
@@ -100,7 +99,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 				getdir = a
 				self.getdir = os.path.abspath(os.path.expanduser(getdir))
 				if not os.path.isdir(self.getdir):
-					Usage('%s: not a directory' % self.getdir)
+					userHelp('%s: not a directory' % self.getdir)
 			elif o == '-x': # xbrowser
 				self.xb, self.id, self.getdir = 1, 0, ''
 			if self.id: self.proto = 'all'
@@ -109,8 +108,8 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 		if self.getdir:
 			for url in self.items:
 				if local_re.search(url) != None:
-					Usage("wget doesn't retrieve local files")
-			if connyAS: systemCall(["osascript", connyAS])
+					userHelp("wget doesn't retrieve local files")
+			goOnline()
 			systemCall([getbin('wget'), "-P", self.getdir] + self.items)
 		else: selBrowser(urls=self.items, tb=False, xb=self.xb)
 					
