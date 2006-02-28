@@ -21,8 +21,6 @@ from kiosk import Kiosk
 
 optstring = "bd:D:f:ghiIlnp:k:r:tTw:x"
 mailers = ("mutt", "pine", "elm", "mail") 
-connyAS = os.path.join(os.environ["HOME"], "AS", "conny.applescript")
-if not os.path.exists(connyAS): connyAS = False
 
 urlpager_help = """
 [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]
@@ -43,6 +41,13 @@ def userHelp(error=""):
 	from cheutils.exnam import Usage
 	u = Usage(help=urlpager_help, rcsid=urlpager_cset)
 	u.printHelp(err=error)
+
+def goOnline():
+	try:
+		from cheutils.conny import appleConnect
+		appleConnect()
+	except ImportError:
+		pass
 
 
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
@@ -142,9 +147,11 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			if not self.ft: cs = ["ftp"]
 			else: cs = [self.ft]
 			self.nt = True
-		if not cs: selBrowser(self.url, tb=self.tb, xb=self.xb)
+		if not cs:
+			selBrowser(self.url, tb=self.tb, xb=self.xb)
 		else:
-			if conny and connyAS: systemCall(["osascript", connyAS])
+			if conny:
+				goOnline()
 			if not self.getdir or self.nt: # program needs terminal
 				tty = os.ctermid()
 				cs = cs + [self.url, "<", tty, ">", tty]
@@ -156,9 +163,9 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 
 	def urlSearch(self):
 		if not self.files: self.nt = True
-		result = Urlcollector.urlCollect(self)
-		if result:
-			userHelp(result)
+		issue = Urlcollector.urlCollect(self)
+		if issue:
+			userHelp(issue)
 		if self.nt:
 			LastExit.termInit(self)
 		self.urlPager()
