@@ -9,7 +9,6 @@ urlbatcher_cset = "$Hg: urlbatcher.py,v$"
 # input is checked anew for each file.
 ###
 
-import getopt, os, sys
 from cheutils.spl import sPl
 from cheutils.selbrowser import selBrowser, local_re
 from cheutils.systemcall import systemCall
@@ -60,10 +59,12 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 		self.getdir = ""            # download in dir via wget
 
 	def argParser(self):
+		from sys import argv
+		from getopt import getopt, GetoptError
 		try:
-			opts, self.files = getopt.getopt(sys.argv[1:], optstring)
-		except getopt.GetoptError, msg:
-			userHelp(msg)
+			opts, self.files = getopt(argv[1:], optstring)
+		except GetoptError, e:
+			userHelp(e)
 		for o, a in opts:
 			if o == "-d": # add specific mail hierarchies
 				self.id = 1
@@ -98,10 +99,11 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 			if o == "-T": # force new terminal
 				self.nt = True
 			if o == "-w": # download dir for wget
+				from os.path import abspath, expanduser, isdir
 				self.id = 0
 				getdir = a
-				self.getdir = os.path.abspath(os.path.expanduser(getdir))
-				if not os.path.isdir(self.getdir):
+				self.getdir = abspath(expanduser(getdir))
+				if not isdir(self.getdir):
 					userHelp("%s: not a directory" % self.getdir)
 			if o == "-x": # xbrowser
 				self.xb, self.id, self.getdir = 1, 0, ""
