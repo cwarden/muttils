@@ -9,7 +9,7 @@ urlpager_cset = "$Hg: urlpager.py,v$"
 # input is checked anew for each file.
 ###
 
-import os, readline
+import readline
 from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
 from cheutils.getbin import getBin
@@ -115,10 +115,11 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			if o == "-T": # needs terminal (at end of pipe e.g)
 				self.nt = True
 			if o == "-w": # download dir for wget
+				from os.path import abspath, expanduser, isdir
 				self.proto = "web"
 				self.getdir = a
-				self.getdir = os.path.abspath(os.path.expanduser(self.getdir))
-				if not os.path.isdir(self.getdir):
+				self.getdir = abspath(expanduser(self.getdir))
+				if not isdir(self.getdir):
 					userHelp("%s: not a directory" % self.getdir)
 				self.id = False
 
@@ -142,7 +143,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				userHelp("wget doesn't retrieve local files")
 			cs = [getBin("wget"), "-P", self.getdir]
 		elif self.proto == "ftp" or self.ft or ftpCheck(self.url):
-			if not os.path.splitext(self.url)[1] \
+			from os.path import splitext
+			if not splitext(self.url)[1] \
 					and not self.url.endswith("/"):
 				self.url = self.url + "/"
 			if not self.ft:
@@ -156,7 +158,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			if conny:
 				goOnline()
 			if not self.getdir or self.nt: # program needs terminal
-				tty = os.ctermid()
+				from os import ctermid
+				tty = ctermid()
 				cs = cs + [self.url, "<", tty, ">", tty]
 				cs = " ".join(cs)
 				systemCall(cs, sh=True)
