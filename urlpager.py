@@ -133,7 +133,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 
 	def urlGo(self):
 		cs = []
-		conny = local_re.search(self.url) == None
+		conny = local_re.match(self.url) == None
 		if self.proto == "mailto" \
 				or self.proto == "all" and mailCheck(self.url):
 			cs = [getBin(mailers)]

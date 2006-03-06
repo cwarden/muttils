@@ -113,7 +113,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 	def urlGo(self):
 		if self.getdir:
 			for url in self.items:
-				if local_re.search(url) != None:
+				if local_re.match(url):
 					userHelp("wget doesn't retrieve local files")
 			goOnline()
 			systemCall([getbin("wget"), "-P", self.getdir] + self.items)
