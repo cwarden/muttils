@@ -1,7 +1,7 @@
 # $Hg: Pages.py,v$
 
+import terminfo
 from Tformat import Tformat
-from terminfo import t_rows, t_cols
 	
 class Pages(Tformat):
 	"""
@@ -18,9 +18,9 @@ class Pages(Tformat):
 		self.pn = 0          # current page/key of pages
 		self.buff = ""	     # current page string buffer
 		self.lines = 0	     # current amount of lines
-		self.cols = t_cols+1 # needs 1 extra when lines are broken
+		self.cols = terminfo.t_cols+1 # needs 1 extra when lines are broken
 		# retain 2 lines for header & 1 for menu
-		self.rows = t_rows-3
+		self.rows = terminfo.t_rows-3
 
 	def itemsDict(self):
 		"""Populates itemsdict and keys."""

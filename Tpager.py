@@ -1,8 +1,7 @@
 # $Hg: Tpager.py,v$
 
 from Pages import Pages
-from cheutils.spl import sPl
-from cheutils.valclamp import valClamp
+from cheutils import spl, valclamp
 
 # format default paging command
 pds = {-1:"Back", 1:"Forward"}
@@ -52,7 +51,7 @@ class Tpager(Pages):
 	def interAct(self, newdict=True):
 		"""Lets user page through a list of items and make a choice."""
 		if newdict: Pages.pagesDict(self)
-		self.header = "*%s*" % sPl(self.ilen, self.name)
+		self.header = "*%s*" % spl.sPl(self.ilen, self.name)
 		self.header = "%s\n\n" % self.colTrunc(self.header, self.cols-2)
 		plen = len(self.pages)
 		if plen == 1: # no paging
@@ -94,7 +93,7 @@ class Tpager(Pages):
 						return reply
 					elif reply == "-" and bs:
 						pdir *= -1
-						pn = valClamp(pn+pdir, 1, plen)
+						pn = valclamp.valClamp(pn+pdir, 1, plen)
 					#else: same page displayed on invalid response
 				else:
-					pn = valClamp(pn+pdir, 1, plen)
+					pn = valclamp.valClamp(pn+pdir, 1, plen)

@@ -1,8 +1,7 @@
 sigpager_cset = "$Hg: sigpager.py,v$"
 
-import os, re, readline
-from random import shuffle
-from cheutils.readwrite import readFile, writeFile
+import os, random, re, readline
+from cheutils import readwrite
 from LastExit import LastExit
 from Tpager import Tpager
 
@@ -23,8 +22,8 @@ sigpager_help = """
 -h (display this help)"""
 
 def userHelp(error=""):
-	from cheutils.exnam import Usage
-	u = Usage(help=sigpager_help, rcsid=sigpager_cset)
+	import exnam
+	u = exnam.Usage(help=sigpager_help, rcsid=sigpager_cset)
 	u.printHelp(err=error)
 
 
@@ -50,11 +49,10 @@ class Signature(Tpager, LastExit):
 		self.pat = None         # match sigs against pattern
 
 	def argParser(self):
-		from sys import argv, stdin
-		from getopt import getopt, GetoptError
+		import getopt, sys
 		try:
-			opts, args = getopt(argv[1:], optstring)
-		except GetoptError, e:
+			opts, args = getopt.getopt(sys.argv[1:], optstring)
+		except getopt.GetoptError, e:
 			userHelp(e)
 		for o, a in opts:
 			if o == "-d": self.sdir = a
@@ -63,26 +61,32 @@ class Signature(Tpager, LastExit):
 			if o == "-s": self.sig = a
 			if o == "-t": self.tail = a
 			if o == "-w": self.w = "w"
-		if args == ["-"]: self.inp = stdin.read()
-		else: self.targets = args
+		if args == ["-"]:
+			self.inp = sys.stdin.read()
+		else:
+			self.targets = args
 
 	def getString(self, fn):
 		sigfile = os.path.join(self.sdir, fn)
-		return readFile(sigfile)
+		return readwrite.readFile(sigfile)
 
 	def getSig(self):
 		siglist = filter(lambda f: f.endswith(self.tail),
 				os.listdir(self.sdir) )
-		if not siglist: return ""
-		shuffle(siglist)
+		if not siglist:
+			return ""
+		random.shuffle(siglist)
 		self.items = [self.getString(fn) for fn in siglist]
 		if self.pat and self.items:
 			self.items = filter(lambda i: self.pat.search(i), self.items)
-		try: self.sign = Tpager.interAct(self)
-		except KeyboardInterrupt: self.sign = None
+		try:
+			self.sign = Tpager.interAct(self)
+		except KeyboardInterrupt:
+			self.sign = None
 
 	def checkPattern(self):
-		try: self.pat = re.compile(r"%s" % self.pat, re.I)
+		try:
+			self.pat = re.compile(r"%s" % self.pat, re.I)
 		except re.error, e:
 			print "%s in pattern %s" % (e, self.pat)
 			self.pat = None
@@ -91,9 +95,12 @@ class Signature(Tpager, LastExit):
 	def getPattern(self):
 		prompt = "C-c to cancel or\n" \
 			"Enter pattern to match signatures against:\n"
-		try: self.pat = raw_input(prompt)
-		except KeyboardInterrupt: self.pat = None
-		if self.pat: self.checkPattern()
+		try:
+			self.pat = raw_input(prompt)
+		except KeyboardInterrupt:
+			self.pat = None
+		if self.pat:
+			self.checkPattern()
 
 	def siggiLoop(self):
 		while 1:
@@ -104,24 +111,33 @@ class Signature(Tpager, LastExit):
 				self.checkPattern()
 				Tpager.__init__(self,
 					self.name, self.format, self.qfunc, self.ckey)
-			else: break
+			else:
+				break
 
 	def underSign(self):
-		if not self.targets: LastExit.termInit(self)
+		if not self.targets:
+			LastExit.termInit(self)
 		self.siggiLoop()
-		if not self.targets: LastExit.reInit(self)
+		if not self.targets:
+			LastExit.reInit(self)
 		if self.sign != None:
-			if not self.sign: self.sign = readFile(self.sig)
-			if self.full: self.sign = "-- \n%s" % self.sign
+			if not self.sign:
+				self.sign = readwrite.readFile(self.sig)
+			if self.full:
+				self.sign = "-- \n%s" % self.sign
 			self.sign = self.sign.rstrip() # get rid of EOFnewline
 			if not self.targets:
-				if not self.inp: print self.sign
-				else: print "%s%s" % (self.inp, self.sign)
+				if not self.inp:
+					print self.sign
+				else:
+					print "%s%s" % (self.inp, self.sign)
 			else:
 				for targetfile in self.targets:
-					writeFile(targetfile, self.sign, self.w)
-		elif self.inp: print self.inp
-		elif self.targets: print
+					readwrite.writeFile(targetfile, self.sign, self.w)
+		elif self.inp:
+			print self.inp
+		elif self.targets:
+			print
 
 
 def run():

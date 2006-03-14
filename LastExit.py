@@ -1,8 +1,7 @@
 # $Hg: LastExit.py,v$
 
-import sys
-from os import ctermid
-from cheutils.readwrite import writeFile, readLine
+import os, sys
+from cheutils import readwrite
 
 class Termplus:
 	"""
@@ -10,13 +9,13 @@ class Termplus:
 	for an interactive terminal device.
 	"""
 	def __init__(self):
-		self.dev = ctermid()
+		self.dev = os.ctermid()
 
 	def write(self, o):
-		writeFile(self.dev, o)
+		readwrite.writeFile(self.dev, o)
 	
 	def readline(self, size=-1):
-		return readLine(self.dev, size=size)
+		return readwrite.readLine(self.dev, size=size)
 
 
 class LastExit(Termplus):
