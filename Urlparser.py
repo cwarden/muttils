@@ -1,8 +1,8 @@
 # $Hg: Urlparser.py,v$
 
-import re
-from email import message_from_file, message_from_string
+import email, re
 from email.Errors import MessageParseError
+from email import Utils
 from HTMLParser import HTMLParser, HTMLParseError
 
 protos = ("all", "web", "http", "mailto",
@@ -27,7 +27,7 @@ quote_re = re.compile(r"^(> ?)+", re.MULTILINE)
 
 def msgFactory(fp):
 	try:
-		return message_from_file(fp)
+		return email.message_from_file(fp)
 	except MessageParseError:
 		return ""
 
@@ -52,12 +52,12 @@ class Urlparser(HTMLParser):
 	def protoTest(self):
 		if self.proto in protos:
 			return
-		from sys import exit
-		from cheutils.exnam import exNam
+		import sys
+		from cheutils import exnam
 		err = "%s: invalid protocol specification `%s'\n" \
 		      "Use one of: %s" \
-		      % (exNam(), self.proto, ", ".join(protos))
-		exit(err)
+		      % (exnam.exNam(), self.proto, ", ".join(protos))
+		sys.exit(err)
 
 	def handle_starttag(self, tag, attrs):
 		if tag in ("a", "img"):
@@ -75,11 +75,10 @@ class Urlparser(HTMLParser):
 			pass
 
 	def headParser(self, keys):
-		from email.Utils import getaddresses
 		for key in keys:
 			vals = self.msg.get_all(key)
 			if vals:
-				pairs = getaddresses(vals)
+				pairs = Utils.getaddresses(vals)
 				urls = [pair[1] for pair in pairs if pair[1]]
 				self.items += urls
 
@@ -92,7 +91,7 @@ class Urlparser(HTMLParser):
 
 	def mailDeconstructor(self, s):
 		try:
-			self.msg = message_from_string(s)
+			self.msg = email.message_from_string(s)
 		except MessageParseError:
 			return s
 		if not self.msg or not self.msg["Message-ID"]:

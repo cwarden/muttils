@@ -3,11 +3,11 @@
 import re
 from tpager.LastExit import LastExit
 from Urlregex import Urlregex
+from cheutils import exnam
 
 def collectErr(err):
-	from sys import exit
-	from cheutils.exnam import exNam
-	exit("%s: %s" % (exNam(), err))
+	import sys
+	sys.exit("%s: %s" % (exnam.exNam(), err))
 
 
 class Urlcollector(Urlregex, LastExit):
@@ -23,10 +23,9 @@ class Urlcollector(Urlregex, LastExit):
 		self.nt = False         # needs terminal
 
 	def parseError(self):
-		from cheutils.exnam import exNam
 		errmsg = "%s: encountered malformed html!\n" \
 			 "Might be unable to retrieve every url.\n" \
-			 "Continue? [Yes], no " % exNam()
+			 "Continue? [Yes], no " % exnam.exNam()
 		if self.nt:
 			LastExit.termInit(self)
 		yorn = raw_input(errmsg)
@@ -37,16 +36,16 @@ class Urlcollector(Urlregex, LastExit):
 
 	def urlCollect(self):
 		if not self.files: # read from stdin
-			from sys import stdin
+			import sys
 			try:
-				data = stdin.read()
+				data = sys.stdin.read()
 			except KeyboardInterrupt:
 				collectErr("needs stdin or filename(s)")
 			Urlregex.findUrls(self, data)
 		else:
-			from datatype import dataType
+			import datatype
 			for f in self.files:
-				data, type = dataType(f)
+				data, type = datatype.dataType(f)
 				Urlregex.findUrls(self, data, type)
 		if self.ugly:
 			self.parseError()

@@ -9,12 +9,9 @@ urlbatcher_cset = "$Hg: urlbatcher.py,v$"
 # input is checked anew for each file.
 ###
 
-from cheutils.spl import sPl
-from cheutils.selbrowser import selBrowser, local_re
-from cheutils.systemcall import systemCall
+from cheutils import selbrowser, spl, systemcall
 from tpager.LastExit import LastExit
 from Urlcollector import Urlcollector
-from Urlregex import mailCheck, ftpCheck
 from kiosk import Kiosk
 
 optstring = "d:D:ghiIk:lnr:Tw:x"
@@ -40,8 +37,8 @@ def userHelp(error=""):
 
 def goOnline():
 	try:
-		from cheutils.conny import appleConnect
-		appleConnect()
+		from cheutils import conny
+		conny.appleConnect()
 	except ImportError:
 		pass
 
@@ -59,11 +56,10 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 		self.getdir = ""            # download in dir via wget
 
 	def argParser(self):
-		from sys import argv
-		from getopt import getopt, GetoptError
+		import getopt, sys
 		try:
-			opts, self.files = getopt(argv[1:], optstring)
-		except GetoptError, e:
+			opts, self.files = getopt.getopt(sys.argv[1:], optstring)
+		except getopt.GetoptError, e:
 			userHelp(e)
 		for o, a in opts:
 			if o == "-d": # add specific mail hierarchies
@@ -99,11 +95,11 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 			if o == "-T": # force new terminal
 				self.nt = True
 			if o == "-w": # download dir for wget
-				from os.path import abspath, expanduser, isdir
+				import os.path
 				self.id = 0
 				getdir = a
-				self.getdir = abspath(expanduser(getdir))
-				if not isdir(self.getdir):
+				self.getdir = os.path.abspath(os.path.expanduser(getdir))
+				if not os.path.isdir(self.getdir):
 					userHelp("%s: not a directory" % self.getdir)
 			if o == "-x": # xbrowser
 				self.xb, self.id, self.getdir = 1, 0, ""
@@ -113,12 +109,12 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 	def urlGo(self):
 		if self.getdir:
 			for url in self.items:
-				if local_re.match(url):
+				if selbrowser.local_re.match(url):
 					userHelp("wget doesn't retrieve local files")
 			goOnline()
-			systemCall([getbin("wget"), "-P", self.getdir] + self.items)
+			systemcall.systemCall([getbin("wget"), "-P", self.getdir] + self.items)
 		else:
-			selBrowser(urls=self.items, tb=False, xb=self.xb)
+			selbrowser.selBrowser(urls=self.items, tb=False, xb=self.xb)
 					
 	def urlSearch(self):
 		if not self.files:
@@ -130,7 +126,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 			if self.items:
 				yorn = "%s\nRetrieve the above %s? yes, [No] " \
 				       % ("\n".join(self.items),
-					  sPl(len(self.items),
+					  spl.sPl(len(self.items),
 				          	("url", "message-id")[self.id])
 					 )
 				if raw_input(yorn) in ("y", "Y"):

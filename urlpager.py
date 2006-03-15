@@ -9,14 +9,11 @@ urlpager_cset = "$Hg: urlpager.py,v$"
 # input is checked anew for each file.
 ###
 
-import readline
+import os, readline, Urlregex
 from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
-from cheutils.getbin import getBin
-from cheutils.selbrowser import selBrowser, local_re
-from cheutils.systemcall import systemCall
+from cheutils import getbin, selbrowser, systemcall
 from Urlcollector import Urlcollector
-from Urlregex import mailCheck, ftpCheck
 from kiosk import Kiosk
 
 optstring = "bd:D:f:ghiIlnp:k:r:tTw:x"
@@ -81,7 +78,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				self.mdirs = a.split(":")
 				self.getdir = ""
 			if o == "-f": # ftp client
-				self.ft = getBin(a)
+				self.ft = getbin.getBin(a)
 			if o == "-g": # don't look up msgs locally
 				self.id, self.google = True, True
 				self.mdirs = []
@@ -115,11 +112,10 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			if o == "-T": # needs terminal (at end of pipe e.g)
 				self.nt = True
 			if o == "-w": # download dir for wget
-				from os.path import abspath, expanduser, isdir
 				self.proto = "web"
 				self.getdir = a
-				self.getdir = abspath(expanduser(self.getdir))
-				if not isdir(self.getdir):
+				self.getdir = os.path.abspath(os.path.expanduser(self.getdir))
+				if not os.path.isdir(self.getdir):
 					userHelp("%s: not a directory" % self.getdir)
 				self.id = False
 
@@ -133,18 +129,17 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 
 	def urlGo(self):
 		cs = []
-		conny = local_re.match(self.url) == None
+		conny = selbrowser.local_re.match(self.url) == None
 		if self.proto == "mailto" \
-				or self.proto == "all" and mailCheck(self.url):
-			cs = [getBin(mailers)]
+				or self.proto == "all" and Urlregex.mailCheck(self.url):
+			cs = [getbin.getBin(mailers)]
 			conny = False
 		elif self.getdir:
 			if not conny:
 				userHelp("wget doesn't retrieve local files")
-			cs = [getBin("wget"), "-P", self.getdir]
-		elif self.proto == "ftp" or self.ft or ftpCheck(self.url):
-			from os.path import splitext
-			if not splitext(self.url)[1] \
+			cs = [getbin.getBin("wget"), "-P", self.getdir]
+		elif self.proto == "ftp" or self.ft or Urlregex.ftpCheck(self.url):
+			if not os.path.splitext(self.url)[1] \
 					and not self.url.endswith("/"):
 				self.url = self.url + "/"
 			if not self.ft:
@@ -153,19 +148,18 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				cs = [self.ft]
 			self.nt = True
 		if not cs:
-			selBrowser(self.url, tb=self.tb, xb=self.xb)
+			selbrowser.selBrowser(self.url, tb=self.tb, xb=self.xb)
 		else:
 			if conny:
 				goOnline()
 			if not self.getdir or self.nt: # program needs terminal
-				from os import ctermid
-				tty = ctermid()
+				tty = os.ctermid()
 				cs = cs + [self.url, "<", tty, ">", tty]
 				cs = " ".join(cs)
-				systemCall(cs, sh=True)
+				systemcall.systemCall(cs, sh=True)
 			else:
 				cs.append(self.url)
-				systemCall(cs)
+				systemcall.systemCall(cs)
 
 	def urlSearch(self):
 		if not self.files:

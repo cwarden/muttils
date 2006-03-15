@@ -4,20 +4,13 @@ kiosk_cset = "$Hg: kiosk.py,v$"
 # needs python version 2.3 #
 ###
 
-import os, re
-from email import message_from_file, message_from_string
+import email, os, re, time, urllib
 from email.Errors import MessageParseError, HeaderParseError
 from email.Generator import Generator
 from email.Parser import HeaderParser
-from email.Utils import parseaddr, parsedate
-from urllib import FancyURLopener, _urlopener, urlencode, urlopen
+from email import Utils
 from mailbox import Maildir, PortableUnixMailbox
-from time import sleep, asctime
-from cheutils.getbin import getBin
-from cheutils.readwrite import readLine
-from cheutils.selbrowser import selBrowser
-from cheutils.spl import sPl
-from cheutils.systemcall import systemCall, backQuote
+from cheutils import getbin, readwrite, selbrowser, spl, systemcall
 from slrnpy.Leafnode import Leafnode
 
 optstr = "bd:D:ghk:lm:ns:tTx"
@@ -31,7 +24,7 @@ if not mailspool:
 elif mailspool.endswith("/"):
 	mailspool = mailspool[:-1] # ~/Maildir/-INBOX[/]
 
-mutt = getBin("mutt", "muttng")
+mutt = getbin.getBin("mutt", "muttng")
 muttone = "%s -e 'set pager_index_lines=0' " \
 	       "-e 'set quit=yes' -e 'bind pager q quit' " \
 	       "-e 'push <return>' -f" % mutt
@@ -43,8 +36,8 @@ def mutti(id): # uncollapse??
 
 def goOnline():
 	try:
-		from cheutils.conny import appleConnect
-		appleConnect()
+		from cheutils import conny
+		conny.appleConnect()
 	except ImportError:
 		pass
 
@@ -97,11 +90,11 @@ def mkUnixfrom(msg):
 	else:
 		date = msg.__getitem__("date")
 	if date:
-		date = asctime(parsedate(date))
+		date = time.asctime(Utils.parsedate(date))
 		if "return-path" in msg:
 			ufromaddr = msg["return-path"][1:-1]
 		else:
-			ufromaddr = parseaddr(msg.get("from", "nobody"))[1]
+			ufromaddr = Utils.parseaddr(msg.get("from", "nobody"))[1]
 		msg.set_unixfrom("From %s  %s" % (ufromaddr, date))
 	return msg
 
@@ -110,11 +103,11 @@ class KioskError(Exception):
 	"""Exception class for kiosk."""
 
 ### customize user-agent header
-class AppURLopener(FancyURLopener):
+class AppURLopener(urllib.FancyURLopener):
 	def __init__(self, *args):
-		FancyURLopener.__init__(self, *args)
+		urllib.FancyURLopener.__init__(self, *args)
 
-_urlopener = AppURLopener()
+urllib._urlopener = AppURLopener()
 ###
 
 class Kiosk(Leafnode):
@@ -143,10 +136,9 @@ class Kiosk(Leafnode):
 		self.mspool = mailspool
 
 	def argParser(self):
-		from sys import argv
-		from getopt import getopt, GetoptError
+		import getopt, sys
 		try:
-			opts, self.items = getopt(argv[1:], optstr)
+			opts, self.items = getopt.getopt(sys.argv[1:], optstr)
 		except GetoptError, e:
 			userHelp(e)
 		for o, a in opts:
@@ -183,8 +175,8 @@ class Kiosk(Leafnode):
 	def kioskTest(self):
 		"""Provides the path to an mbox file to store retrieved messages."""
 		if not self.kiosk:
-			from tempfile import mkstemp
-			self.kiosk = mkstemp("kiosk")[1]
+			import tempfile
+			self.kiosk = tempfile.mkstemp("kiosk")[1]
 			self.tmp = 1
 			return
 		self.kiosk = os.path.abspath(os.path.expanduser(self.kiosk))
@@ -192,10 +184,10 @@ class Kiosk(Leafnode):
 			return
 		if not os.path.isfile(self.kiosk):
 			userHelp("%s: not a regular file" % self.kiosk)
-		testline = readLine(self.kiosk, "rb")
+		testline = readwrite.readLine(self.kiosk, "rb")
 		if not testline:
 			return # empty is fine
-		test = message_from_string(testline)
+		test = email.message_from_string(testline)
 		if not test.get_unixfrom():
 			userHelp("%s: not a unix mailbox" % self.kiosk)
 		else:
@@ -214,7 +206,7 @@ class Kiosk(Leafnode):
 			query = {"selm": id, "hl": "en", "dmode": "source"}
 		else:
 			query = {"selm": id, "hl": "en"}
-		params = urlencode(query)
+		params = urllib.urlencode(query)
 		return "%s%s" % (ggroups, params)
 
 	def goGoogle(self):
@@ -222,15 +214,15 @@ class Kiosk(Leafnode):
 		print "Going google ..."
 		self.items = [self.makeQuery(id) for id in self.items]
 		if self.browse:
-			from sys import exit
-			selBrowser(self.items, self.tb, self.xb)
-			exit()
+			import sys
+			selbrowser.selBrowser(self.items, self.tb, self.xb)
+			sys.exit()
 		goOnline()
 		found = []
 		for item in self.items:
-			fp = urlopen(item)
+			fp = urllib.urlopen(item)
 			try:
-				msg = message_from_file(fp)
+				msg = email.message_from_file(fp)
 			except IOError, e: # no connection
 				raise KioskError, e
 			except MessageParseError, e:
@@ -241,7 +233,7 @@ class Kiosk(Leafnode):
 				self.msgs.append(msg)
 			else:
 				print msg.get_payload(decode=1)
-				sleep(5)
+				time.sleep(5)
 				print "Continuing ..."
 		for item in found:
 			self.items.remove(item)
@@ -252,7 +244,7 @@ class Kiosk(Leafnode):
 		for article in articles:
 			fp = open(article, "rb")
 			try:
-				msg = message_from_file(fp)
+				msg = email.message_from_file(fp)
 			except MessageParseError, e:
 				raise KioskError, e
 			fp.close()
@@ -309,7 +301,7 @@ class Kiosk(Leafnode):
 		and passes mail hierarchies to walkMdir."""
 		print "%s not on local server.\n" \
 		      "Searching local mailboxes ..." \
-		      % sPl(len(self.items), "message")
+		      % spl.sPl(len(self.items), "message")
 		if self.mspool:
 			self.boxParser(self.mspool, os.path.isdir(self.mspool))
 		for mdir in self.mdirs:
@@ -344,7 +336,7 @@ class Kiosk(Leafnode):
 		if self.nt:
 			tty = os.ctermid()
 			cmd = "%(cmd)s <%(tty)s >%(tty)s" % vars()
-		systemCall(cmd, sh=True)
+		systemcall.systemCall(cmd, sh=True)
 		if self.tmp and os.path.isfile(self.kiosk):
 			os.remove(self.kiosk)
 
@@ -372,14 +364,14 @@ class Kiosk(Leafnode):
 				self.mailSearch()
 				if self.items:
 					print "%s not in specified local mailboxes." \
-					      % sPl(len(self.items), "message")
+					      % spl.sPl(len(self.items), "message")
 #                if self.items and not self.local: self.goGoogle()
 #                elif self.items:
                 if self.items: # haven"t found a way to retrieve orig msgs
 			print "%s not found" \
-				% sPl(len(self.items), "message")
+				% spl.sPl(len(self.items), "message")
 			if self.msgs:
-				sleep(5)
+				time.sleep(5)
 		if self.msgs:
 			self.openKiosk()
 
