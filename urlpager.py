@@ -41,8 +41,8 @@ def userHelp(error=""):
 
 def goOnline():
 	try:
-		from cheutils.conny import appleConnect
-		appleConnect()
+		from cheutils import conny
+		conny.appleConnect()
 	except ImportError:
 		pass
 
@@ -58,11 +58,10 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		self.getdir = ""   # download in dir via wget
 
 	def argParser(self):
-		from sys import argv
-		from getopt import getopt, GetoptError
+		import getopt, sys
 		try:
-			opts, self.files = getopt(argv[1:], optstring)
-		except GetoptError, e:
+			opts, self.files = getopt.getopt(sys.argv[1:], optstring)
+		except getopt.GetoptError, e:
 			userHelp(e)
 		for o, a in opts:
 			if o == "-b": # don't look up msgs locally
