@@ -37,7 +37,7 @@ CTAN = r"ftp://ftp.dante.de/tex-archive/\1"
 outro = r"""
 	%(top)s			# top level preceded by dot
 	(			# { ungreedy 0 or more
-		/		#   slash
+		(/|:\d+)	#   slash or port
 		[%(any)s] *?	#   0 or more valid  
 	) ?			# } 0 or one
 	(?=			# look-ahead non-consumptive assertion
