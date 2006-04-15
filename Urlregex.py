@@ -243,7 +243,7 @@ class Urlregex(Urlparser):
 			self.items = filter(filterdict[self.proto], self.items)
 		if self.uni:
 			from cheutils import unilist
-			self.items = unilist.uniList_no(self.items)
+			self.items = unilist.uniList_o(self.items)
 			if not self.id and not self.decl:
 				self.uniDeluxe()
 
