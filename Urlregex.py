@@ -8,9 +8,10 @@ def orJoin(s):
 
 # and now to the url parts
 #any = "_a-z0-9/#~:.?+=&%!@\-"   # valid url-chars
-any = "-._a-z0-9/#~:,?+=&%!@()" # valid url-chars + comma + parenthesises
+any = "-._a-z0-9/#~:,;?+=&%!@()" # valid url-chars+comma+semicolon+parenthesises
 			        # Message-ID: <10rb6mngqccs018@corp.supernews.com>
                                 # Message-id: <20050702131039.GA10840@oreka.com>
+				# Message-ID: <e2jctg$kgp$1@news1.nefonline.de>
 idy = "-._a-z0-9#~?+=&%!$\]["   # valid message-id-chars ### w/o ":/"?
 delim = "-.,:?!)("		        # punctuation (how 'bout "!"?)
 
