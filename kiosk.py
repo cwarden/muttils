@@ -1,4 +1,4 @@
-kiosk_cset = "$Hg: kiosk.py,v$"
+kiosk_cset = "$Hg$"
 
 ###
 # needs python version 2.3 #
@@ -223,9 +223,7 @@ class Kiosk(Leafnode):
 			fp = urllib.urlopen(item)
 			try:
 				msg = email.message_from_file(fp)
-			except IOError, e: # no connection
-				raise KioskError, e
-			except MessageParseError, e:
+			except (IOError, MessageParseError), e: # IOError: no connection
 				raise KioskError, e
 			fp.close()
 			if "message-id" in msg:
