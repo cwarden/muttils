@@ -1,4 +1,4 @@
-# $Hg: Urlcollector.py,v$
+# $Hg$
 
 import re
 from tpager.LastExit import LastExit
@@ -40,6 +40,7 @@ class Urlcollector(Urlregex, LastExit):
 			try:
 				data = sys.stdin.read()
 			except KeyboardInterrupt:
+				print
 				collectErr("needs stdin or filename(s)")
 			Urlregex.findUrls(self, data)
 		else:
