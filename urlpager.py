@@ -1,4 +1,4 @@
-urlpager_cset = "$Hg: urlpager.py,v$"
+urlpager_cset = "$Hg$"
 
 ###
 # Caveat:
@@ -16,7 +16,7 @@ from cheutils import getbin, selbrowser, systemcall
 from Urlcollector import Urlcollector
 from kiosk import Kiosk
 
-optstring = "bd:D:f:ghiIlnp:k:r:tTw:x"
+optstring = "bd:D:f:ghiIlnp:k:r:tw:x"
 mailers = ("mutt", "pine", "elm", "mail") 
 
 urlpager_help = """
@@ -108,8 +108,6 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				self.xb = True
 			if o == "-t": # text browser command
 				self.tb = True
-			if o == "-T": # needs terminal (at end of pipe e.g)
-				self.nt = True
 			if o == "-w": # download dir for wget
 				self.proto = "web"
 				self.getdir = a

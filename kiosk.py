@@ -13,7 +13,7 @@ from mailbox import Maildir, PortableUnixMailbox
 from cheutils import getbin, readwrite, selbrowser, spl, systemcall
 from slrnpy.Leafnode import Leafnode
 
-optstr = "bd:D:ghk:lm:ns:tTx"
+optstr = "bd:D:ghk:lm:ns:tx"
 
 ggroups = "http://groups.google.com/groups?"
 mailspool = os.getenv("MAIL")
@@ -167,8 +167,6 @@ class Kiosk(Leafnode):
 				self.spool = a # location of local news spool
 			if o == "-t":
 				self.tb = True # use text browser
-			if o == "-T":
-				self.nt = True # needs terminal
 			if o == "-x":
 				self.xb = True # use xbrowser
 

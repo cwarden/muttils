@@ -1,4 +1,4 @@
-urlbatcher_cset = "$Hg: urlbatcher.py,v$"
+urlbatcher_cset = "$Hg$"
 
 ###
 # Caveat:
@@ -14,7 +14,7 @@ from tpager.LastExit import LastExit
 from Urlcollector import Urlcollector
 from kiosk import Kiosk
 
-optstring = "d:D:ghiIk:lnr:Tw:x"
+optstring = "d:D:ghiIk:lnr:w:x"
 
 urlbatcher_help = """
 [-x][-r <pattern>][file ...]
@@ -92,8 +92,6 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 				self.getdir = ""
 			if o == "-r":
 				self.pat = a
-			if o == "-T": # force new terminal
-				self.nt = True
 			if o == "-w": # download dir for wget
 				import os.path
 				self.id = 0
