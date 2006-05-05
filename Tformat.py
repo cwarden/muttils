@@ -1,6 +1,6 @@
 # $Hg: Tformat.py,v$
 
-class Tformat:
+class Tformat(object):
 	"""
 	Subclass to Pages (<- format, itemsdict, keys).
 	Provides formatting methods

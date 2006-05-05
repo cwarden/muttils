@@ -3,7 +3,7 @@
 import os, sys
 from cheutils import readwrite
 
-class Termplus:
+class Termplus(object):
 	"""
 	Provides readline and write methods
 	for an interactive terminal device.
