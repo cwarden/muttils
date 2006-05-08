@@ -137,8 +137,9 @@ class Kiosk(Leafnode):
 
 	def argParser(self):
 		import getopt, sys
+		from Urlregex import Urlregex
 		try:
-			opts, self.items = getopt.getopt(sys.argv[1:], optstr)
+			opts, args = getopt.getopt(sys.argv[1:], optstr)
 		except getopt.GetoptError, e:
 			userHelp(e)
 		for o, a in opts:
@@ -169,6 +170,13 @@ class Kiosk(Leafnode):
 				self.tb = True # use text browser
 			if o == "-x":
 				self.xb = True # use xbrowser
+		ur = Urlregex()
+		ur.id = True
+		ur.findUrls(" ".join(args))
+		if ur.items:
+			self.items = ur.items
+		else:
+			userHelp("no valid Message-ID found")
 
 	def kioskTest(self):
 		"""Provides the path to an mbox file to store retrieved messages."""
@@ -194,7 +202,7 @@ class Kiosk(Leafnode):
 	def dirTest(self):
 		"""Checks whether given directories exist."""
 		for dir in self.mdirs:
-			if not os.path.isdir(filecheck.absolutePath(dir))
+			if not os.path.isdir(filecheck.absolutePath(dir)):
 				print "Warning! %s: not a directory, skipping" % dir
 				self.mdirs.remove(dir)
 
@@ -373,7 +381,7 @@ class Kiosk(Leafnode):
 					      % spl.sPl(len(self.items), "message")
 #                if self.items and not self.local: self.goGoogle()
 #                elif self.items:
-                if self.items: # haven"t found a way to retrieve orig msgs
+                if self.items: # haven't found a way to retrieve orig msgs
 			print "%s not found" \
 				% spl.sPl(len(self.items), "message")
 			if self.msgs:
