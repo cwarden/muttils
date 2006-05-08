@@ -256,17 +256,23 @@ class Urlregex(Urlparser):
 		elif not self.id:
 			self.setStrings()
 			rawurl = self.getRaw()
-			self.url_re = re.compile(rawurl, re.IGNORECASE|re.VERBOSE)
+			self.url_re = re.compile(rawurl,
+					re.IGNORECASE|re.VERBOSE)
 			if self.find:
-				self.kill_re = re.compile("\s+?|^url:", re.IGNORECASE) 
+				self.kill_re = re.compile("\s+?|^url:",
+						re.IGNORECASE) 
 				if not self.decl:
-					self.proto_re = re.compile("^%s" % self.protocol, re.I)
+					self.proto_re = re.compile(
+							"^%s" % self.protocol,
+							re.IGNORECASE)
 		elif self.decl:
-			self.url_re = re.compile(declid, re.IGNORECASE|re.VERBOSE)
+			self.url_re = re.compile(declid,
+					re.IGNORECASE|re.VERBOSE)
 			if self.find:
 				self.kill_re = re.compile(nproto, re.I)
 		else:
-			self.url_re = re.compile(simplid, re.IGNORECASE|re.VERBOSE)
+			self.url_re = re.compile(simplid,
+					re.IGNORECASE|re.VERBOSE)
 
 	def findUrls(self, data, type="text/plain"):
 		self.urlObjects() # compile url_re
@@ -275,7 +281,8 @@ class Urlregex(Urlparser):
 		elif type.startswith("text/"):
 			s = Urlparser.mailDeconstructor(self, data)
 			if not self.id:
-				wipe_resub = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE), ""
+				wipe_resub = re.compile(rawwipe,
+						re.IGNORECASE|re.VERBOSE), ""
 				cpan_resub = re.compile(r"CPAN:([A-Za-z]+?)"), CPAN 
 				ctan_resub = re.compile(r"CTAN:([A-Za-z]+?)"), CTAN
 				for resub in (wipe_resub, cpan_resub, ctan_resub):
