@@ -4,7 +4,7 @@ import os.path, urllib
 from cheutils import filecheck
 
 def dataType(f):
-	path = os.path.abspath(os.path.expanduser(f))
+	path = filecheck.absolutePath(path)
 	filecheck.fileCheck(path)
 	# urllib uses the deprecated mimelib
 	# but email does not work for type detection
