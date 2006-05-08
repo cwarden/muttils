@@ -10,7 +10,7 @@ from email.Generator import Generator
 from email.Parser import HeaderParser
 from email import Utils
 from mailbox import Maildir, PortableUnixMailbox
-from cheutils import getbin, readwrite, selbrowser, spl, systemcall
+from cheutils import getbin, filecheck, readwrite, spl, systemcall
 from slrnpy.Leafnode import Leafnode, LeafnodeError
 
 optstr = "bd:D:ghk:lm:ns:tx"
@@ -177,7 +177,7 @@ class Kiosk(Leafnode):
 			self.kiosk = tempfile.mkstemp("kiosk")[1]
 			self.tmp = 1
 			return
-		self.kiosk = os.path.abspath(os.path.expanduser(self.kiosk))
+		self.kiosk = filecheck.absolutePath(self.kiosk)
 		if not os.path.exists(self.kiosk):
 			return
 		if not os.path.isfile(self.kiosk):
@@ -194,7 +194,7 @@ class Kiosk(Leafnode):
 	def dirTest(self):
 		"""Checks whether given directories exist."""
 		for dir in self.mdirs:
-			if not os.path.isdir(os.path.abspath(os.path.expanduser(dir))):
+			if not os.path.isdir(filecheck.absolutePath(dir))
 				print "Warning! %s: not a directory, skipping" % dir
 				self.mdirs.remove(dir)
 
@@ -213,7 +213,9 @@ class Kiosk(Leafnode):
 		self.items = [self.makeQuery(id) for id in self.items]
 		if self.browse:
 			import sys
-			selbrowser.selBrowser(self.items, self.tb, self.xb)
+			from cheutils import selbrowser
+			selbrowser.selBrowser(self.items,
+					tb=self.tb, xb=self.xb)
 			sys.exit()
 		goOnline()
 		found = []
