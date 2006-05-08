@@ -139,7 +139,7 @@ class Kiosk(Leafnode):
 		import getopt, sys
 		try:
 			opts, self.items = getopt.getopt(sys.argv[1:], optstr)
-		except GetoptError, e:
+		except getopt.GetoptError, e:
 			userHelp(e)
 		for o, a in opts:
 			if o == "-b":
