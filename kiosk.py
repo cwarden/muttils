@@ -1,4 +1,4 @@
-kiosk_cset = "$Hg$"
+kiosk_cset = "$Hg: kiosk.py,v$"
 
 ###
 # needs python version 2.3 #
@@ -11,7 +11,7 @@ from email.Parser import HeaderParser
 from email import Utils
 from mailbox import Maildir, PortableUnixMailbox
 from cheutils import getbin, readwrite, selbrowser, spl, systemcall
-from slrnpy.Leafnode import Leafnode
+from slrnpy.Leafnode import Leafnode, LeafnodeError
 
 optstr = "bd:D:ghk:lm:ns:tx"
 
@@ -236,7 +236,8 @@ class Kiosk(Leafnode):
 
 	def leafSearch(self):
 		print "Searching local newsserver ..."
-		articles, self.items = Leafnode.idPath(self, self.items, True)
+		articles, self.items = Leafnode.idPath(self,
+				idlist=self.items, verbose=True)
 		for article in articles:
 			fp = open(article, "rb")
 			try:
@@ -254,7 +255,11 @@ class Kiosk(Leafnode):
 			fp = open(path, "rb")
 			mbox = PortableUnixMailbox(fp, msgFactory)
 		while True:
-			msg = mbox.next()
+			try:
+				msg = mbox.next()
+			except IOError, e:
+				print e
+				break
 			if msg == None:
 				break
 			msgid = msg.get("message-id","")[1:-1]
@@ -351,7 +356,10 @@ class Kiosk(Leafnode):
 		if not self.google:
 			self.masKompile()
 			if not self.spool:
-				Leafnode.newsSpool(self)
+				try:
+					Leafnode.newsSpool(self)
+				except LeafnodeError, e:
+					print e
 			if self.spool:
 				self.leafSearch()
 			else:
@@ -378,4 +386,5 @@ def run():
 		k.argParser()
 		k.kioskStore()
 	except KeyboardInterrupt:
+		print
 		pass
