@@ -3,9 +3,9 @@
 import os.path, urllib
 from cheutils import filecheck
 
-def dataType(f):
-	path = filecheck.absolutePath(path)
-	filecheck.fileCheck(path)
+def dataType(path):
+#        path = filecheck.absolutePath(path)
+	path = filecheck.fileCheck(path, spec="isfile", absolute=True)
 	# urllib uses the deprecated mimelib
 	# but email does not work for type detection
 	# on local files
