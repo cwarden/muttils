@@ -1,4 +1,4 @@
-urlbatcher_cset = "$Hg$"
+urlbatcher_cset = "$Hg: urlbatcher.py,v$"
 
 ###
 # Caveat:
@@ -14,7 +14,7 @@ from tpager.LastExit import LastExit
 from Urlcollector import Urlcollector
 from kiosk import Kiosk
 
-optstring = "d:D:ghiIk:lnr:w:x"
+optstring = "d:D:hiIk:lnr:w:x"
 
 urlbatcher_help = """
 [-x][-r <pattern>][file ...]
@@ -27,7 +27,6 @@ urlbatcher_help = """
 -D <mail hierarchy>[:<mail hierarchy>[:...]] \\
             [-l][-I][-r <pattern>][-k <mbox>][<file> ...]
 -n [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
--g [-I][-r <pattern>][-k <mbox>][<file> ...]
 -h (display this help)"""
 
 def userHelp(error=""):
@@ -42,6 +41,8 @@ def goOnline():
 	except ImportError:
 		pass
 
+class UrlbatcherError(Exception):
+	"""Exception class for this module."""
 
 class Urlbatcher(Urlcollector, Kiosk, LastExit):
 	"""
@@ -60,47 +61,36 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 		try:
 			opts, self.files = getopt.getopt(sys.argv[1:], optstring)
 		except getopt.GetoptError, e:
-			userHelp(e)
+			raise UrlbatcherError, e
 		for o, a in opts:
 			if o == "-d": # add specific mail hierarchies
-				self.id = 1
+				self.id = True
 				self.mdirs = self.mdirs + a.split(":")
-				self.getdir = ""
 			if o == "-D": # specific mail hierarchies
-				self.id = 1
+				self.id = True
 				self.mdirs = a.split(":")
-				self.getdir = ""
 			if o == "-h":
 				userHelp()
-			if o == "-g": # go to google directly for message-ids
-				self.id, self.google, self.mdirs = 1, 1, []
-				self.getdir = ""
 			if o == "-i": # look for message-ids
-				self.id = 1
-				self.getdir = ""
+				self.id = True
 			if o == "-I": # look for declared message-ids
-				self.id, self.decl = 1, 1
+				self.id, self.decl = True, True
 				self.getdir = ""
 			if o == "-k": # mailbox to store retrieved messages
-				self.id, self.kiosk = 1, a
-				self.getdir = ""
+				self.id, self.kiosk = True, a
 			if o == "-l": # only local search for message-ids
-				self.local, self.id = 1, 1
-				self.getdir = ""
+				self.local, self.id = True, True
 			if o == "-n": # don't search local mailboxes
-				self.id, self.mdirs = 1, []
-				self.getdir = ""
+				self.id, self.mdirs = True, []
 			if o == "-r":
 				self.pat = a
 			if o == "-w": # download dir for wget
-				import os.path
-				self.id = 0
+				from cheutils import filecheck
 				getdir = a
-				self.getdir = os.path.abspath(os.path.expanduser(getdir))
-				if not os.path.isdir(self.getdir):
-					userHelp("%s: not a directory" % self.getdir)
+				self.getdir = filecheck.fileCheck(getdir,
+						spec="isdir", absolute=True)
 			if o == "-x": # xbrowser
-				self.xb, self.id, self.getdir = 1, 0, ""
+				self.xb = True
 			if self.id:
 				self.proto = "all"
 
@@ -108,41 +98,46 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 		if self.getdir:
 			for url in self.items:
 				if selbrowser.local_re.match(url):
-					userHelp("wget doesn't retrieve local files")
+					raise UrlbatcherError, \
+							"wget doesn't retrieve local files"
 			goOnline()
-			systemcall.systemCall([getbin("wget"), "-P", self.getdir] + self.items)
+			systemcall.systemCall(
+					[getbin("wget"), "-P", self.getdir] + self.items)
 		else:
 			selbrowser.selBrowser(urls=self.items, tb=False, xb=self.xb)
 					
 	def urlSearch(self):
 		if not self.files:
-			self.nt =True
+			self.nt = True
 		Urlcollector.urlCollect(self)
 		if self.nt:
 			LastExit.termInit(self)
-		try:
-			if self.items:
-				yorn = "%s\nRetrieve the above %s? yes, [No] " \
-				       % ("\n".join(self.items),
-					  spl.sPl(len(self.items),
-				          	("url", "message-id")[self.id])
-					 )
-				if raw_input(yorn) in ("y", "Y"):
-					if not self.id:
-						self.urlGo()
-					else:
-						Kiosk.kioskStore(self)
-			else:
-				msg = "No %s found. [Ok] " \
-				      % ("urls", "message-ids")[self.id]
-				raw_input(msg)
-		except KeyboardInterrupt:
-			pass
+		if self.items:
+			yorn = "%s\nRetrieve the above %s? yes, [No] " \
+			       % ("\n".join(self.items),
+				  spl.sPl(len(self.items),
+					("url", "message-id")[self.id])
+				 )
+			if raw_input(yorn).lower() in ("y", "yes"):
+				if not self.id:
+					self.urlGo()
+				else:
+					Kiosk.kioskStore(self)
+		else:
+			msg = "No %s found. [Ok] " \
+			      % ("urls", "message-ids")[self.id]
+			raw_input(msg)
 		if self.nt:
 			LastExit.reInit(self)
 
 
 def run():
-	up = Urlbatcher()
-	up.argParser()
-	up.urlSearch()
+	try:
+		up = Urlbatcher()
+		up.argParser()
+		up.urlSearch()
+	except UrlbatcherError, e:
+		userHelp(e)
+	except KeyboardInterrupt:
+		print
+		pass

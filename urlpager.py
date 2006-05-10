@@ -1,4 +1,4 @@
-urlpager_cset = "$Hg$"
+urlpager_cset = "$Hg: urlpager.py,v$"
 
 ###
 # Caveat:
@@ -16,7 +16,7 @@ from cheutils import getbin, selbrowser, systemcall
 from Urlcollector import Urlcollector
 from kiosk import Kiosk
 
-optstring = "bd:D:f:ghiIlnp:k:r:tw:x"
+optstring = "bd:D:f:hiIlnp:k:r:tw:x"
 mailers = ("mutt", "pine", "elm", "mail") 
 
 urlpager_help = """
@@ -30,7 +30,6 @@ urlpager_help = """
 -D <mail hierarchy>[:<mail hierarchy>[:...]] \\
             [-I][-l][-r <pattern>][-k <mbox>][<file> ...]
 -n [-r <pattern][-I][-l][-k <mbox>][<file> ...]
--g [-r <pattern][-I][-k <mbox>][<file> ...]
 -b [-r <pattern][-I][<file> ...]
 -h (display this help)"""
 
@@ -46,6 +45,8 @@ def goOnline():
 	except ImportError:
 		pass
 
+class UrlpagerError(Exception):
+	"""Exception class for this module."""
 
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def __init__(self):
@@ -62,46 +63,35 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		try:
 			opts, self.files = getopt.getopt(sys.argv[1:], optstring)
 		except getopt.GetoptError, e:
-			userHelp(e)
+			raise UrlpagerError, e
 		for o, a in opts:
 			if o == "-b": # don't look up msgs locally
-				self.browse, self.id, self.google = True, True, True
-				self.mdirs = []
-				self.getdir = ""
+				self.browse, self.id = True, True
 			if o == "-d": # add specific mail hierarchies
 				self.id = True
 				self.mdirs = self.mdirs + a.split(":")
-				self.getdir = ""
 			if o == "-D": # specific mail hierarchies
 				self.id = True
 				self.mdirs = a.split(":")
-				self.getdir = ""
 			if o == "-f": # ftp client
 				self.ft = getbin.getBin(a)
-			if o == "-g": # don't look up msgs locally
-				self.id, self.google = True, True
-				self.mdirs = []
-			if o == "-h": userHelp()
+			if o == "-h":
+				userHelp()
 			if o == "-I": # look for declared message-ids
 				self.id, self.decl = True, True
 				self.getdir = ""
 			if o == "-i": # look for ids, in text w/o prot (email false positives)
 				self.id = True
-				self.getdir = ""
 			if o == "-k": # mailbox to store retrieved message
 				self.id = True
 				self.kiosk = a
-				self.getdir = ""
 			if o == "-l": # only local search for message-ids
 				self.local, self.id = True, True
-				self.getdir = ""
 			if o == "-n": # don't search mailboxes for message-ids
 				self.id = True
 				self.mdirs = []
-				self.getdir = ""
 			if o == "-p": # protocol(s)
 				self.proto = a
-				self.id = False
 			if o == "-r": # regex pattern to match urls against
 				self.pat = a
 			if o == "-x": # xbrowser
@@ -109,12 +99,11 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			if o == "-t": # text browser command
 				self.tb = True
 			if o == "-w": # download dir for wget
+				from cheutils import filecheck
 				self.proto = "web"
-				self.getdir = a
-				self.getdir = os.path.abspath(os.path.expanduser(self.getdir))
-				if not os.path.isdir(self.getdir):
-					userHelp("%s: not a directory" % self.getdir)
-				self.id = False
+				getdir = a
+				self.getdir = filecheck.fileCheck(getdir,
+						spec="isdir", absolute=True)
 
 	def urlPager(self):
 		if not self.id and self.proto != "all":
@@ -128,14 +117,17 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 		cs = []
 		conny = selbrowser.local_re.match(self.url) == None
 		if self.proto == "mailto" \
-				or self.proto == "all" and Urlregex.mailCheck(self.url):
+				or self.proto == "all" \
+				and Urlregex.mailCheck(self.url):
 			cs = [getbin.getBin(mailers)]
 			conny = False
 		elif self.getdir:
 			if not conny:
-				userHelp("wget doesn't retrieve local files")
+				e = "wget doesn't retrieve local files"
+				raise UrlpagerError, e
 			cs = [getbin.getBin("wget"), "-P", self.getdir]
-		elif self.proto == "ftp" or self.ft or Urlregex.ftpCheck(self.url):
+		elif self.proto == "ftp" or self.ft \
+				or Urlregex.ftpCheck(self.url):
 			if not os.path.splitext(self.url)[1] \
 					and not self.url.endswith("/"):
 				self.url = self.url + "/"
@@ -163,7 +155,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			self.nt = True
 		issue = Urlcollector.urlCollect(self)
 		if issue:
-			userHelp(issue)
+			raise UrlpagerError, issue
 		if self.nt:
 			LastExit.termInit(self)
 		self.urlPager()
@@ -185,5 +177,7 @@ def run():
 	try:
 		up.argParser()
 		up.urlSearch()
+	except UrlpagerError, e:
+		userHelp(e)
 	except KeyboardInterrupt:
 		pass

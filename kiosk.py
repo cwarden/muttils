@@ -4,7 +4,7 @@ kiosk_cset = "$Hg: kiosk.py,v$"
 # needs python version 2.3 #
 ###
 
-import email, os, re, time, urllib
+import email, os, re, time, urllib, sys
 from email.Errors import MessageParseError, HeaderParseError
 from email.Generator import Generator
 from email.Parser import HeaderParser
@@ -13,7 +13,7 @@ from mailbox import Maildir, PortableUnixMailbox
 from cheutils import getbin, filecheck, readwrite, spl, systemcall
 from slrnpy.Leafnode import Leafnode, LeafnodeError
 
-optstr = "bd:D:ghk:lm:ns:tx"
+optstr = "bd:D:hk:lm:ns:tx"
 
 ggroups = "http://groups.google.com/groups?"
 mailspool = os.getenv("MAIL")
@@ -21,7 +21,7 @@ if not mailspool:
 	mailspool = os.path.join("var", "mail", os.environ["USER"])
 	if not os.path.isfile(mailspool):
 		mailspool = None
-elif mailspool.endswith("/"):
+elif mailspool.endswith(os.sep):
 	mailspool = mailspool[:-1] # ~/Maildir/-INBOX[/]
 
 mutt = getbin.getBin("mutt", "muttng")
@@ -31,15 +31,9 @@ muttone = "%s -e 'set pager_index_lines=0' " \
 
 def mutti(id): # uncollapse??
 	"""Opens kiosk mailbox and goes to id."""
-	return "%s -e 'push <search>\"~i\ \'%s\'\"<return>' -f" \
+	return "%s -e 'set uncollapse_jump' " \
+			"-e 'push <search>~i\ %s<return>' -f" \
 			% (mutt, id)
-
-def goOnline():
-	try:
-		from cheutils import conny
-		conny.appleConnect()
-	except ImportError:
-		pass
 
 kiosk_help = """
 [-l][-d <mail hierarchy>[:<mail hierarchy> ...]]' \\
@@ -47,8 +41,6 @@ kiosk_help = """
 [-l][-D <mail hierarchy>[:<mail hierarchy> ...]]' \\
       [-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]
 -n [-l][-k <mbox>][-t] <ID> [<ID> ...]
--g [-k <mbox>][-t] <ID> [<ID> ...]
-     *** -g: broken because plain text is inaccessible ***
 -b <ID> [<ID> ...]
 -h (display this help)"""
 
@@ -56,10 +48,6 @@ def userHelp(error=""):
 	from cheutils.exnam import Usage
 	u = Usage(help=kiosk_help, rcsid=kiosk_cset)
 	u.printHelp(err=error)
-
-def regError(err, pat):
-	err = "%s in pattern `%s'" % (err, pat)
-	userHelp(err)
 
 def mailDir():
 	"""Returns either ~/Maildir or ~/Mail
@@ -94,7 +82,8 @@ def mkUnixfrom(msg):
 		if "return-path" in msg:
 			ufromaddr = msg["return-path"][1:-1]
 		else:
-			ufromaddr = Utils.parseaddr(msg.get("from", "nobody"))[1]
+			ufromaddr = Utils.parseaddr(
+					msg.get("from", "nobody"))[1]
 		msg.set_unixfrom("From %s  %s" % (ufromaddr, date))
 	return msg
 
@@ -123,10 +112,9 @@ class Kiosk(Leafnode):
 		self.kiosk = ""		# path to kiosk mbox
 		self.mask = None	# file mask for mdir (applied to directories too)
 		self.nt = False		# if True: needs terminal
-		self.browse = False	# browse googlegroups
-		self.google = False	# if True: just googlegroups
+		self.browse = False	# limit to browse googlegroups
 		self.mdirs = mailDir() 	# mailbox hierarchies
-		self.local = False      # local search only
+		self.local = False      # limit to local search
 		self.msgs = []          # list of retrieved message objects
 		self.tmp = False        # whether kiosk is a temporary file
 		self.muttone = True     # configure mutt for display of 1 msg only
@@ -136,28 +124,23 @@ class Kiosk(Leafnode):
 		self.mspool = mailspool
 
 	def argParser(self):
-		import getopt, sys
+		import getopt
 		from Urlregex import Urlregex
 		try:
 			opts, args = getopt.getopt(sys.argv[1:], optstr)
 		except getopt.GetoptError, e:
-			userHelp(e)
+			raise KioskError, e
 		for o, a in opts:
 			if o == "-b":
-				self.browse, self.google, self.mdirs = True, True, []
+				self.browse, self.mdirs = True, []
 			if o == "-d":
 				self.mdirs = self.mdirs + a.split(":")
 			if o == "-D":
-				self.mdirs = a.split(":")
-				if self.mspool:
-					self.mspool = None
-			if o == "-g":
-				self.browse, self.google, self.mdirs = True, True, []
-#                                self.google, self.mdirs = 1, []# temporarily(?) disabled
+				self.mdirs, self.mspool = a.split(":"), None
 			if o == "-h":
 				userHelp()
 			if o == "-l":
-				self.local, self.google = True, False
+				self.local = True
 			if o == "-k":
 				self.kiosk = a
 			if o == "-m":
@@ -176,7 +159,7 @@ class Kiosk(Leafnode):
 		if ur.items:
 			self.items = ur.items
 		else:
-			userHelp("no valid Message-ID found")
+			raise KioskError, "no valid Message-ID found"
 
 	def kioskTest(self):
 		"""Provides the path to an mbox file to store retrieved messages."""
@@ -189,13 +172,15 @@ class Kiosk(Leafnode):
 		if not os.path.exists(self.kiosk):
 			return
 		if not os.path.isfile(self.kiosk):
-			userHelp("%s: not a regular file" % self.kiosk)
+			raise KioskError, "%s: not a regular file" \
+					% self.kiosk
 		testline = readwrite.readLine(self.kiosk, "rb")
 		if not testline:
 			return # empty is fine
 		test = email.message_from_string(testline)
 		if not test.get_unixfrom():
-			userHelp("%s: not a unix mailbox" % self.kiosk)
+			raise KioskError, "%s: not a unix mailbox" \
+					% self.kiosk
 		else:
 			self.muttone = False
 
@@ -208,41 +193,19 @@ class Kiosk(Leafnode):
 
 	def makeQuery(self, id):
 		"""Reformats Message-ID to google query."""
-		if not self.browse:
-			query = {"selm": id, "hl": "en", "dmode": "source"}
-		else:
-			query = {"selm": id, "hl": "en"}
+		query = {"selm": id, "hl": "en"}
 		params = urllib.urlencode(query)
 		return "%s%s" % (ggroups, params)
 
-	def goGoogle(self):
+	def goGoogle(self, quit=False):
 		"""Gets messages from Google Groups."""
 		print "Going google ..."
 		self.items = [self.makeQuery(id) for id in self.items]
-		if self.browse:
-			import sys
-			from cheutils import selbrowser
-			selbrowser.selBrowser(self.items,
-					tb=self.tb, xb=self.xb)
+		from cheutils import selbrowser
+		selbrowser.selBrowser(self.items,
+				tb=self.tb, xb=self.xb)
+		if quit:
 			sys.exit()
-		goOnline()
-		found = []
-		for item in self.items:
-			fp = urllib.urlopen(item)
-			try:
-				msg = email.message_from_file(fp)
-			except (IOError, MessageParseError), e: # IOError: no connection
-				raise KioskError, e
-			fp.close()
-			if "message-id" in msg:
-				found.append(item)
-				self.msgs.append(msg)
-			else:
-				print msg.get_payload(decode=1)
-				time.sleep(5)
-				print "Continuing ..."
-		for item in found:
-			self.items.remove(item)
 
 	def leafSearch(self):
 		print "Searching local newsserver ..."
@@ -322,14 +285,17 @@ class Kiosk(Leafnode):
 		"""Compiles masks to exclude files and directories from search."""
 		try:
 			if self.mask:
-				self.mdmask = re.compile(r"%s|%s" % (self.mdmask, self.mask))
+				self.mdmask = re.compile(r"%s|%s" \
+						% (self.mdmask, self.mask))
 				self.mask = re.compile(r"%s" % self.mask)
 			else:
-				self.mdmask = re.compile(r"%s" % self.mdmask)
+				self.mdmask = re.compile(r"%s" \
+						% self.mdmask)
 		except re.error, e:
-			regError(e, self.mask)
+			raise KioskError, "%s in pattern `%s'" \
+					% (e, self.mask)
 
-	def openKiosk(self):
+	def openKiosk(self, firstid):
 		"""Opens mutt on kiosk mailbox."""
 		outfp = open(self.kiosk, "ab")
 		g = Generator(outfp, maxheaderlen=0)
@@ -354,40 +320,41 @@ class Kiosk(Leafnode):
 	def kioskStore(self):
 		"""Collects messages identified by ID either
 		by retrieving them locally or from GoogleGroups."""
-		self.items = [nakHead(item) for item in self.items]
 		if not self.items:
-			userHelp("needs Message-ID(s) as mandatory argument(s)")
-		elif self.browse:
-			self.goGoogle()
-		firstid = self.items[0]
+			raise KioskError, "need Message-ID(s) as argument(s)"
+		self.items = [nakHead(item) for item in self.items]
+		if self.browse:
+			self.goGoogle(quit=True)
 		self.kioskTest()
+		itemscopy = self.items[:]
 		if self.mdirs:
 			self.dirTest()
-		if not self.google:
-			self.masKompile()
-			if not self.spool:
-				try:
-					Leafnode.newsSpool(self)
-				except LeafnodeError, e:
-					print e
-			if self.spool:
-				self.leafSearch()
-			else:
-				print "No local news server found."
-			if self.items and self.mdirs:
-				self.mailSearch()
-				if self.items:
-					print "%s not in specified local mailboxes." \
-					      % spl.sPl(len(self.items), "message")
-#                if self.items and not self.local: self.goGoogle()
-#                elif self.items:
-                if self.items: # haven't found a way to retrieve orig msgs
+		self.masKompile()
+		if not self.spool:
+			try:
+				Leafnode.newsSpool(self)
+			except LeafnodeError, e:
+				print e
+		if self.spool:
+			self.leafSearch()
+		else:
+			print "No local news server found."
+		if self.items and self.mdirs:
+			self.mailSearch()
+			if self.items:
+				print "%s not in specified local mailboxes." \
+				      % spl.sPl(len(self.items), "message")
+                if self.items:
 			print "%s not found" \
 				% spl.sPl(len(self.items), "message")
 			if self.msgs:
-				time.sleep(5)
+				itemscopy = [id for id in itemscopy \
+						if id not in self.items]
+				time.sleep(3)
+			if not self.local:
+				self.goGoogle(quit=False)
 		if self.msgs:
-			self.openKiosk()
+			self.openKiosk(itemscopy[0])
 
 
 def run():
@@ -395,6 +362,8 @@ def run():
 	try:
 		k.argParser()
 		k.kioskStore()
+	except KioskError, e:
+		userHelp(e)
 	except KeyboardInterrupt:
 		print
 		pass
