@@ -16,13 +16,6 @@ from slrnpy.Leafnode import Leafnode, LeafnodeError
 optstr = "bd:D:hk:lm:ns:tx"
 
 ggroups = "http://groups.google.com/groups?"
-mailspool = os.getenv("MAIL")
-if not mailspool:
-	mailspool = os.path.join("var", "mail", os.environ["USER"])
-	if not os.path.isfile(mailspool):
-		mailspool = None
-elif mailspool.endswith(os.sep):
-	mailspool = mailspool[:-1] # ~/Maildir/-INBOX[/]
 
 mutt = getbin.getBin("mutt", "muttng")
 muttone = "%s -e 'set pager_index_lines=0' " \
@@ -48,6 +41,18 @@ def userHelp(error=""):
 	from cheutils.exnam import Usage
 	u = Usage(help=kiosk_help, rcsid=kiosk_cset)
 	u.printHelp(err=error)
+
+def mailSpool(mailspool=None):
+	"""Tries to return a sensible default for user's mail spool.
+	Returns None otherwise."""
+	mailspool = os.getenv("MAIL")
+	if not mailspool:
+		ms = os.path.join("var", "mail", os.environ["USER"])
+		if os.path.isfile(ms):
+			return ms
+	elif mailspool.endswith(os.sep):
+		return mailspool[:-1] # ~/Maildir/-INBOX[/]
+	return mailspool
 
 def mailDir():
 	"""Returns either ~/Maildir or ~/Mail
@@ -121,7 +126,7 @@ class Kiosk(Leafnode):
 		self.xb = False	        # force x-browser
 		self.tb = False         # use text browser
 		self.mdmask = r"^(cur|new|tmp)$"
-		self.mspool = mailspool
+		self.mspool = mailSpool()
 
 	def argParser(self):
 		import getopt
