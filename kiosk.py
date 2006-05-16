@@ -65,6 +65,12 @@ def mailDir():
 			return [d]
 	return []
 
+def makeQuery(id):
+	"""Reformats Message-ID to google query."""
+	query = {"selm": id, "hl": "en"}
+	params = urllib.urlencode(query)
+	return "%s%s" % (ggroups, params)
+
 def msgFactory(fp):
 	try:
 		return HeaderParser().parse(fp)
@@ -95,14 +101,6 @@ def mkUnixfrom(msg):
 
 class KioskError(Exception):
 	"""Exception class for kiosk."""
-
-### customize user-agent header
-class AppURLopener(urllib.FancyURLopener):
-	def __init__(self, *args):
-		urllib.FancyURLopener.__init__(self, *args)
-
-urllib._urlopener = AppURLopener()
-###
 
 class Kiosk(Leafnode):
 	"""
@@ -196,17 +194,11 @@ class Kiosk(Leafnode):
 				print "Warning! %s: not a directory, skipping" % dir
 				self.mdirs.remove(dir)
 
-	def makeQuery(self, id):
-		"""Reformats Message-ID to google query."""
-		query = {"selm": id, "hl": "en"}
-		params = urllib.urlencode(query)
-		return "%s%s" % (ggroups, params)
-
 	def goGoogle(self, quit=False):
 		"""Gets messages from Google Groups."""
-		print "Going google ..."
-		self.items = [self.makeQuery(id) for id in self.items]
 		from cheutils import selbrowser
+		print "Going google ..."
+		self.items = [makeQuery(id) for id in self.items]
 		selbrowser.selBrowser(self.items,
 				tb=self.tb, xb=self.xb)
 		if quit:
