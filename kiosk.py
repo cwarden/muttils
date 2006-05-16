@@ -10,23 +10,14 @@ from email.Generator import Generator
 from email.Parser import HeaderParser
 from email import Utils
 from mailbox import Maildir, PortableUnixMailbox
-from cheutils import getbin, filecheck, readwrite, spl, systemcall
+from cheutils import filecheck, readwrite, spl, systemcall
 from slrnpy.Leafnode import Leafnode, LeafnodeError
 
 optstr = "bd:D:hk:lm:ns:tx"
-
 ggroups = "http://groups.google.com/groups?"
-
-mutt = getbin.getBin("mutt", "muttng")
-muttone = "%s -e 'set pager_index_lines=0' " \
-	       "-e 'set quit=yes' -e 'bind pager q quit' " \
-	       "-e 'push <return>' -f" % mutt
-
-def mutti(id): # uncollapse??
-	"""Opens kiosk mailbox and goes to id."""
-	return "%s -e 'set uncollapse_jump' " \
-			"-e 'push <search>~i\ %s<return>' -f" \
-			% (mutt, id)
+muttone = "-e 'set pager_index_lines=0' " \
+       "-e 'set quit=yes' -e 'bind pager q quit' " \
+       "-e 'push <return>' -f"
 
 kiosk_help = """
 [-l][-d <mail hierarchy>[:<mail hierarchy> ...]]' \\
@@ -80,6 +71,12 @@ def msgFactory(fp):
 def nakHead(header):
 	"""Strips Message-ID header down to pure ID."""
 	return header.split("<")[-1].strip(">")
+
+def muttI(id): # uncollapse??
+	"""Opens kiosk mailbox and goes to id."""
+	return "-e 'set uncollapse_jump' " \
+		"-e 'push <search>~i\ %s<return>' -f" \
+		% id
 
 def mkUnixfrom(msg):
 	"""Creates missing unixfrom."""
@@ -295,6 +292,8 @@ class Kiosk(Leafnode):
 
 	def openKiosk(self, firstid):
 		"""Opens mutt on kiosk mailbox."""
+		from cheutils import getbin
+		mutt = getbin.getBin("mutt", "muttng")
 		outfp = open(self.kiosk, "ab")
 		g = Generator(outfp, maxheaderlen=0)
 		for msg in self.msgs:
@@ -305,9 +304,9 @@ class Kiosk(Leafnode):
 			g.flatten(msg, unixfrom=True)
 		outfp.close()
 		if len(self.msgs) == 1 and self.muttone:
-			cmd = "%s '%s'" % (muttone, self.kiosk)
+			cmd = "%s %s '%s'" % (mutt, muttone, self.kiosk)
 		else:
-			cmd = "%s '%s'" % (mutti(firstid), self.kiosk)
+			cmd = "%s %s '%s'" % (mutt, muttI(firstid), self.kiosk)
 		if self.nt:
 			tty = os.ctermid()
 			cmd = "%(cmd)s <%(tty)s >%(tty)s" % vars()
