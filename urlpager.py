@@ -79,7 +79,6 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				userHelp()
 			if o == "-I": # look for declared message-ids
 				self.id, self.decl = True, True
-				self.getdir = ""
 			if o == "-i": # look for ids, in text w/o prot (email false positives)
 				self.id = True
 			if o == "-k": # mailbox to store retrieved message
