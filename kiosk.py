@@ -125,8 +125,8 @@ class Kiosk(Leafnode):
 		self.muttone = True     # configure mutt for display of 1 msg only
 		self.xb = False	        # force x-browser
 		self.tb = False         # use text browser
+		self.mspool = True	# look for MID in default mailspool
 		self.mdmask = r"^(cur|new|tmp)$"
-		self.mspool = mailSpool()
 
 	def argParser(self):
 		import getopt
@@ -141,7 +141,7 @@ class Kiosk(Leafnode):
 			if o == "-d":
 				self.mdirs = self.mdirs + a.split(":")
 			if o == "-D":
-				self.mdirs, self.mspool = a.split(":"), None
+				self.mdirs, self.mspool = a.split(":"), False
 			if o == "-h":
 				userHelp()
 			if o == "-l":
@@ -282,6 +282,7 @@ class Kiosk(Leafnode):
 		      "Searching local mailboxes ..." \
 		      % spl.sPl(len(self.items), "message")
 		if self.mspool:
+			self.mspool = mailSpool()
 			self.boxParser(self.mspool, os.path.isdir(self.mspool))
 		for mdir in self.mdirs:
 			self.walkMdir(mdir)
@@ -334,7 +335,7 @@ class Kiosk(Leafnode):
 		itemscopy = self.items[:]
 		if self.mdirs:
 			self.dirTest()
-		self.masKompile()
+			self.masKompile()
 		if not self.spool:
 			try:
 				Leafnode.newsSpool(self)
