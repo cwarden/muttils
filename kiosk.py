@@ -13,7 +13,7 @@ from mailbox import Maildir, PortableUnixMailbox
 from cheutils import filecheck, readwrite, spl, systemcall
 from slrnpy.Leafnode import Leafnode, LeafnodeError
 
-optstr = "bd:D:hk:lm:ns:tx"
+optstr = "bd:D:hk:lm:ntx"
 ggroups = "http://groups.google.com/groups?"
 muttone = "-e 'set pager_index_lines=0' " \
        "-e 'set quit=yes' -e 'bind pager q quit' " \
@@ -147,8 +147,6 @@ class Kiosk(Leafnode):
 				self.mask = a
 			if o == "-n":
 				self.mhiers = False # don"t search local mailboxes
-			if o == "-s":
-				self.spool = a # location of local news spool
 			if o == "-t":
 				self.tb = True # use text browser
 			if o == "-x":
@@ -335,15 +333,7 @@ class Kiosk(Leafnode):
 		if self.mask:
 			self.masKompile()
 		itemscopy = self.items[:]
-		if not self.spool:
-			try:
-				Leafnode.newsSpool(self)
-			except LeafnodeError, e:
-				print e
-		if self.spool:
-			self.leafSearch()
-		else:
-			print "No local news server found."
+		self.leafSearch()
 		if self.items and self.mhiers != False:
 			self.hierTest()
 			self.mailSearch()
