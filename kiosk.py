@@ -188,7 +188,7 @@ class Kiosk(Leafnode):
 		"""Checks whether given directories exist."""
 		for dir in self.mhiers:
 			if not os.path.isdir(filecheck.absolutePath(dir)):
-				print "Warning! %s: not a directory, skipping" % dir
+				print "Warning! `%s': not a directory, skipping" % dir
 				self.mhiers.remove(dir)
 
 	def goGoogle(self, quit=False):
