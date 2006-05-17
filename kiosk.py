@@ -11,7 +11,6 @@ from email.Parser import HeaderParser
 from email import Utils
 from mailbox import Maildir, PortableUnixMailbox
 from cheutils import filecheck, readwrite, spl, systemcall
-from slrnpy.Leafnode import Leafnode, LeafnodeError
 
 optstr = "bd:D:hk:lm:ntx"
 ggroups = "http://groups.google.com/groups?"
@@ -99,13 +98,12 @@ def mkUnixfrom(msg):
 class KioskError(Exception):
 	"""Exception class for kiosk."""
 
-class Kiosk(Leafnode):
+class Kiosk(object):
 	"""
 	Provides methods to search for and retrieve
 	messages via their Message-ID.
 	"""
-	def __init__(self, items=None, spool=""):
-		Leafnode.__init__(self, spool=spool) # <- spool
+	def __init__(self, items=None):
 		if items == None:
 			items = []
 		self.items = items      # message-ids to look for
@@ -208,9 +206,14 @@ class Kiosk(Leafnode):
 			sys.exit()
 
 	def leafSearch(self):
+		try:
+			from slrnpy.Leafnode import Leafnode
+		except ImportError:
+			return
+		leafnode = Leafnode()
 		print "Searching local newsserver ..."
-		articles, self.items = Leafnode.idPath(self,
-				idlist=self.items, verbose=True)
+		articles, self.items = leafnode.idPath(idlist=self.items,
+				verbose=True)
 		for article in articles:
 			fp = open(article, "rb")
 			try:
@@ -219,6 +222,9 @@ class Kiosk(Leafnode):
 				raise KioskError, e
 			fp.close()
 			self.msgs.append(msg)
+		if self.items:
+			print "%s not on local server" \
+			      % spl.sPl(len(self.items), "message")
 
 	def boxParser(self, path, maildir=False, isspool=False):
 		if not isspool and path == self.mspool or \
@@ -278,9 +284,7 @@ class Kiosk(Leafnode):
 	def mailSearch(self):
 		"""Announces search of mailboxes, searches spool,
 		and passes mail hierarchies to walkMhier."""
-		print "%s not on local server.\n" \
-		      "Searching local mailboxes ..." \
-		      % spl.sPl(len(self.items), "message")
+		print "Searching local mailboxes ..."
 		if self.mspool:
 			self.mspool = mailSpool()
 			self.boxParser(self.mspool,
