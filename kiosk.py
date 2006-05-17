@@ -133,9 +133,9 @@ class Kiosk(Leafnode):
 		for o, a in opts:
 			if o == "-b":
 				self.browse, self.mdirs = True, False
-			if o == "-d":
+			if o == "-d": # specific mail hierarchies
 				self.mdirs = a.split(":")
-			if o == "-D":
+			if o == "-D": # specific mail hierarchies, exclude mspool
 				self.mdirs, self.mspool = a.split(":"), False
 			if o == "-h":
 				userHelp()
