@@ -184,12 +184,21 @@ class Kiosk(Leafnode):
 		else:
 			self.muttone = False
 
-	def dirTest(self):
-		"""Checks whether given directories exist."""
-		for dir in self.mhiers:
-			if not os.path.isdir(filecheck.absolutePath(dir)):
-				print "Warning! `%s': not a directory, skipping" % dir
-				self.mhiers.remove(dir)
+	def hierTest(self):
+		"""Checks whether given directories exist and
+		creates mhiers set (unique elems) with absolute paths."""
+		if not self.mhiers:
+			self.mhiers = mailHier()
+		mhiers = set(self.mhiers)
+		self.mhiers = set([])
+		for hier in mhiers:
+			abshier = filecheck.fileCheck(hier, spec="isdir",
+					absolute=True, noexit=False)
+			if abshier:
+				self.mhiers.add(abshier)
+			else:
+				print "Warning! `%s': not a directory, skipping" \
+						% hier
 
 	def goGoogle(self, quit=False):
 		"""Gets messages from Google Groups."""
@@ -336,7 +345,7 @@ class Kiosk(Leafnode):
 		if self.items and self.mhiers != False:
 			if not self.mhiers:
 				self.mhiers = mailHier()
-			self.dirTest()
+			self.hierTest()
 			self.masKompile()
 			self.mailSearch()
 			if self.items:
