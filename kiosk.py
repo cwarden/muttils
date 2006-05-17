@@ -113,7 +113,7 @@ class Kiosk(Leafnode):
 		self.mask = None	# file mask for mdir (applied to directories too)
 		self.nt = False		# if True: needs terminal
 		self.browse = False	# limit to browse googlegroups
-		self.mdirs = mailDir() 	# mailbox hierarchies
+		self.mdirs = [] 	# mailbox hierarchies
 		self.local = False      # limit to local search
 		self.msgs = []          # list of retrieved message objects
 		self.tmp = False        # whether kiosk is a temporary file
@@ -132,9 +132,9 @@ class Kiosk(Leafnode):
 			raise KioskError, e
 		for o, a in opts:
 			if o == "-b":
-				self.browse, self.mdirs = True, []
+				self.browse, self.mdirs = True, False
 			if o == "-d":
-				self.mdirs = self.mdirs + a.split(":")
+				self.mdirs = a.split(":")
 			if o == "-D":
 				self.mdirs, self.mspool = a.split(":"), False
 			if o == "-h":
@@ -146,7 +146,7 @@ class Kiosk(Leafnode):
 			if o == "-m":
 				self.mask = a
 			if o == "-n":
-				self.mdirs = [] # don"t search local mailboxes
+				self.mdirs = False # don"t search local mailboxes
 			if o == "-s":
 				self.spool = a # location of local news spool
 			if o == "-t":
@@ -324,9 +324,6 @@ class Kiosk(Leafnode):
 			self.goGoogle(quit=True)
 		self.kioskTest()
 		itemscopy = self.items[:]
-		if self.mdirs:
-			self.dirTest()
-			self.masKompile()
 		if not self.spool:
 			try:
 				Leafnode.newsSpool(self)
@@ -336,7 +333,11 @@ class Kiosk(Leafnode):
 			self.leafSearch()
 		else:
 			print "No local news server found."
-		if self.items and self.mdirs:
+		if self.items and self.mdirs != False:
+			if not self.mdirs:
+				self.mdirs = mailDir()
+			self.dirTest()
+			self.masKompile()
 			self.mailSearch()
 			if self.items:
 				print "%s not in specified local mailboxes." \
