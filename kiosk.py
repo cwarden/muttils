@@ -121,7 +121,7 @@ class Kiosk(Leafnode):
 		self.xb = False	        # force x-browser
 		self.tb = False         # use text browser
 		self.mspool = True	# look for MID in default mailspool
-		self.mdmask = r"^(cur|new|tmp)$"
+		self.mdmask = "^(cur|new|tmp)$"
 
 	def argParser(self):
 		import getopt
@@ -223,13 +223,25 @@ class Kiosk(Leafnode):
 			fp.close()
 			self.msgs.append(msg)
 
-	def boxParser(self, path, maildir=False):
-		print "Searching %s ..." % path
+	def boxParser(self, path, maildir=False, isspool=False):
+		if not isspool and path == self.mspool or \
+				self.mask and \
+				self.mask.search(path) != None:
+			return
 		if maildir:
+			dl = os.listdir(path)
+			for d in "cur", "new":
+				if not d in dl:
+					return
 			mbox = Maildir(path, msgFactory)
 		else:
-			fp = open(path, "rb")
+			try:
+				fp = open(path, "rb")
+			except IOError, e:
+				print e
+				return
 			mbox = PortableUnixMailbox(fp, msgFactory)
+		print "Searching %s ..." % path
 		while True:
 			try:
 				msg = mbox.next()
@@ -248,7 +260,7 @@ class Kiosk(Leafnode):
 		if not maildir:
 			fp.close()
 
-	def walkMdir(self, mdir):
+	def walkMhier(self, mdir):
 		"""Visits mail hierarchies and parses their mailboxes.
 		Detects mbox and Maildir mailboxes."""
 		for root, dirs, files in os.walk(mdir):	
@@ -257,44 +269,33 @@ class Kiosk(Leafnode):
 			rmdl = [d for d in dirs if self.mdmask.search(d)!=None]
 			for d in rmdl:
 				dirs.remove(d)
-			if self.mask:
-				rmfl = [f for f in files if self.mask.search(f)!=None]
-				for f in rmfl: files.remove(f)
 			for name in dirs:
 				if self.items:
 					path = os.path.join(root, name)
-					if path != self.mspool:
-						dirlist = os.listdir(path)
-						if "cur" in dirlist and "new" in dirlist:
-							self.boxParser(path, True)
+					self.boxParser(path, True)
 			for name in files:
 				if self.items:
 					path = os.path.join(root, name)
-					if path != self.mspool:
-						self.boxParser(path)
+					self.boxParser(path)
 
 	def mailSearch(self):
 		"""Announces search of mailboxes, searches spool,
-		and passes mail hierarchies to walkMdir."""
+		and passes mail hierarchies to walkMhier."""
 		print "%s not on local server.\n" \
 		      "Searching local mailboxes ..." \
 		      % spl.sPl(len(self.items), "message")
 		if self.mspool:
 			self.mspool = mailSpool()
-			self.boxParser(self.mspool, os.path.isdir(self.mspool))
-		for mdir in self.mhiers:
-			self.walkMdir(mdir)
+			self.boxParser(self.mspool,
+					os.path.isdir(self.mspool),
+					isspool=True)
+		self.mdmask = re.compile(r"%s" % self.mdmask)
+		for mhier in self.mhiers:
+			self.walkMhier(mhier)
 
 	def masKompile(self):
-		"""Compiles masks to exclude files and directories from search."""
 		try:
-			if self.mask:
-				self.mdmask = re.compile(r"%s|%s" \
-						% (self.mdmask, self.mask))
-				self.mask = re.compile(r"%s" % self.mask)
-			else:
-				self.mdmask = re.compile(r"%s" \
-						% self.mdmask)
+			self.mask = re.compile(r"%s" % self.mask)
 		except re.error, e:
 			raise KioskError, "%s in pattern `%s'" \
 					% (e, self.mask)
@@ -332,6 +333,8 @@ class Kiosk(Leafnode):
 		if self.browse:
 			self.goGoogle(quit=True)
 		self.kioskTest()
+		if self.mask:
+			self.masKompile()
 		itemscopy = self.items[:]
 		if not self.spool:
 			try:
@@ -343,10 +346,7 @@ class Kiosk(Leafnode):
 		else:
 			print "No local news server found."
 		if self.items and self.mhiers != False:
-			if not self.mhiers:
-				self.mhiers = mailHier()
 			self.hierTest()
-			self.masKompile()
 			self.mailSearch()
 			if self.items:
 				print "%s not in specified local mailboxes." \
