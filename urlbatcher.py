@@ -52,7 +52,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 	"""
 	def __init__(self):
 		Urlcollector.__init__(self, proto="web") # <- nt, proto, id, decl, items, files, pat
-		Kiosk.__init__(self)        # <- nt, kiosk, mdirs, mspool, local, google, xb, tb
+		Kiosk.__init__(self)        # <- nt, kiosk, mhiers, mspool, local, google, xb, tb
 		LastExit.__init__(self)
 		self.getdir = ""            # download in dir via wget
 
@@ -65,10 +65,10 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 		for o, a in opts:
 			if o == "-d": # specific mail hierarchies
 				self.id = True
-				self.mdirs = a.split(":")
+				self.mhiers = a.split(":")
 			if o == "-D": # specific mail hierarchies, exclude mspool
 				self.id, self.mspool = True, False
-				self.mdirs = a.split(":")
+				self.mhiers = a.split(":")
 			if o == "-h":
 				userHelp()
 			if o == "-i": # look for message-ids
@@ -81,7 +81,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 			if o == "-l": # only local search for message-ids
 				self.local, self.id = True, True
 			if o == "-n": # don't search local mailboxes
-				self.id, self.mdirs = True, False
+				self.id, self.mhiers = True, False
 			if o == "-r":
 				self.pat = a
 			if o == "-w": # download dir for wget

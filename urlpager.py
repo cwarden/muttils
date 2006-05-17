@@ -51,7 +51,7 @@ class UrlpagerError(Exception):
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def __init__(self):
 		Urlcollector.__init__(self) # <- nt, proto, id, laxid, items, files, pat
-		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mdirs, mspool, local, xb, tb
+		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mhiers, mspool, local, xb, tb
 		Tpager.__init__(self, name="url") # <- items, name
 		LastExit.__init__(self)
 		self.ft = ""	   # ftpclient
@@ -69,10 +69,10 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 				self.browse, self.id = True, True
 			if o == "-d": # specific mail hierarchies
 				self.id = True
-				self.mdirs = a.split(":")
+				self.mhiers = a.split(":")
 			if o == "-D": # specific mail hierarchies, exclude mspool
 				self.id, self.mspool = True, False
-				self.mdirs = a.split(":")
+				self.mhiers = a.split(":")
 			if o == "-f": # ftp client
 				self.ft = getbin.getBin(a)
 			if o == "-h":
@@ -87,7 +87,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			if o == "-l": # only local search for message-ids
 				self.local, self.id = True, True
 			if o == "-n": # don't search mailboxes for message-ids
-				self.id, self.mdirs = True, False
+				self.id, self.mhiers = True, False
 			if o == "-p": # protocol(s)
 				self.proto = a
 			if o == "-r": # regex pattern to match urls against

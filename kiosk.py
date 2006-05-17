@@ -45,7 +45,7 @@ def mailSpool(mailspool=None):
 		return mailspool[:-1] # ~/Maildir/-INBOX[/]
 	return mailspool
 
-def mailDir():
+def mailHier():
 	"""Returns either ~/Maildir or ~/Mail
 	as first item of a list if they are directories,
 	an empty list otherwise."""
@@ -113,7 +113,7 @@ class Kiosk(Leafnode):
 		self.mask = None	# file mask for mdir (applied to directories too)
 		self.nt = False		# if True: needs terminal
 		self.browse = False	# limit to browse googlegroups
-		self.mdirs = [] 	# mailbox hierarchies
+		self.mhiers = [] 	# mailbox hierarchies
 		self.local = False      # limit to local search
 		self.msgs = []          # list of retrieved message objects
 		self.tmp = False        # whether kiosk is a temporary file
@@ -132,11 +132,11 @@ class Kiosk(Leafnode):
 			raise KioskError, e
 		for o, a in opts:
 			if o == "-b":
-				self.browse, self.mdirs = True, False
+				self.browse, self.mhiers = True, False
 			if o == "-d": # specific mail hierarchies
-				self.mdirs = a.split(":")
+				self.mhiers = a.split(":")
 			if o == "-D": # specific mail hierarchies, exclude mspool
-				self.mdirs, self.mspool = a.split(":"), False
+				self.mhiers, self.mspool = a.split(":"), False
 			if o == "-h":
 				userHelp()
 			if o == "-l":
@@ -146,7 +146,7 @@ class Kiosk(Leafnode):
 			if o == "-m":
 				self.mask = a
 			if o == "-n":
-				self.mdirs = False # don"t search local mailboxes
+				self.mhiers = False # don"t search local mailboxes
 			if o == "-s":
 				self.spool = a # location of local news spool
 			if o == "-t":
@@ -186,10 +186,10 @@ class Kiosk(Leafnode):
 
 	def dirTest(self):
 		"""Checks whether given directories exist."""
-		for dir in self.mdirs:
+		for dir in self.mhiers:
 			if not os.path.isdir(filecheck.absolutePath(dir)):
 				print "Warning! %s: not a directory, skipping" % dir
-				self.mdirs.remove(dir)
+				self.mhiers.remove(dir)
 
 	def goGoogle(self, quit=False):
 		"""Gets messages from Google Groups."""
@@ -273,7 +273,7 @@ class Kiosk(Leafnode):
 		if self.mspool:
 			self.mspool = mailSpool()
 			self.boxParser(self.mspool, os.path.isdir(self.mspool))
-		for mdir in self.mdirs:
+		for mdir in self.mhiers:
 			self.walkMdir(mdir)
 
 	def masKompile(self):
@@ -333,9 +333,9 @@ class Kiosk(Leafnode):
 			self.leafSearch()
 		else:
 			print "No local news server found."
-		if self.items and self.mdirs != False:
-			if not self.mdirs:
-				self.mdirs = mailDir()
+		if self.items and self.mhiers != False:
+			if not self.mhiers:
+				self.mhiers = mailHier()
 			self.dirTest()
 			self.masKompile()
 			self.mailSearch()
