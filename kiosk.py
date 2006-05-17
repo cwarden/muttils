@@ -153,8 +153,7 @@ class Kiosk(Leafnode):
 				self.tb = True # use text browser
 			if o == "-x":
 				self.xb = True # use xbrowser
-		ur = Urlregex()
-		ur.id = True
+		ur = Urlregex(proto="mid")
 		ur.findUrls(" ".join(args))
 		if ur.items:
 			self.items = ur.items
