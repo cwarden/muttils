@@ -50,7 +50,7 @@ class UrlpagerError(Exception):
 
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 	def __init__(self):
-		Urlcollector.__init__(self) # <- nt, proto, id, laxid, items, files, pat
+		Urlcollector.__init__(self) # <- nt, proto, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mhiers, mspool, local, xb, tb
 		Tpager.__init__(self, name="url") # <- items, name
 		LastExit.__init__(self)
@@ -66,28 +66,33 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			raise UrlpagerError, e
 		for o, a in opts:
 			if o == "-b": # don't look up msgs locally
-				self.browse, self.id = True, True
+				self.proto = "mid"
+				self.browse = True
 			if o == "-d": # specific mail hierarchies
-				self.id = True
+				self.proto = "mid"
 				self.mhiers = a.split(":")
 			if o == "-D": # specific mail hierarchies, exclude mspool
-				self.id, self.mspool = True, False
+				self.proto = "mid"
+				self.mspool = False
 				self.mhiers = a.split(":")
 			if o == "-f": # ftp client
 				self.ft = getbin.getBin(a)
 			if o == "-h":
 				userHelp()
 			if o == "-I": # look for declared message-ids
-				self.id, self.decl = True, True
+				self.proto = "mid"
+				self.decl = True
 			if o == "-i": # look for ids, in text w/o prot (email false positives)
-				self.id = True
+				self.proto = "mid"
 			if o == "-k": # mailbox to store retrieved message
-				self.id = True
+				self.proto = "mid"
 				self.kiosk = a
 			if o == "-l": # only local search for message-ids
-				self.local, self.id = True, True
+				self.proto = "mid"
+				self.local = True
 			if o == "-n": # don't search mailboxes for message-ids
-				self.id, self.mhiers = True, False
+				self.proto = "mid"
+				self.mhiers = False
 			if o == "-p": # protocol(s)
 				self.proto = a
 			if o == "-r": # regex pattern to match urls against
@@ -104,9 +109,9 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 						spec="isdir", absolute=True)
 
 	def urlPager(self):
-		if not self.id and self.proto != "all":
+		if not self.proto in ("all", "mid"):
 			self.name = "%s %s" % (self.proto, self.name)
-		elif self.id:
+		elif self.proto == "mid":
 			self.name = "message-id"
 		self.name = "unique %s" % self.name
 		self.url = Tpager.interAct(self)
@@ -158,7 +163,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 			LastExit.termInit(self)
 		self.urlPager()
 		if self.url:
-			if not self.id:
+			if self.proto != "mid":
 				self.urlGo()
 			else:
 				self.items = [self.url]

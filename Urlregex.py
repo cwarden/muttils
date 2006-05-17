@@ -244,7 +244,7 @@ class Urlregex(Urlparser):
 			self.items = filter(filterdict[self.proto], self.items)
 		if self.uni:
 			self.items = list(set(self.items))
-			if not self.id and not self.decl:
+			if self.proto != "mid" and not self.decl:
 				self.uniDeluxe()
 
 	def urlObjects(self):
@@ -253,7 +253,7 @@ class Urlregex(Urlparser):
 		if self.proto == "mailto":# be pragmatic and list not only declared
 			self.url_re = mail_re
 			self.proto_re = re.compile("^mailto:")
-		elif not self.id:
+		elif self.proto != "mid":
 			self.setStrings()
 			rawurl = self.getRaw()
 			self.url_re = re.compile(rawurl,
@@ -280,7 +280,7 @@ class Urlregex(Urlparser):
 			Urlparser.makeUrlist(self, data)
 		elif type.startswith("text/"):
 			s = Urlparser.mailDeconstructor(self, data)
-			if not self.id:
+			if self.proto != "mid":
 				wipe_resub = re.compile(rawwipe,
 						re.IGNORECASE|re.VERBOSE), ""
 				cpan_resub = re.compile(r"CPAN:([A-Za-z]+?)"), CPAN 

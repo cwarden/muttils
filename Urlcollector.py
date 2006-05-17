@@ -1,4 +1,4 @@
-# $Hg$
+# $Hg: Urlcollector.py,v$
 
 import re
 from tpager.LastExit import LastExit
@@ -16,7 +16,7 @@ class Urlcollector(Urlregex, LastExit):
 	from files or input stream.
 	"""
 	def __init__(self, proto="all", nt=False):
-		Urlregex.__init__(self, proto) # <- proto, id, decl, items
+		Urlregex.__init__(self, proto) # <- proto, decl, items
 		LastExit.__init__(self)
 		self.files =[]          # files to search
 		self.pat = None         # pattern to match urls against

@@ -6,7 +6,7 @@ from email import Utils
 from HTMLParser import HTMLParser, HTMLParseError
 
 protos = ("all", "web", "http", "mailto",
-	  "ftp", "finger", "telnet")
+	  "ftp", "finger", "telnet", "mid")
 
 # header tuples (to be extended)
 searchkeys = ("subject", "organization",
@@ -43,7 +43,6 @@ class Urlparser(HTMLParser):
 	def __init__(self, proto="all"):
 		HTMLParser.__init__(self)
 		self.proto = proto
-		self.id = False         # search only for message-ids
 		self.url_re = None
 		self.items = []
 		self.msg = ""
@@ -117,12 +116,12 @@ class Urlparser(HTMLParser):
 	def msgDeconstructor(self, sl=None):
 		if sl == None:
 			sl = []
-		if self.id:
-			self.headParser(refkeys)
-		elif self.proto in ("all", "mailto"):
-			self.headParser(addrkeys)
-		if not self.id:
+		if self.proto != "mid":
+			if self.proto in ("all", "mailto"):
+				self.headParser(addrkeys)
 			self.headSearcher()
+		else:
+			self.headParser(refkeys)
 		for part in self.msg.walk(): # use email.Iterator?
 			if part.get_content_maintype() == "text":
 				text = part.get_payload(decode=True)
