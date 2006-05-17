@@ -82,7 +82,7 @@ headsoff = r"""
 	""" % head
 
 # attributions:
-nproto = "(msgid|news|nntp|message(-id)?|article|MID)(:\s*?|\s+?)<{,2}"
+nproto = "(msgid|news|nntp|message(-id)?|article|MID)(:\s*|\s+)<{,2}"
 
 mid = r"""
 	[%(idy)s] +?            # one or more valid id char
