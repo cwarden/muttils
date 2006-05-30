@@ -30,9 +30,9 @@ tops =	"a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
 top = "\.%s" % orJoin(tops)
 
 #CPAN = "ftp://ftp.cpan.org/pub/CPAN/"
-CPAN = "ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1"
+CPAN = r"ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1"
 #CTAN = "ftp://ftp.ctan.org/tex-archive/"
-CTAN = "ftp://ftp.dante.de/tex-archive/\1"
+CTAN = r"ftp://ftp.dante.de/tex-archive/\1"
 
 ### outro ###
 outro = r"""
@@ -283,8 +283,8 @@ class Urlregex(Urlparser):
 			if self.proto != "mid":
 				wipe_resub = re.compile(rawwipe,
 						re.IGNORECASE|re.VERBOSE), ""
-				cpan_resub = re.compile(r"CPAN:([A-Za-z]+?)"), CPAN 
-				ctan_resub = re.compile(r"CTAN:([A-Za-z]+?)"), CTAN
+				cpan_resub = re.compile(r"CPAN:\s*([A-Za-z]+?)"), CPAN 
+				ctan_resub = re.compile(r"CTAN:\s*([A-Za-z]+?)"), CTAN
 				for resub in (wipe_resub, cpan_resub, ctan_resub):
 					s = resub[0].sub(resub[1], s)
 			urls = [u[0] for u in self.url_re.findall(s)]
