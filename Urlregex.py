@@ -98,7 +98,7 @@ simplid = r"(\b%(mid)s)" % vars()
 rawwipe = r"(%(declid)s)|(%(headsoff)s)" % vars()
 
 ## precompiled regexes ##
-ftp_re = re.compile("ftp(://|\.)", re.IGNORECASE)
+ftp_re = re.compile("(s?ftp://|ftp\.)", re.IGNORECASE)
 
 address = "[-._a-z0-9]+@[-._a-z0-9]+%s" % top
 mail = r"""
@@ -167,7 +167,7 @@ class Urlregex(Urlparser):
 		### intro ###
 		if self.proto in ("all", "web"): ## groups
 			protocols = "(www|ftp)\. https?:// " \
-				"finger:// ftp:// telnet:// mailto:".split()
+				"finger:// s?ftp:// telnet:// mailto:".split()
 #                                "(file://(localhost)?/|http://(localhost|127\.) " \
 				# TO DO: local switch!
 			# gopher? wais?
@@ -184,7 +184,7 @@ class Urlregex(Urlparser):
 			if self.proto == "http":
 				self.intro = "(https?://|www\.)"
 			elif self.proto == "ftp":
-				self.intro = "ftp(://|\.)"
+				self.intro = "(s?ftp://|ftp\.)"
 			else:
 				self.intro = self.protocol
 		self.intro = "(url:)?%s" % self.intro
