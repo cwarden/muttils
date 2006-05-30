@@ -283,8 +283,8 @@ class Urlregex(Urlparser):
 			if self.proto != "mid":
 				wipe_resub = re.compile(rawwipe,
 						re.IGNORECASE|re.VERBOSE), ""
-				cpan_resub = re.compile(r"CPAN:\s*([A-Za-z]+?)"), CPAN 
-				ctan_resub = re.compile(r"CTAN:\s*([A-Za-z]+?)"), CTAN
+				cpan_resub = re.compile(r"CPAN:\s*/?([A-Za-z]+?)"), CPAN 
+				ctan_resub = re.compile(r"CTAN:\s*/?([A-Za-z]+?)"), CTAN
 				for resub in (wipe_resub, cpan_resub, ctan_resub):
 					s = resub[0].sub(resub[1], s)
 			urls = [u[0] for u in self.url_re.findall(s)]
