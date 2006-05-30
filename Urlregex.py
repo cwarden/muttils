@@ -30,9 +30,9 @@ tops =	"a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
 top = "\.%s" % orJoin(tops)
 
 #CPAN = "ftp://ftp.cpan.org/pub/CPAN/"
-CPAN = r"ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1"
+CPAN = "ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1"
 #CTAN = "ftp://ftp.ctan.org/tex-archive/"
-CTAN = r"ftp://ftp.dante.de/tex-archive/\1"
+CTAN = "ftp://ftp.dante.de/tex-archive/\1"
 
 ### outro ###
 outro = r"""
@@ -98,7 +98,7 @@ simplid = r"(\b%(mid)s)" % vars()
 rawwipe = r"(%(declid)s)|(%(headsoff)s)" % vars()
 
 ## precompiled regexes ##
-ftp_re = re.compile("(s?ftp://|ftp\.)", re.IGNORECASE)
+ftp_re = re.compile(r"(s?ftp://|ftp\.)", re.IGNORECASE)
 
 address = "[-._a-z0-9]+@[-._a-z0-9]+%s" % top
 mail = r"""
@@ -252,18 +252,18 @@ class Urlregex(Urlparser):
 		Urlparser.protoTest(self)
 		if self.proto == "mailto":# be pragmatic and list not only declared
 			self.url_re = mail_re
-			self.proto_re = re.compile("^mailto:")
+			self.proto_re = re.compile(r"^mailto:")
 		elif self.proto != "mid":
 			self.setStrings()
 			rawurl = self.getRaw()
 			self.url_re = re.compile(rawurl,
 					re.IGNORECASE|re.VERBOSE)
 			if self.find:
-				self.kill_re = re.compile("\s+?|^url:",
+				self.kill_re = re.compile(r"\s+?|^url:",
 						re.IGNORECASE) 
 				if not self.decl:
 					self.proto_re = re.compile(
-							"^%s" % self.protocol,
+							r"^%s" % self.protocol,
 							re.IGNORECASE)
 		elif self.decl:
 			self.url_re = re.compile(declid,
