@@ -55,12 +55,6 @@ def mailHier():
 			return [d]
 	return []
 
-def makeQuery(id):
-	"""Reformats Message-ID to google query."""
-	query = {"selm": id, "hl": "en"}
-	params = urllib.urlencode(query)
-	return "%s%s" % (ggroups, params)
-
 def msgFactory(fp):
 	try:
 		return HeaderParser().parse(fp)
@@ -70,6 +64,13 @@ def msgFactory(fp):
 def nakHead(header):
 	"""Strips Message-ID header down to pure ID."""
 	return header.split("<")[-1].strip(">")
+
+def goOnline():
+	try:
+		from cheutils import conny
+		conny.appleConnect()
+	except ImportError:
+		pass
 
 def muttI(id): # uncollapse??
 	"""Opens kiosk mailbox and goes to id."""
@@ -195,15 +196,47 @@ class Kiosk(object):
 				print "Warning! `%s': not a directory, skipping" \
 						% hier
 
-	def goGoogle(self, quit=False):
+	def makeQuery(self, id):
+		"""Reformats Message-ID to google query."""
+		query = ({"selm": id, "dmode": "source", "hl": "en"},
+				{"selm": id, "hl": "en"})[self.browse]
+		params = urllib.urlencode(query)
+		return "%s%s" % (ggroups, params)
+
+	def goGoogle(self, ilen=None):
 		"""Gets messages from Google Groups."""
 		from cheutils import selbrowser
 		print "Going google ..."
-		self.items = [makeQuery(id) for id in self.items]
-		selbrowser.selBrowser(self.items,
-				tb=self.tb, xb=self.xb)
-		if quit:
+		urls = [self.makeQuery(id) for id in self.items]
+		if self.browse:
+			selbrowser.selBrowser(urls,
+					tb=self.tb, xb=self.xb)
 			sys.exit()
+		print "*Unfortunately Google masks all email addresses*"
+		goOnline()
+		found = []
+		for i in range(ilen):
+			url = urls[i]
+			html = systemcall.backQuote(["w3m", "-dump", url])
+			hiter = iter(html.split("\n"))
+			line = ""
+			while not line.startswith("From: "):
+				line = hiter.next()
+			lines = [line]
+			while line != "[dot_clear]":
+				line = hiter.next()
+				lines.append(line)
+			msg = "\n".join(lines[:-1])
+			msg = email.message_from_string(msg)
+			if "message-id" in msg:
+				found.append(self.items[i])
+				self.msgs.append(msg)
+			else:
+				print msg.get_payload(decode=True)
+				time.sleep(5)
+				print "Continuing ..."
+		for id in found:
+			self.items.remove(id)
 
 	def leafSearch(self):
 		try:
@@ -332,7 +365,7 @@ class Kiosk(object):
 			raise KioskError, "need Message-ID(s) as argument(s)"
 		self.items = [nakHead(item) for item in self.items]
 		if self.browse:
-			self.goGoogle(quit=True)
+			self.goGoogle()
 		self.kioskTest()
 		if self.mask:
 			self.masKompile()
@@ -345,16 +378,20 @@ class Kiosk(object):
 				print "%s not in specified local mailboxes." \
 				      % spl.sPl(len(self.items), "message")
                 if self.items:
+			ilen = len(self.items)
 			print "%s not found" \
-				% spl.sPl(len(self.items), "message")
-			if self.msgs:
-				itemscopy = [id for id in itemscopy \
-						if id not in self.items]
-				time.sleep(3)
+				% spl.sPl(ilen, "message")
 			if not self.local:
-				self.goGoogle(quit=False)
+				self.goGoogle(ilen)
+			else:
+				time.sleep(3)
 		if self.msgs:
-			self.openKiosk(itemscopy[0])
+			firstid = None
+			for id in itemscopy:
+				if not id in self.items:
+					firstid = id
+					break
+			self.openKiosk(firstid)
 
 
 def run():
