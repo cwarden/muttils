@@ -234,7 +234,7 @@ class Kiosk(object):
 			lfp.close()
 			liniter = iter(s.split("\n"))
 			line = ""
-			while not line.startswith("From: "):
+			while not line.startswith("Path: "):
 				line = liniter.next()
 			lines = [line]
 			while not line.startswith("(image) Google Home["):
