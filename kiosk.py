@@ -96,6 +96,11 @@ def mkUnixfrom(msg):
 	return msg
 
 
+class AppURLopener(urllib.FancyURLopener):
+	def __init__(self, *args):
+	self.version = "w3m"
+	urllib.FancyURLopener.__init__(self, *args)
+
 class KioskError(Exception):
 	"""Exception class for kiosk."""
 
@@ -213,18 +218,27 @@ class Kiosk(object):
 					tb=self.tb, xb=self.xb)
 			sys.exit()
 		print "*Unfortunately Google masks all email addresses*"
+		import cStringIO, formatter, htmllib
+		urllib._urlopener = AppURLopener()
 		goOnline()
 		found = []
 		for i in range(ilen):
-			url = urls[i]
-			html = systemcall.backQuote(["w3m", "-dump", url])
-			hiter = iter(html.split("\n"))
+			lfp = cStringIO.StringIO()
+			mwriter = formatter.DumbWriter(lfp)
+			mformatter = formatter.AbstractFormatter(mwriter)
+			mparser = htmllib.HTMLParser(mformatter)
+			rfp = urllib.urlopen(urls[i])
+			mparser.feed(rfp.read())
+			rfp.close()
+			s = lfp.getvalue()
+			lfp.close()
+			liniter = iter(s.split("\n"))
 			line = ""
 			while not line.startswith("From: "):
-				line = hiter.next()
+				line = liniter.next()
 			lines = [line]
-			while line != "[dot_clear]":
-				line = hiter.next()
+			while not line.startswith("(image) Google Home["):
+				line = liniter.next()
 				lines.append(line)
 			msg = "\n".join(lines[:-1])
 			msg = email.message_from_string(msg)
