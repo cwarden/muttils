@@ -355,8 +355,9 @@ class Kiosk(object):
 		outfp = open(self.kiosk, "ab")
 		g = Generator(outfp, maxheaderlen=0)
 		for msg in self.msgs:
-			msg.__delitem__("status") # show msg as new in mutt
-			msg.__delitem__("xref") # delete server info
+			# delete read status and local server info
+			for h in ("Status", "Xref"):
+				msg.__delitem__(h)
 			if not msg.get_unixfrom():
 				msg = mkUnixfrom(msg)
 			g.flatten(msg, unixfrom=True)
