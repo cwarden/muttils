@@ -203,12 +203,12 @@ class Kiosk(object):
 		params = urllib.urlencode(query)
 		return "%s%s" % (ggroups, params)
 
-	def goGoogle(self, ilen=None):
+	def goGoogle(self, ilen=0):
 		"""Gets messages from Google Groups."""
-		from cheutils import selbrowser
 		print "Going google ..."
 		urls = [self.makeQuery(id) for id in self.items]
 		if self.browse:
+			from cheutils import selbrowser
 			selbrowser.selBrowser(urls,
 					tb=self.tb, xb=self.xb)
 			sys.exit()
