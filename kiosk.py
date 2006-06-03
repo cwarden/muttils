@@ -98,8 +98,8 @@ def mkUnixfrom(msg):
 
 class AppURLopener(urllib.FancyURLopener):
 	def __init__(self, *args):
-	self.version = "w3m"
-	urllib.FancyURLopener.__init__(self, *args)
+		self.version = "w3m"
+		urllib.FancyURLopener.__init__(self, *args)
 
 class KioskError(Exception):
 	"""Exception class for kiosk."""
