@@ -75,7 +75,7 @@ def goOnline():
 def muttI(id): # uncollapse??
 	"""Opens kiosk mailbox and goes to id."""
 	return "-e 'set uncollapse_jump' " \
-		"-e 'push <search>~i\ %s<return>' -f" \
+		"-e 'push <search>~i\ \'%s\'<return>' -f" \
 		% id
 
 def mkUnixfrom(msg):
@@ -155,7 +155,7 @@ class Kiosk(object):
 				self.tb = True # use text browser
 			if o == "-x":
 				self.xb = True # use xbrowser
-		ur = Urlregex(proto="mid")
+		ur = Urlregex(proto="mid", uniq=False)
 		ur.findUrls(" ".join(args))
 		if ur.items:
 			self.items = ur.items

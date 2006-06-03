@@ -142,11 +142,11 @@ class Urlregex(Urlparser):
 	and urls spanning more than 1 line
 	if they are enclosed in "<>".
 	"""
-	def __init__(self, proto="all", find=True):
+	def __init__(self, proto="all", find=True, uniq=True):
 		Urlparser.__init__(self, proto) # <- id, proto, items, url_re, ugly
 		self.find = find    	# for grabbing regexes only
+		self.uniq = uniq        # list only unique urls
 		self.decl = False       # list only declared urls
-		self.uni = True         # list only unique urls
 		self.kill_re = None	# customized pattern to find non url chars
 		self.intro = ""
 		self.protocol = ""	# pragmatic proto (may include www., ftp.)
@@ -242,7 +242,7 @@ class Urlregex(Urlparser):
 	def urlFilter(self):
 		if not self.decl and self.proto in filterdict:
 			self.items = filter(filterdict[self.proto], self.items)
-		if self.uni:
+		if self.uniq:
 			self.items = list(set(self.items))
 			if self.proto != "mid" and not self.decl:
 				self.uniDeluxe()
