@@ -95,11 +95,6 @@ def mkUnixfrom(msg):
 	return msg
 
 
-class AppURLopener(urllib.FancyURLopener):
-	def __init__(self, *args):
-		self.version = "w3m"
-		urllib.FancyURLopener.__init__(self, *args)
-
 class KioskError(Exception):
 	"""Exception class for kiosk."""
 
@@ -207,22 +202,24 @@ class Kiosk(object):
 		params = urllib.urlencode(query)
 		return "%s%s" % (ggroups, params)
 
-	def goGoogle(self, ilen=0):
+	def goGoogle(self):
 		"""Gets messages from Google Groups."""
 		print "Going google ..."
-		urls = [self.makeQuery(mid) for mid in self.items]
 		if self.browse:
 			from cheutils import selbrowser
+			urls = [self.makeQuery(mid) for mid in self.items]
 			selbrowser.selBrowser(urls,
 					tb=self.tb, xb=self.xb)
 			sys.exit()
 		print "*Unfortunately Google masks all email addresses*"
+		import urllib2
 		from cheutils import html2text
-		urllib._urlopener = AppURLopener()
+		opener = urllib2.build_opener()
+		opener.addheaders = [("User-Agent", "w3m")]
 		goOnline()
 		found = []
-		for i in range(ilen):
-			fp = urllib.urlopen(urls[i])
+		for mid in self.items:
+			fp = opener.open(self.makeQuery(mid))
 			html = fp.read()
 			fp.close()
 			s = html2text.html2Text(html, strict=False)
@@ -237,7 +234,7 @@ class Kiosk(object):
 			msg = "\n".join(lines[:-1])
 			msg = email.message_from_string(msg)
 			if "message-id" in msg:
-				found.append(self.items[i])
+				found.append(mid)
 				self.msgs.append(msg)
 			else:
 				print msg.get_payload(decode=True)
@@ -387,11 +384,10 @@ class Kiosk(object):
 				print "%s not in specified local mailboxes." \
 				      % spl.sPl(len(self.items), "message")
                 if self.items:
-			ilen = len(self.items)
 			print "%s not found" \
-				% spl.sPl(ilen, "message")
+				% spl.sPl(len(self.items), "message")
 			if not self.local:
-				self.goGoogle(ilen)
+				self.goGoogle()
 			else:
 				time.sleep(3)
 		if self.msgs:
