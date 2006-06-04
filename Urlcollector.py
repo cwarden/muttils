@@ -30,8 +30,8 @@ class Urlcollector(Urlregex, LastExit):
 		yorn = raw_input(errmsg)
 		if self.nt:
 			LastExit.reInit(self)
-		if yorn in ("n", "N"):
-			sys.exit()
+		if yorn.lower() in ("n", "no"):
+			sys.exit(1)
 
 	def urlCollect(self):
 		if not self.files: # read from stdin
