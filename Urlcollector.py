@@ -44,8 +44,8 @@ class Urlcollector(Urlregex, LastExit):
 		else:
 			import datatype
 			for f in self.files:
-				data, type = datatype.dataType(f)
-				Urlregex.findUrls(self, data, type)
+				data, kind = datatype.dataType(f)
+				Urlregex.findUrls(self, data, kind)
 		if self.ugly:
 			self.parseError()
 		if self.pat and self.items:
