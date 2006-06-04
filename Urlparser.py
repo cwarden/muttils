@@ -1,6 +1,7 @@
 # $Hg: Urlparser.py,v$
 
 import email, re
+import email.Errors, email.Utils
 from HTMLParser import HTMLParser, HTMLParseError
 
 protos = ("all", "web", "http", "mailto",
