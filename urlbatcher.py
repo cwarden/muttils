@@ -44,16 +44,16 @@ def goOnline():
 class UrlbatcherError(Exception):
 	"""Exception class for this module."""
 
-class Urlbatcher(Urlcollector, Kiosk, LastExit):
+class Urlbatcher(Urlcollector, Kiosk):
 	"""
 	Parses input for either web urls or message-ids.
 	Browses all urls or creates a message tree in mutt.
 	You can specify urls/ids by a regex pattern.
 	"""
 	def __init__(self):
-		Urlcollector.__init__(self, proto="web") # <- nt, proto, decl, items, files, pat
+		Urlcollector.__init__(self,
+				proto="web") # <- (Urlregex, LastExit) nt, proto, decl, items, files, pat
 		Kiosk.__init__(self)        # <- nt, kiosk, mhiers, mspool, local, google, xb, tb
-		LastExit.__init__(self)
 		self.getdir = ""            # download in dir via wget
 
 	def argParser(self):

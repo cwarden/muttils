@@ -48,12 +48,11 @@ def goOnline():
 class UrlpagerError(Exception):
 	"""Exception class for this module."""
 
-class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
+class Urlpager(Urlcollector, Kiosk, Tpager):
 	def __init__(self):
-		Urlcollector.__init__(self) # <- nt, proto, items, files, pat
+		Urlcollector.__init__(self) # (Urlregex, LastExit) <- nt, proto, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mhiers, mspool, local, xb, tb
 		Tpager.__init__(self, name="url") # <- items, name
-		LastExit.__init__(self)
 		self.ft = ""	   # ftpclient
 		self.url = ""	   # selected url
 		self.getdir = ""   # download in dir via wget
