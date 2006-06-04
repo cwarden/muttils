@@ -98,13 +98,14 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
 
 	def urlGo(self):
 		if self.getdir:
+			from cheutils import getbin
 			for url in self.items:
 				if selbrowser.local_re.match(url):
 					raise UrlbatcherError, \
-							"wget doesn't retrieve local files"
+						"wget doesn't retrieve local files"
 			goOnline()
 			systemcall.systemCall(
-					[getbin("wget"), "-P", self.getdir] + self.items)
+				[getbin.getBin("wget"), "-P", self.getdir] + self.items)
 		else:
 			selbrowser.selBrowser(urls=self.items, tb=False, xb=self.xb)
 					
