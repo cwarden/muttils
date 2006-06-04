@@ -29,7 +29,7 @@ def userHelp(error=""):
 	u = Usage(help=kiosk_help, rcsid=kiosk_cset)
 	u.printHelp(err=error)
 
-def mailSpool(mailspool=None):
+def mailSpool():
 	"""Tries to return a sensible default for user's mail spool.
 	Returns None otherwise."""
 	mailspool = os.getenv("MAIL")
@@ -135,7 +135,7 @@ class Kiosk(object):
 			raise KioskError, e
 		for o, a in opts:
 			if o == "-b":
-				self.browse, self.mhiers = True, False
+				self.browse, self.mhiers = True, None
 			if o == "-d": # specific mail hierarchies
 				self.mhiers = a.split(":")
 			if o == "-D": # specific mail hierarchies, exclude mspool
@@ -149,7 +149,7 @@ class Kiosk(object):
 			if o == "-m":
 				self.mask = a
 			if o == "-n":
-				self.mhiers = False # don"t search local mailboxes
+				self.mhiers = None # don"t search local mailboxes
 			if o == "-t":
 				self.tb = True # use text browser
 			if o == "-x":
@@ -380,7 +380,7 @@ class Kiosk(object):
 			self.masKompile()
 		itemscopy = self.items[:]
 		self.leafSearch()
-		if self.items and self.mhiers != False:
+		if self.items and self.mhiers != None:
 			self.hierTest()
 			self.mailSearch()
 			if self.items:
