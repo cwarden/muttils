@@ -5,10 +5,7 @@ kiosk_cset = "$Hg: kiosk.py,v$"
 ###
 
 import email, os, re, time, urllib, sys
-from email.Errors import MessageParseError, HeaderParseError
-from email.Generator import Generator
-from email.Parser import HeaderParser
-from email import Utils
+import email.Generator, email.Parser
 from mailbox import Maildir, PortableUnixMailbox
 from cheutils import filecheck, readwrite, spl, systemcall
 
@@ -57,8 +54,9 @@ def mailHier():
 
 def msgFactory(fp):
 	try:
-		return HeaderParser().parse(fp)
-	except HeaderParseError:
+		p = email.Parser.HeaderParser()
+		return p.parse(fp)
+	except email.Errors.HeaderParseError:
 		return ""
 
 def nakHead(header):
@@ -86,12 +84,13 @@ def mkUnixfrom(msg):
 	else:
 		date = msg.__getitem__("date")
 	if date:
-		date = time.asctime(Utils.parsedate(date))
+		date = time.asctime(email.Utils.parsedate(date))
 		if "return-path" in msg:
 			ufromaddr = msg["return-path"][1:-1]
 		else:
-			ufromaddr = Utils.parseaddr(
-					msg.get("from", "nobody"))[1]
+			ufromaddr = email.Utils.parseaddr(
+					msg.get("from", "nobody")
+							)[1]
 		msg.set_unixfrom("From %s  %s" % (ufromaddr, date))
 	return msg
 
@@ -260,7 +259,7 @@ class Kiosk(object):
 			fp = open(article, "rb")
 			try:
 				msg = email.message_from_file(fp)
-			except MessageParseError, e:
+			except email.Errors.MessageParseError, e:
 				raise KioskError, e
 			fp.close()
 			self.msgs.append(msg)
@@ -348,7 +347,7 @@ class Kiosk(object):
 		from cheutils import getbin
 		mutt = getbin.getBin("mutt", "muttng")
 		outfp = open(self.kiosk, "ab")
-		g = Generator(outfp, maxheaderlen=0)
+		g = email.Generator.Generator(outfp, maxheaderlen=0)
 		for msg in self.msgs:
 			# delete read status and local server info
 			for h in ("Status", "Xref"):
