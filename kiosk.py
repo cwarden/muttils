@@ -218,20 +218,15 @@ class Kiosk(object):
 					tb=self.tb, xb=self.xb)
 			sys.exit()
 		print "*Unfortunately Google masks all email addresses*"
-		import cStringIO, formatter, htmllib
+		from cheutils import html2text
 		urllib._urlopener = AppURLopener()
 		goOnline()
 		found = []
 		for i in range(ilen):
-			lfp = cStringIO.StringIO()
-			mwriter = formatter.DumbWriter(lfp)
-			mformatter = formatter.AbstractFormatter(mwriter)
-			mparser = htmllib.HTMLParser(mformatter)
-			rfp = urllib.urlopen(urls[i])
-			mparser.feed(rfp.read())
-			rfp.close()
-			s = lfp.getvalue()
-			lfp.close()
+			fp = urllib.urlopen(urls[i])
+			html = fp.read()
+			fp.close()
+			s = html2text.html2Text(html, strict=False)
 			liniter = iter(s.split("\n"))
 			line = ""
 			while not line.startswith("Path: "):
