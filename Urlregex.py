@@ -293,21 +293,3 @@ class Urlregex(Urlparser):
 			if urls:
 				self.items += urls
 		self.urlFilter()
-
-
-def _test():
-	from cheutils.exnam import Usage
-	cset = Usage(rcsid=urlregex_cset)
-	sample = """
-hello world, these are 3 urls:
-cis.tarzisius.net
-www.python.org.
-<www.black
-trash.org> Can you find them?
-"""
-	print cset.getCset()
-	print sample
-	ur = Urlregex()
-	ur.findUrls(sample)
-	print "Here's what we found:"
-	print ur.items
