@@ -1,8 +1,6 @@
 # $Hg: Urlparser.py,v$
 
 import email, re
-from email.Errors import MessageParseError
-from email import Utils
 from HTMLParser import HTMLParser, HTMLParseError
 
 protos = ("all", "web", "http", "mailto",
@@ -28,7 +26,7 @@ quote_re = re.compile(r"^(> ?)+", re.MULTILINE)
 def msgFactory(fp):
 	try:
 		return email.message_from_file(fp)
-	except MessageParseError:
+	except email.Errors.MessageParseError:
 		return ""
 
 def unQuote(s):
@@ -77,7 +75,7 @@ class Urlparser(HTMLParser):
 		for key in keys:
 			vals = self.msg.get_all(key)
 			if vals:
-				pairs = Utils.getaddresses(vals)
+				pairs = email.Utils.getaddresses(vals)
 				urls = [pair[1] for pair in pairs if pair[1]]
 				self.items += urls
 
@@ -91,7 +89,7 @@ class Urlparser(HTMLParser):
 	def mailDeconstructor(self, s):
 		try:
 			self.msg = email.message_from_string(s)
-		except MessageParseError:
+		except email.Errors.MessageParseError:
 			return s
 		if not self.msg or not self.msg["Message-ID"]:
 			return s
