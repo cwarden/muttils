@@ -17,9 +17,9 @@ class Urlcollector(Urlregex, LastExit):
 	def __init__(self, proto="all", nt=False):
 		Urlregex.__init__(self, proto) # <- proto, decl, items
 		LastExit.__init__(self)
-		self.files =[]          # files to search
+		self.files = []         # files to search
 		self.pat = None         # pattern to match urls against
-		self.nt = False         # needs terminal
+		self.nt = nt         	# needs terminal
 
 	def parseError(self):
 		errmsg = "%s: encountered malformed html!\n" \
