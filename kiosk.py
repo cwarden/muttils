@@ -49,8 +49,8 @@ def mailHier():
 	as first item of a list if they are directories,
 	an empty list otherwise."""
 	castle = os.environ["HOME"]
-	for dir in ("Maildir", "Mail"):
-		d = os.path.join(castle, dir)
+	for md in ("Maildir", "Mail"):
+		d = os.path.join(castle, md)
 		if os.path.isdir(d):
 			return [d]
 	return []
@@ -72,11 +72,11 @@ def goOnline():
 	except ImportError:
 		pass
 
-def muttI(id): # uncollapse??
-	"""Opens kiosk mailbox and goes to id."""
+def muttI(mid): # uncollapse??
+	"""Opens kiosk mailbox and goes to mid."""
 	return "-e 'set uncollapse_jump' " \
 		"-e 'push <search>~i\ \'%s\'<return>' -f" \
-		% id
+		% mid
 
 def mkUnixfrom(msg):
 	"""Creates missing unixfrom."""
@@ -201,17 +201,17 @@ class Kiosk(object):
 				print "Warning! `%s': not a directory, skipping" \
 						% hier
 
-	def makeQuery(self, id):
+	def makeQuery(self, mid):
 		"""Reformats Message-ID to google query."""
-		query = ({"selm": id, "dmode": "source", "hl": "en"},
-				{"selm": id, "hl": "en"})[self.browse]
+		query = ({"selm": mid, "dmode": "source", "hl": "en"},
+				{"selm": mid, "hl": "en"})[self.browse]
 		params = urllib.urlencode(query)
 		return "%s%s" % (ggroups, params)
 
 	def goGoogle(self, ilen=0):
 		"""Gets messages from Google Groups."""
 		print "Going google ..."
-		urls = [self.makeQuery(id) for id in self.items]
+		urls = [self.makeQuery(mid) for mid in self.items]
 		if self.browse:
 			from cheutils import selbrowser
 			selbrowser.selBrowser(urls,
@@ -244,8 +244,8 @@ class Kiosk(object):
 				print msg.get_payload(decode=True)
 				time.sleep(5)
 				print "Continuing ..."
-		for id in found:
-			self.items.remove(id)
+		for mid in found:
+			self.items.remove(mid)
 
 	def leafSearch(self):
 		try:
@@ -397,9 +397,9 @@ class Kiosk(object):
 				time.sleep(3)
 		if self.msgs:
 			firstid = None
-			for id in itemscopy:
-				if not id in self.items:
-					firstid = id
+			for mid in itemscopy:
+				if not mid in self.items:
+					firstid = mid
 					break
 			self.openKiosk(firstid)
 
