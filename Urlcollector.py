@@ -1,12 +1,11 @@
 # $Hg: Urlcollector.py,v$
 
-import re
+import re, sys
 from tpager.LastExit import LastExit
 from Urlregex import Urlregex
 from cheutils import exnam
 
 def collectErr(err):
-	import sys
 	sys.exit("%s: %s" % (exnam.exNam(), err))
 
 
@@ -36,7 +35,6 @@ class Urlcollector(Urlregex, LastExit):
 
 	def urlCollect(self):
 		if not self.files: # read from stdin
-			import sys
 			try:
 				data = sys.stdin.read()
 			except KeyboardInterrupt:
