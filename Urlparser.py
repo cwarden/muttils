@@ -69,7 +69,7 @@ class Urlparser(HTMLParser):
 		try:
 			self.feed(text)
 			self.close()
-		except HTMLParseError, AssertionError:
+		except (HTMLParseError, AssertionError):
 			self.ugly = True
 			pass
 
