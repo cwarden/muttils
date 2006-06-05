@@ -143,7 +143,8 @@ class Urlregex(Urlparser):
 	if they are enclosed in '<>'.
 	'''
 	def __init__(self, proto='all', find=True, uniq=True):
-		Urlparser.__init__(self, proto) # <- id, proto, items, url_re, ugly
+		Urlparser.__init__(self, proto=proto) # <- id, proto, items, url_re, ugly
+		self.proto = proto
 		self.find = find    	# for grabbing regexes only
 		self.uniq = uniq        # list only unique urls
 		self.decl = False       # list only declared urls

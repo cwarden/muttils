@@ -155,9 +155,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 	def urlSearch(self):
 		if not self.files:
 			self.nt = True
-		issue = Urlcollector.urlCollect(self)
-		if issue:
-			raise UrlpagerError, issue
+		Urlcollector.urlCollect(self)
 		if self.nt:
 			LastExit.termInit(self)
 		self.urlPager()
