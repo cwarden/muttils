@@ -1,4 +1,4 @@
-sigpager_cset = "$Hg: sigpager.py,v$"
+sigpager_cset = '$Hg: sigpager.py,v$'
 
 import os, random, re, readline
 from cheutils import readwrite
@@ -6,45 +6,45 @@ from LastExit import LastExit
 from Tpager import Tpager
 
 # defaults:
-sigdir = os.path.expanduser("~/.Sig")
-defaultsig = os.getenv("SIGNATURE")
+sigdir = os.path.expanduser('~/.Sig')
+defaultsig = os.getenv('SIGNATURE')
 if not defaultsig:
-	defaultsig = os.path.expanduser("~/.signature")
-optstring = "d:fhs:t:w"
+	defaultsig = os.path.expanduser('~/.signature')
+optstring = 'd:fhs:t:w'
 # d: sigdir, f [include separator], h [help],
 # s: defaultsig, t: sigtail, w [(over)write target file(s)]
 
-sigpager_help = """
+sigpager_help = '''
 [-d <sigdir>][-f][-s <defaultsig>] \\
          [-t <sigtail>][-]
 [-d <sigdir>][-f][-s <defaultsig>] \\
          [-t <sigtail>][-w] <file> [<file> ...]
--h (display this help)"""
+-h (display this help)'''
 
-def userHelp(error=""):
+def userHelp(error=''):
 	from cheutils import exnam
 	u = exnam.Usage(help=sigpager_help, rcsid=sigpager_cset)
 	u.printHelp(err=error)
 
 
 class Signature(Tpager, LastExit):
-	"""
+	'''
 	Provides functions to interactively choose a mail signature
 	matched against a regular expression of your choice.
-	"""
+	'''
 	def __init__(self):
 		Tpager.__init__(self, # <- item, name, format, qfunc
-			name="sig", format="bf",
-			qfunc="default sig, C-c:cancel", ckey="/")
+			name='sig', format='bf',
+			qfunc='default sig, C-c:cancel', ckey='/')
 		LastExit.__init__(self)
-		self.sign = ""          # chosen self.signature
+		self.sign = ''          # chosen self.signature
 		self.sig = defaultsig	# self.signature file
 		self.sdir = sigdir	# directory containing sigfiles
-		self.tail = ".sig"	# tail for sigfiles
+		self.tail = '.sig'	# tail for sigfiles
 		self.full = False	# sig including separator
-		self.inp = ""		# append sig at input
+		self.inp = ''		# append sig at input
 		self.targets = []	# target files to self.sign
-		self.w = "wa"           # if "w": overwrite target file(s)
+		self.w = 'wa'           # if 'w': overwrite target file(s)
 					# sig appended otherwise
 		self.pat = None         # match sigs against pattern
 
@@ -55,13 +55,13 @@ class Signature(Tpager, LastExit):
 		except getopt.GetoptError, e:
 			userHelp(e)
 		for o, a in opts:
-			if o == "-d": self.sdir = a
-			if o == "-f": self.full = True
-			if o == "-h": userHelp()
-			if o == "-s": self.sig = a
-			if o == "-t": self.tail = a
-			if o == "-w": self.w = "w"
-		if args == ["-"]:
+			if o == '-d': self.sdir = a
+			if o == '-f': self.full = True
+			if o == '-h': userHelp()
+			if o == '-s': self.sig = a
+			if o == '-t': self.tail = a
+			if o == '-w': self.w = 'w'
+		if args == ['-']:
 			self.inp = sys.stdin.read()
 		else:
 			self.targets = args
@@ -74,7 +74,7 @@ class Signature(Tpager, LastExit):
 		siglist = filter(lambda f: f.endswith(self.tail),
 				os.listdir(self.sdir) )
 		if not siglist:
-			return ""
+			return ''
 		random.shuffle(siglist)
 		self.items = [self.getString(fn) for fn in siglist]
 		if self.pat and self.items:
@@ -86,15 +86,15 @@ class Signature(Tpager, LastExit):
 
 	def checkPattern(self):
 		try:
-			self.pat = re.compile(r"%s" % self.pat, re.I)
+			self.pat = re.compile(r'%s' % self.pat, re.I)
 		except re.error, e:
-			print "%s in pattern %s" % (e, self.pat)
+			print '%s in pattern %s' % (e, self.pat)
 			self.pat = None
 			self.getPattern()
 
 	def getPattern(self):
-		prompt = "C-c to cancel or\n" \
-			"Enter pattern to match signatures against:\n"
+		prompt = 'C-c to cancel or\n' \
+			'Enter pattern to match signatures against:\n'
 		try:
 			self.pat = raw_input(prompt)
 		except KeyboardInterrupt:
@@ -107,7 +107,7 @@ class Signature(Tpager, LastExit):
 			self.getSig()
 			if self.sign and self.sign.startswith(self.ckey):
 				self.pat = self.sign[1:]
-				self.sign = ""
+				self.sign = ''
 				self.checkPattern()
 				Tpager.__init__(self,
 					self.name, self.format, self.qfunc, self.ckey)
@@ -124,13 +124,13 @@ class Signature(Tpager, LastExit):
 			if not self.sign:
 				self.sign = readwrite.readFile(self.sig)
 			if self.full:
-				self.sign = "-- \n%s" % self.sign
+				self.sign = '-- \n%s' % self.sign
 			self.sign = self.sign.rstrip() # get rid of EOFnewline
 			if not self.targets:
 				if not self.inp:
 					print self.sign
 				else:
-					print "%s%s" % (self.inp, self.sign)
+					print '%s%s' % (self.inp, self.sign)
 			else:
 				for targetfile in self.targets:
 					readwrite.writeFile(targetfile, self.sign, self.w)
