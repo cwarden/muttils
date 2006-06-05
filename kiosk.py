@@ -7,7 +7,7 @@ kiosk_cset = "$Hg: kiosk.py,v$"
 import email, os, re, time, urllib, sys
 from email.Generator import Generator
 from email.Parser import HeaderParser
-from email.Errors import HeaderParseError
+from email.Errors import MessageParseError, HeaderParseError
 from mailbox import Maildir, PortableUnixMailbox
 from cheutils import filecheck, readwrite, spl, systemcall
 
@@ -174,10 +174,13 @@ class Kiosk(object):
 		testline = readwrite.readLine(self.kiosk, "rb")
 		if not testline:
 			return # empty is fine
-		test = email.message_from_string(testline)
+		e = '%s: not a unix mailbox' % self.kiosk
+		try:
+			test = email.message_from_string(testline)
+		except MessageParseError:
+			raise KioskError, e
 		if not test.get_unixfrom():
-			raise KioskError, "%s: not a unix mailbox" \
-					% self.kiosk
+			raise KioskError, e
 		else:
 			self.muttone = False
 
