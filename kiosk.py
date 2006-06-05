@@ -5,7 +5,9 @@ kiosk_cset = "$Hg: kiosk.py,v$"
 ###
 
 import email, os, re, time, urllib, sys
-import email.Generator, email.Parser
+from email.Generator import Generator
+from email.Parser import HeaderParser
+from email.Errors import HeaderParseError
 from mailbox import Maildir, PortableUnixMailbox
 from cheutils import filecheck, readwrite, spl, systemcall
 
@@ -54,9 +56,9 @@ def mailHier():
 
 def msgFactory(fp):
 	try:
-		p = email.Parser.HeaderParser()
+		p = HeaderParser()
 		return p.parse(fp)
-	except email.Errors.HeaderParseError:
+	except HeaderParseError:
 		return ""
 
 def nakHead(header):
@@ -344,7 +346,7 @@ class Kiosk(object):
 		from cheutils import getbin
 		mutt = getbin.getBin("mutt", "muttng")
 		outfp = open(self.kiosk, "ab")
-		g = email.Generator.Generator(outfp, maxheaderlen=0)
+		g = Generator(outfp, maxheaderlen=0)
 		for msg in self.msgs:
 			# delete read status and local server info
 			for h in ("Status", "Xref"):
