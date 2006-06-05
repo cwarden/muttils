@@ -162,8 +162,8 @@ class Kiosk(object):
 		"""Provides the path to an mbox file to store retrieved messages."""
 		if not self.kiosk:
 			import tempfile
-			self.kiosk = tempfile.mkstemp("kiosk")[1]
-			self.tmp = 1
+			self.kiosk = tempfile.mkstemp("kiosk.")[1]
+			self.tmp = True
 			return
 		self.kiosk = filecheck.absolutePath(self.kiosk)
 		if not os.path.exists(self.kiosk):
