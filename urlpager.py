@@ -1,4 +1,4 @@
-urlpager_cset = "$Hg: urlpager.py,v$"
+urlpager_cset = '$Hg: urlpager.py,v$'
 
 ###
 # Caveat:
@@ -16,10 +16,10 @@ from cheutils import getbin, selbrowser, systemcall
 from Urlcollector import Urlcollector
 from kiosk import Kiosk
 
-optstring = "bd:D:f:hiIlnp:k:r:tw:x"
-mailers = ("mutt", "pine", "elm", "mail") 
+optstring = 'bd:D:f:hiIlnp:k:r:tw:x'
+mailers = ('mutt', 'pine', 'elm', 'mail') 
 
-urlpager_help = """
+urlpager_help = '''
 [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]
 -w <download dir> [-r <pattern]
 -i [-r <pattern>][-k <mbox>][<file> ...]
@@ -31,9 +31,9 @@ urlpager_help = """
             [-I][-l][-r <pattern>][-k <mbox>][<file> ...]
 -n [-r <pattern][-I][-l][-k <mbox>][<file> ...]
 -b [-r <pattern][-I][<file> ...]
--h (display this help)"""
+-h (display this help)'''
 
-def userHelp(error=""):
+def userHelp(error=''):
 	from cheutils.exnam import Usage
 	u = Usage(help=urlpager_help, rcsid=urlpager_cset)
 	u.printHelp(err=error)
@@ -46,16 +46,16 @@ def goOnline():
 		pass
 
 class UrlpagerError(Exception):
-	"""Exception class for this module."""
+	'''Exception class for this module.'''
 
 class Urlpager(Urlcollector, Kiosk, Tpager):
 	def __init__(self):
 		Urlcollector.__init__(self) # (Urlregex, LastExit) <- nt, proto, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mhiers, mspool, local, xb, tb
-		Tpager.__init__(self, name="url") # <- items, name
-		self.ft = ""	   # ftpclient
-		self.url = ""	   # selected url
-		self.getdir = ""   # download in dir via wget
+		Tpager.__init__(self, name='url') # <- items, name
+		self.ft = ''	   # ftpclient
+		self.url = ''	   # selected url
+		self.getdir = ''   # download in dir via wget
 
 	def argParser(self):
 		import getopt, sys
@@ -64,77 +64,77 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 		except getopt.GetoptError, e:
 			raise UrlpagerError, e
 		for o, a in opts:
-			if o == "-b": # don't look up msgs locally
-				self.proto = "mid"
+			if o == '-b': # don't look up msgs locally
+				self.proto = 'mid'
 				self.browse = True
-			if o == "-d": # specific mail hierarchies
-				self.proto = "mid"
-				self.mhiers = a.split(":")
-			if o == "-D": # specific mail hierarchies, exclude mspool
-				self.proto = "mid"
+			if o == '-d': # specific mail hierarchies
+				self.proto = 'mid'
+				self.mhiers = a.split(':')
+			if o == '-D': # specific mail hierarchies, exclude mspool
+				self.proto = 'mid'
 				self.mspool = False
-				self.mhiers = a.split(":")
-			if o == "-f": # ftp client
+				self.mhiers = a.split(':')
+			if o == '-f': # ftp client
 				self.ft = getbin.getBin(a)
-			if o == "-h":
+			if o == '-h':
 				userHelp()
-			if o == "-I": # look for declared message-ids
-				self.proto = "mid"
+			if o == '-I': # look for declared message-ids
+				self.proto = 'mid'
 				self.decl = True
-			if o == "-i": # look for ids, in text w/o prot (email false positives)
-				self.proto = "mid"
-			if o == "-k": # mailbox to store retrieved message
-				self.proto = "mid"
+			if o == '-i': # look for ids, in text w/o prot (email false positives)
+				self.proto = 'mid'
+			if o == '-k': # mailbox to store retrieved message
+				self.proto = 'mid'
 				self.kiosk = a
-			if o == "-l": # only local search for message-ids
-				self.proto = "mid"
+			if o == '-l': # only local search for message-ids
+				self.proto = 'mid'
 				self.local = True
-			if o == "-n": # don't search mailboxes for message-ids
-				self.proto = "mid"
+			if o == '-n': # don't search mailboxes for message-ids
+				self.proto = 'mid'
 				self.mhiers = False
-			if o == "-p": # protocol(s)
+			if o == '-p': # protocol(s)
 				self.proto = a
-			if o == "-r": # regex pattern to match urls against
+			if o == '-r': # regex pattern to match urls against
 				self.pat = a
-			if o == "-x": # xbrowser
+			if o == '-x': # xbrowser
 				self.xb = True
-			if o == "-t": # text browser command
+			if o == '-t': # text browser command
 				self.tb = True
-			if o == "-w": # download dir for wget
+			if o == '-w': # download dir for wget
 				from cheutils import filecheck
-				self.proto = "web"
+				self.proto = 'web'
 				getdir = a
 				self.getdir = filecheck.fileCheck(getdir,
-						spec="isdir", absolute=True)
+						spec='isdir', absolute=True)
 
 	def urlPager(self):
-		if not self.proto in ("all", "mid"):
-			self.name = "%s %s" % (self.proto, self.name)
-		elif self.proto == "mid":
-			self.name = "message-id"
-		self.name = "unique %s" % self.name
+		if not self.proto in ('all', 'mid'):
+			self.name = '%s %s' % (self.proto, self.name)
+		elif self.proto == 'mid':
+			self.name = 'message-id'
+		self.name = 'unique %s' % self.name
 		self.url = Tpager.interAct(self)
 
 	def urlGo(self):
 		cs = []
 		conny = selbrowser.local_re.match(self.url) == None
-		if self.proto == "mailto" \
-				or self.proto == "all" \
+		if self.proto == 'mailto' \
+				or self.proto == 'all' \
 				and Urlregex.mailCheck(self.url):
 			cs = [getbin.getBin(mailers)]
 			conny = False
 		elif self.getdir:
 			if not conny:
-				e = "wget doesn't retrieve local files"
+				e = 'wget does not retrieve local files'
 				raise UrlpagerError, e
-			cs = [getbin.getBin("wget"), "-P", self.getdir]
-		elif self.proto == "ftp" or self.ft \
+			cs = [getbin.getBin('wget'), '-P', self.getdir]
+		elif self.proto == 'ftp' or self.ft \
 				or Urlregex.ftpCheck(self.url):
 			if not os.path.splitext(self.url)[1] \
-					and not self.url.endswith("/"):
-				self.url = self.url + "/"
+					and not self.url.endswith('/'):
+				self.url = self.url + '/'
 			if not self.ft:
-				cs = ["ftp"]
+				cs = ['ftp']
 			else:
 				cs = [self.ft]
 			self.nt = True
@@ -145,8 +145,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 				goOnline()
 			if not self.getdir or self.nt: # program needs terminal
 				tty = os.ctermid()
-				cs = cs + [self.url, "<", tty, ">", tty]
-				cs = " ".join(cs)
+				cs = cs + [self.url, '<', tty, '>', tty]
+				cs = ' '.join(cs)
 				systemcall.systemCall(cs, sh=True)
 			else:
 				cs.append(self.url)
@@ -162,7 +162,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 			LastExit.termInit(self)
 		self.urlPager()
 		if self.url:
-			if self.proto != "mid":
+			if self.proto != 'mid':
 				self.urlGo()
 			else:
 				self.items = [self.url]

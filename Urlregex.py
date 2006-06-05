@@ -1,41 +1,41 @@
-urlregex_cset = "$Hg: Urlregex.py,v$"
+# $Hg: Urlregex.py,v$
 
 import re
 from Urlparser import Urlparser
 
 def orJoin(s):
-	return "(%s)" % "|".join(s.split())
+	return '(%s)' % '|'.join(s.split())
 
 # and now to the url parts
-#any = "_a-z0-9/#~:.?+=&%!@\-"   # valid url-chars
-any = "-._a-z0-9/#~:,;?+=&%!@()" # valid url-chars+comma+semicolon+parenthesises
+#any = '_a-z0-9/#~:.?+=&%!@\-'   # valid url-chars
+any = '-._a-z0-9/#~:,;?+=&%!@()' # valid url-chars+comma+semicolon+parenthesises
 			        # Message-ID: <10rb6mngqccs018@corp.supernews.com>
                                 # Message-id: <20050702131039.GA10840@oreka.com>
 				# Message-ID: <e2jctg$kgp$1@news1.nefonline.de>
-idy = "-._a-z0-9#~?+=&%!$\]["   # valid message-id-chars ### w/o ":/"?
-delim = "-.,:?!)("		        # punctuation (how 'bout "!"?)
+idy = '-._a-z0-9#~?+=&%!$\]['   # valid message-id-chars ### w/o ':/'?
+delim = '-.,:?!)('		        # punctuation (how 'bout '!'?)
 
 # top level domains
-tops =	"a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] " \
-	"c[acdfghiklmnoruvxyz] d[ejkmoz] e[ceghrst] " \
-	"f[ijkmor] g[abdefghilmnpqrstuwy] " \
-	"h[kmnrtu] i[delnmoqrst] j[emop] " \
-	"k[eghimnprwyz] l[abcikrstuvy] " \
-	"m[acdghklmnopqrstuvwxyz] n[acefgilopruz] om " \
-	"p[aefghklmnrstwy] qa r[eouw] " \
-	"s[abcdeghijklmnortuvyz] " \
-	"t[cdfghjkmnoprtvwz] u[agkmsyz] " \
-	"v[acegivu] w[fs] y[etu] z[amw] " \
-	"arpa com edu gov int mil net org aero biz coop info name pro"
-top = "\.%s" % orJoin(tops)
+tops =	'a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] ' \
+	'c[acdfghiklmnoruvxyz] d[ejkmoz] e[ceghrst] ' \
+	'f[ijkmor] g[abdefghilmnpqrstuwy] ' \
+	'h[kmnrtu] i[delnmoqrst] j[emop] ' \
+	'k[eghimnprwyz] l[abcikrstuvy] ' \
+	'm[acdghklmnopqrstuvwxyz] n[acefgilopruz] om ' \
+	'p[aefghklmnrstwy] qa r[eouw] ' \
+	's[abcdeghijklmnortuvyz] ' \
+	't[cdfghjkmnoprtvwz] u[agkmsyz] ' \
+	'v[acegivu] w[fs] y[etu] z[amw] ' \
+	'arpa com edu gov int mil net org aero biz coop info name pro'
+top = '\.%s' % orJoin(tops)
 
-#CPAN = "ftp://ftp.cpan.org/pub/CPAN/"
-CPAN = r"ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1"
-#CTAN = "ftp://ftp.ctan.org/tex-archive/"
-CTAN = r"ftp://ftp.dante.de/tex-archive/\1"
+#CPAN = 'ftp://ftp.cpan.org/pub/CPAN/'
+CPAN = r'ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1'
+#CTAN = 'ftp://ftp.ctan.org/tex-archive/'
+CTAN = r'ftp://ftp.dante.de/tex-archive/\1'
 
 ### outro ###
-outro = r"""
+outro = r'''
 	%(top)s			# top level preceded by dot
 	(			# { ungreedy 0 or more
 		(/|:\d+)	#   slash or port
@@ -47,27 +47,27 @@ outro = r"""
 	|			# or else
 		$		#  then end of the string
 	)
-	""" % vars()
+	''' % vars()
 
 ### outro w/ spaces ###
-spoutro = r"""
+spoutro = r'''
 	%(top)s			# top level dom preceded by dot
 	(			# { 0 or more
 		\s*?/		#   opt space and slash
 		[%(any)s\s] *?	#   any or space (space to be removed)
 	) ?			# } 0 or one
-	(?=>)		# lookahead for ">"
-	""" % vars()
+	(?=>)		# lookahead for '>'
+	''' % vars()
 
 # get rid of *quoted* mail headers of no use
 # (how to do this more elegantly?)
-headers = "Received References Message-ID In-Reply-To " \
-	"Delivered-To List-Id Path Return-Path " \
-	"Newsgroups NNTP-Posting-Host Xref " \
-	"X-ID X-Abuse-Info X-Trace X-MIME-Autoconverted"
+headers = 'Received References Message-ID In-Reply-To ' \
+	'Delivered-To List-Id Path Return-Path ' \
+	'Newsgroups NNTP-Posting-Host Xref ' \
+	'X-ID X-Abuse-Info X-Trace X-MIME-Autoconverted'
 head = orJoin(headers)
 
-headsoff = r"""
+headsoff = r'''
 	(?<=			# look back in negative anger
 		[\n^]		#  for newline or absolute beginning
 	)			# end anger
@@ -79,29 +79,29 @@ headsoff = r"""
 		[^\n]+?		#   greedy anything
 	) *?			# } 0 or more
 	(\n|$)			# newline or end of text
-	""" % head
+	''' % head
 
 # attributions:
-nproto = "(msgid|news|nntp|message(-id)?|article|MID)(:\s*|\s+)<{,2}"
+nproto = '(msgid|news|nntp|message(-id)?|article|MID)(:\s*|\s+)<{,2}'
 
-mid = r"""
+mid = r'''
 	[%(idy)s] +?            # one or more valid id char
 	@
 	[-._a-z0-9] +?		# one or more server char
 	%(top)s                 # top level domain
 	\b
-	""" % vars()
+	''' % vars()
 
-declid = r"(%(nproto)s%(mid)s)" % vars()
-simplid = r"(\b%(mid)s)" % vars()
+declid = r'(%(nproto)s%(mid)s)' % vars()
+simplid = r'(\b%(mid)s)' % vars()
 
-rawwipe = r"(%(declid)s)|(%(headsoff)s)" % vars()
+rawwipe = r'(%(declid)s)|(%(headsoff)s)' % vars()
 
 ## precompiled regexes ##
-ftp_re = re.compile(r"(s?ftp://|ftp\.)", re.IGNORECASE)
+ftp_re = re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
 
-address = "[-._a-z0-9]+@[-._a-z0-9]+%s" % top
-mail = r"""
+address = '[-._a-z0-9]+@[-._a-z0-9]+%s' % top
+mail = r'''
 	\b(			# word boundary and group open
 		mailto:
 		%(address)s	# address
@@ -111,7 +111,7 @@ mail = r"""
 		(mailto:)?	# optional mailto
 		%(address)s	# and address
 	)\b			# close group and word boundary
-	""" % vars()
+	''' % vars()
 mail_re = re.compile(mail, re.IGNORECASE|re.VERBOSE)
 # chris@localhost necessary
 	
@@ -129,70 +129,70 @@ def httpCheck(url):
 def mailCheck(url):
 	return mail_re.match(url)
 
-filterdict = {	"web":	mailKill,
-		"ftp":	ftpCheck,
-		"http":	httpCheck,
-		"mailto": mailCheck }
+filterdict = {	'web':	mailKill,
+		'ftp':	ftpCheck,
+		'http':	httpCheck,
+		'mailto': mailCheck }
 
 class Urlregex(Urlparser):
-	"""
+	'''
 	Provides functions to extract urls from text,
 	customized by attributes.
-	Detects also www-urls that don"t start with a protocol
+	Detects also www-urls that don't start with a protocol
 	and urls spanning more than 1 line
-	if they are enclosed in "<>".
-	"""
-	def __init__(self, proto="all", find=True, uniq=True):
+	if they are enclosed in '<>'.
+	'''
+	def __init__(self, proto='all', find=True, uniq=True):
 		Urlparser.__init__(self, proto) # <- id, proto, items, url_re, ugly
 		self.find = find    	# for grabbing regexes only
 		self.uniq = uniq        # list only unique urls
 		self.decl = False       # list only declared urls
 		self.kill_re = None	# customized pattern to find non url chars
-		self.intro = ""
-		self.protocol = ""	# pragmatic proto (may include www., ftp.)
+		self.intro = ''
+		self.protocol = ''	# pragmatic proto (may include www., ftp.)
 		self.proto_re = None
 
 	def httpAdd(self, url):
 		if not re.match(self.protocol, url):
-			return "http://%s" % url
+			return 'http://%s' % url
 		return url
 
 	def urlCheck(self, s):
 		self.urlObjects()
-		url = self.kill_re.sub("", s)
+		url = self.kill_re.sub('', s)
 		return self.url_re.match(url)
 
 
 	def setStrings(self):
 		### intro ###
-		if self.proto in ("all", "web"): ## groups
-			protocols = "(www|ftp)\. https?:// " \
-				"finger:// s?ftp:// telnet:// mailto:".split()
-#                                "(file://(localhost)?/|http://(localhost|127\.) " \
+		if self.proto in ('all', 'web'): ## groups
+			protocols = '(www|ftp)\. https?:// ' \
+				'finger:// s?ftp:// telnet:// mailto:'.split()
+#                                '(file://(localhost)?/|http://(localhost|127\.) ' \
 				# TO DO: local switch!
 			# gopher? wais?
-			if self.proto == "web":
+			if self.proto == 'web':
 				protocols = protocols[:-1] # web only
-			intros = "%s" % "|".join(protocols)
-			protocols = "%s" % "|".join(protocols[1:])
-			self.intro = "(%s)" % intros
-			self.protocol = "(%s)" % protocols
+			intros = '%s' % '|'.join(protocols)
+			protocols = '%s' % '|'.join(protocols[1:])
+			self.intro = '(%s)' % intros
+			self.protocol = '(%s)' % protocols
 
 		else:				  ## singles
 			self.decl = True
-			self.protocol = "%s://" % self.proto
-			if self.proto == "http":
-				self.intro = "(https?://|www\.)"
-			elif self.proto == "ftp":
-				self.intro = "(s?ftp://|ftp\.)"
+			self.protocol = '%s://' % self.proto
+			if self.proto == 'http':
+				self.intro = '(https?://|www\.)'
+			elif self.proto == 'ftp':
+				self.intro = '(s?ftp://|ftp\.)'
 			else:
 				self.intro = self.protocol
-		self.intro = "(url:)?%s" % self.intro
+		self.intro = '(url:)?%s' % self.intro
 
 	def getRaw(self):
 
-		proto_url = r"""	## long url ##
-			(?<=<)		# look behind for "<"
+		proto_url = r'''	## long url ##
+			(?<=<)		# look behind for '<'
 			%(intro)s	# intro
 			[%(any)s\s] +?	# any or space (space to be removed)
 			%(spoutro)s     # outro w/ spaces
@@ -201,35 +201,35 @@ class Urlregex(Urlparser):
 			%(intro)s	# intro
 			[%(any)s] +?	# followed by 1 or more valid url char
 			%(outro)s	# outro
-			""" % { "intro":   self.intro,
-			        "any":     any,
-                                "spoutro": spoutro,
-				"outro":   outro }
+			''' % { 'intro':   self.intro,
+			        'any':     any,
+                                'spoutro': spoutro,
+				'outro':   outro }
 
 		if self.decl:
-			return "(%s)" % proto_url
+			return '(%s)' % proto_url
 
 		## follows an attempt to comprise as much urls as possible
 		## some bad formatted stuff too
-		any_url = r"""		## long url ##
-			(?<=<)		# look behind for "<"
+		any_url = r'''		## long url ##
+			(?<=<)		# look behind for '<'
 			[%(any)s\s] +?	# any or space (space to be removed)
 			%(spoutro)s     # outro w/ spaces
 			|		## or url in 1 line ##
 			\b		# start at word boundary
 			[%(any)s] +?	# one or more valid characters
 			%(outro)s	# outro
-			""" % { "any":     any,
-				"spoutro": spoutro,
-				"outro":   outro }
+			''' % { 'any':     any,
+				'spoutro': spoutro,
+				'outro':   outro }
 		
-		return "(%s|%s)" % (proto_url, any_url)
+		return '(%s|%s)' % (proto_url, any_url)
 
 	def uniDeluxe(self):
-		"""remove duplicates deluxe:
+		'''remove duplicates deluxe:
 		of http://www.blacktrash.org, www.blacktrash.org
-		keep only the first, declared version."""
-		truncs = [self.proto_re.sub("", u) for u in self.items]
+		keep only the first, declared version.'''
+		truncs = [self.proto_re.sub('', u) for u in self.items]
 		deluxurls = []
 		for i in range(len(self.items)):
 			url = self.items[i]
@@ -244,26 +244,26 @@ class Urlregex(Urlparser):
 			self.items = filter(filterdict[self.proto], self.items)
 		if self.uniq:
 			self.items = list(set(self.items))
-			if self.proto != "mid" and not self.decl:
+			if self.proto != 'mid' and not self.decl:
 				self.uniDeluxe()
 
 	def urlObjects(self):
-		"""Creates customized regex objects of url."""
+		'''Creates customized regex objects of url.'''
 		Urlparser.protoTest(self)
-		if self.proto == "mailto":# be pragmatic and list not only declared
+		if self.proto == 'mailto':# be pragmatic and list not only declared
 			self.url_re = mail_re
-			self.proto_re = re.compile(r"^mailto:")
-		elif self.proto != "mid":
+			self.proto_re = re.compile(r'^mailto:')
+		elif self.proto != 'mid':
 			self.setStrings()
 			rawurl = self.getRaw()
 			self.url_re = re.compile(rawurl,
 					re.IGNORECASE|re.VERBOSE)
 			if self.find:
-				self.kill_re = re.compile(r"\s+?|^url:",
+				self.kill_re = re.compile(r'\s+?|^url:',
 						re.IGNORECASE) 
 				if not self.decl:
 					self.proto_re = re.compile(
-							r"^%s" % self.protocol,
+							r'^%s' % self.protocol,
 							re.IGNORECASE)
 		elif self.decl:
 			self.url_re = re.compile(declid,
@@ -274,22 +274,22 @@ class Urlregex(Urlparser):
 			self.url_re = re.compile(simplid,
 					re.IGNORECASE|re.VERBOSE)
 
-	def findUrls(self, data, type="text/plain"):
+	def findUrls(self, data, type='text/plain'):
 		self.urlObjects() # compile url_re
-		if type == "text/html":
+		if type == 'text/html':
 			Urlparser.makeUrlist(self, data)
-		elif type.startswith("text/"):
+		elif type.startswith('text/'):
 			s = Urlparser.mailDeconstructor(self, data)
-			if self.proto != "mid":
+			if self.proto != 'mid':
 				wipe_resub = re.compile(rawwipe,
-						re.IGNORECASE|re.VERBOSE), ""
-				cpan_resub = re.compile(r"CPAN:\s*/?([A-Za-z]+?)"), CPAN 
-				ctan_resub = re.compile(r"CTAN:\s*/?([A-Za-z]+?)"), CTAN
+						re.IGNORECASE|re.VERBOSE), ''
+				cpan_resub = re.compile(r'CPAN:\s*/?([A-Za-z]+?)'), CPAN 
+				ctan_resub = re.compile(r'CTAN:\s*/?([A-Za-z]+?)'), CTAN
 				for resub in (wipe_resub, cpan_resub, ctan_resub):
 					s = resub[0].sub(resub[1], s)
 			urls = [u[0] for u in self.url_re.findall(s)]
 			if self.kill_re:
-				urls = [self.kill_re.sub("", u) for u in urls]
+				urls = [self.kill_re.sub('', u) for u in urls]
 			if urls:
 				self.items += urls
 		self.urlFilter()

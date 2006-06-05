@@ -6,15 +6,15 @@ from Urlregex import Urlregex
 from cheutils import exnam
 
 def collectErr(err):
-	sys.exit("%s: %s" % (exnam.exNam(), err))
+	sys.exit('%s: %s' % (exnam.exNam(), err))
 
 
 class Urlcollector(Urlregex, LastExit):
-	"""
+	'''
 	Provides function to retrieve urls
 	from files or input stream.
-	"""
-	def __init__(self, proto="all", nt=False):
+	'''
+	def __init__(self, proto='all', nt=False):
 		Urlregex.__init__(self, proto) # <- proto, decl, items
 		LastExit.__init__(self)
 		self.files = []         # files to search
@@ -22,15 +22,15 @@ class Urlcollector(Urlregex, LastExit):
 		self.nt = nt         	# needs terminal
 
 	def parseError(self):
-		errmsg = "%s: encountered malformed html!\n" \
-			 "Might be unable to retrieve every url.\n" \
-			 "Continue? [Yes], no " % exnam.exNam()
+		errmsg = '%s: encountered malformed html!\n' \
+			 'Might be unable to retrieve every url.\n' \
+			 'Continue? [Yes], no ' % exnam.exNam()
 		if self.nt:
 			LastExit.termInit(self)
 		yorn = raw_input(errmsg)
 		if self.nt:
 			LastExit.reInit(self)
-		if yorn.lower() in ("n", "no"):
+		if yorn.lower() in ('n', 'no'):
 			sys.exit(1)
 
 	def urlCollect(self):
@@ -39,7 +39,7 @@ class Urlcollector(Urlregex, LastExit):
 				data = sys.stdin.read()
 			except KeyboardInterrupt:
 				print
-				collectErr("needs stdin or filename(s)")
+				collectErr('needs stdin or filename(s)')
 			Urlregex.findUrls(self, data)
 		else:
 			import datatype
@@ -50,7 +50,7 @@ class Urlcollector(Urlregex, LastExit):
 			self.parseError()
 		if self.pat and self.items:
 			try:
-				self.pat = re.compile(r"%s" % self.pat, re.I)
+				self.pat = re.compile(r'%s' % self.pat, re.I)
 			except re.error, e:
 				collectErr("%s in pattern `%s'" % (e, self.pat))
 			self.items = filter(lambda i: self.pat.search(i),
