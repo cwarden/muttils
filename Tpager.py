@@ -50,7 +50,8 @@ class Tpager(Pages):
 
 	def interAct(self, newdict=True):
 		"""Lets user page through a list of items and make a choice."""
-		if newdict: Pages.pagesDict(self)
+		if newdict:
+			Pages.pagesDict(self)
 		self.header = "*%s*" % spl.sPl(self.ilen, self.name)
 		self.header = "%s\n\n" % self.colTrunc(self.header, self.cols-2)
 		plen = len(self.pages)
@@ -68,11 +69,12 @@ class Tpager(Pages):
 				return self.itemsdict[reply]
 			elif self.ckey and reply.startswith(self.ckey):
 				return reply
-			else: self.interAct(newdict=False) # display same page
+			else:
+				self.interAct(newdict=False) # display same page
 		else: # more than 1 page
 			pn = 1 # start at first page
 			pdir = -1 # initial paging direction reversed
-			while 1:
+			while True:
 				bs = "" # reverse paging direction
 				if 1 < pn < plen:
 					bs = "-:%s, " % pds[pdir*-1]
