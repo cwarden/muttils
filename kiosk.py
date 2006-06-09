@@ -58,7 +58,7 @@ def msgFactory(fp):
 	try:
 		p = HeaderParser()
 		return p.parse(fp)
-	except HeaderParseError:
+	except (HeaderParseError, MessageParseError):
 		return ''
 
 def nakHead(header):
@@ -230,8 +230,13 @@ class Kiosk(object):
 			s = html2text.html2Text(html, strict=False)
 			liniter = iter(s.split('\n'))
 			line = ''
-			while not line.startswith('Path: '):
-				line = liniter.next()
+			try:
+				while not line.startswith('Path: '):
+					line = liniter.next()
+			except StopIteration:
+				print '%s: not at Google' % mid
+				time.sleep(5)
+				break
 			lines = [line]
 			while not line.startswith('(image) Google Home['):
 				line = liniter.next()
