@@ -91,7 +91,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 				self.local = True
 			if o == '-n': # don't search mailboxes for message-ids
 				self.proto = 'mid'
-				self.mhiers = False
+				self.mhiers = None
 			if o == '-p': # protocol(s)
 				self.proto = a
 			if o == '-r': # regex pattern to match urls against

@@ -85,7 +85,7 @@ class Urlbatcher(Urlcollector, Kiosk):
 				self.local = True
 			if o == '-n': # don't search local mailboxes
 				self.proto = 'mid'
-				self.mhiers = False
+				self.mhiers = None
 			if o == '-r':
 				self.pat = a
 			if o == '-w': # download dir for wget
