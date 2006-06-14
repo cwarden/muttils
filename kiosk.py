@@ -222,6 +222,7 @@ class Kiosk(object):
 		opener = urllib2.build_opener()
 		opener.addheaders = [('User-Agent', 'w3m')]
 		goOnline()
+		header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
 		found = []
 		for mid in self.items:
 			fp = opener.open(self.makeQuery(mid))
@@ -231,7 +232,7 @@ class Kiosk(object):
 			liniter = iter(s.split('\n'))
 			line = ''
 			try:
-				while not line.startswith('Path: '):
+				while not header_re.match(line):
 					line = liniter.next()
 			except StopIteration:
 				print '%s: not at Google' % mid
