@@ -6,17 +6,47 @@ from Urlparser import Urlparser
 def orJoin(s):
 	return '(%s)' % '|'.join(s.split())
 
+def mkDomPat(top, any, delim):
+	'''Creates the raw domain parts of the url patterns.
+	2 patterns, the second of which contains spaces.'''
+	dom = r'''
+		%(top)s			# top level preceded by dot
+		(			# { ungreedy 0 or more
+			(/|:\d+)	#   slash or port
+			[%(any)s] *?	#   0 or more valid  
+		) ?			# } 0 or one
+		(?=			# look-ahead non-consumptive assertion
+			[%(delim)s] *?	#  either 0 or more punctuation
+			[^%(any)s]	#  followed by a non-url char
+		|			# or else
+			$		#  then end of the string
+		)
+		''' % vars()
+	spdom = r'''
+		%(top)s			# top level dom preceded by dot
+		(			# { 0 or more
+			\s*?/		#   opt space and slash
+			[%(any)s\s] *?	#   any or space (space to be removed)
+		) ?			# } 0 or one
+		(?=>)		        # lookahead for '>'
+		''' % vars()
+	return dom, spdom
+
 # and now to the url parts
 #any = '_a-z0-9/#~:.?+=&%!@\-'   # valid url-chars
 any = '-._a-z0-9/#~:,;?+=&%!@()' # valid url-chars+comma+semicolon+parenthesises
 			        # Message-ID: <10rb6mngqccs018@corp.supernews.com>
                                 # Message-id: <20050702131039.GA10840@oreka.com>
 				# Message-ID: <e2jctg$kgp$1@news1.nefonline.de>
-idy = '-._a-z0-9#~?+=&%!$\]['   # valid message-id-chars ### w/o ':/'?
-delim = '-.,:?!)('		        # punctuation (how 'bout '!'?)
+idy = '-._a-z0-9#~?+=&%!$\][' # valid message-id-chars ### w/o ':/'?
+delim = '-.,:?!)('	      # punctuation (how 'bout '!'?)
+
+# international domains
+intls = 'arpa com edu gov int mil net org aero biz coop info name pro'
 
 # top level domains
-tops =	'a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] ' \
+tops =	'%s ' \
+	'a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] ' \
 	'c[acdfghiklmnoruvxyz] d[ejkmoz] e[ceghrst] ' \
 	'f[ijkmor] g[abdefghilmnpqrstuwy] ' \
 	'h[kmnrtu] i[delnmoqrst] j[emop] ' \
@@ -25,39 +55,18 @@ tops =	'a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] ' \
 	'p[aefghklmnrstwy] qa r[eouw] ' \
 	's[abcdeghijklmnortuvyz] ' \
 	't[cdfghjkmnoprtvwz] u[agkmsyz] ' \
-	'v[acegivu] w[fs] y[etu] z[amw] ' \
-	'arpa com edu gov int mil net org aero biz coop info name pro'
+	'v[acegivu] w[fs] y[etu] z[amw]' % intls
+
 top = '\.%s' % orJoin(tops)
+intl = '\.%s' % orJoin(intls)
+
+proto_dom, proto_spdom = mkDomPat(top, any, delim)
+any_dom, any_spdom = mkDomPat(intl, any, delim)
 
 #CPAN = 'ftp://ftp.cpan.org/pub/CPAN/'
 CPAN = r'ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1'
 #CTAN = 'ftp://ftp.ctan.org/tex-archive/'
 CTAN = r'ftp://ftp.dante.de/tex-archive/\1'
-
-### outro ###
-outro = r'''
-	%(top)s			# top level preceded by dot
-	(			# { ungreedy 0 or more
-		(/|:\d+)	#   slash or port
-		[%(any)s] *?	#   0 or more valid  
-	) ?			# } 0 or one
-	(?=			# look-ahead non-consumptive assertion
-		[%(delim)s] *?	#  either 0 or more punctuation
-		[^%(any)s]	#  followed by a non-url char
-	|			# or else
-		$		#  then end of the string
-	)
-	''' % vars()
-
-### outro w/ spaces ###
-spoutro = r'''
-	%(top)s			# top level dom preceded by dot
-	(			# { 0 or more
-		\s*?/		#   opt space and slash
-		[%(any)s\s] *?	#   any or space (space to be removed)
-	) ?			# } 0 or one
-	(?=>)		# lookahead for '>'
-	''' % vars()
 
 # get rid of *quoted* mail headers of no use
 # (how to do this more elegantly?)
@@ -196,16 +205,16 @@ class Urlregex(Urlparser):
 			(?<=<)		# look behind for '<'
 			%(intro)s	# intro
 			[%(any)s\s] +?	# any or space (space to be removed)
-			%(spoutro)s     # outro w/ spaces
+			%(spdom)s       # dom w/ spaces
 			|		## or url in 1 line ##
 			\b		# start at word boundary
 			%(intro)s	# intro
 			[%(any)s] +?	# followed by 1 or more valid url char
-			%(outro)s	# outro
+			%(dom)s	        # dom
 			''' % { 'intro':   self.intro,
 			        'any':     any,
-                                'spoutro': spoutro,
-				'outro':   outro }
+                                'spdom': proto_spdom,
+				'dom':   proto_dom }
 
 		if self.decl:
 			return '(%s)' % proto_url
@@ -215,14 +224,14 @@ class Urlregex(Urlparser):
 		any_url = r'''		## long url ##
 			(?<=<)		# look behind for '<'
 			[%(any)s\s] +?	# any or space (space to be removed)
-			%(spoutro)s     # outro w/ spaces
+			%(spdom)s       # dom w/ spaces
 			|		## or url in 1 line ##
 			\b		# start at word boundary
 			[%(any)s] +?	# one or more valid characters
-			%(outro)s	# outro
+			%(dom)s	        # dom
 			''' % { 'any':     any,
-				'spoutro': spoutro,
-				'outro':   outro }
+				'spdom': any_spdom,
+				'dom':   any_dom }
 		
 		return '(%s|%s)' % (proto_url, any_url)
 
