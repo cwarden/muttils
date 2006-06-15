@@ -218,18 +218,18 @@ class Kiosk(object):
 			sys.exit()
 		print '*Unfortunately Google masks all email addresses*'
 		import urllib2
-		from cheutils import html2text
+		from cheutils.html2text import HTML2Text
 		opener = urllib2.build_opener()
 		opener.addheaders = [('User-Agent', 'w3m')]
 		goOnline()
 		header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
 		found = []
+		htparser = HTML2Text(strict=False)
 		for mid in self.items:
 			fp = opener.open(self.makeQuery(mid))
-			html = fp.read()
+			htparser.write(fp.read(), append=False)
 			fp.close()
-			s = html2text.html2Text(html, strict=False)
-			liniter = iter(s.split('\n'))
+			liniter = iter(htparser.readlines(nl=False))
 			line = ''
 			try:
 				while not header_re.match(line):
@@ -251,6 +251,7 @@ class Kiosk(object):
 				print msg.get_payload(decode=True)
 				time.sleep(5)
 				print 'Continuing ...'
+		htparser.close()
 		for mid in found:
 			self.items.remove(mid)
 
