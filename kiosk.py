@@ -12,7 +12,10 @@ from mailbox import Maildir, PortableUnixMailbox
 from cheutils import filecheck, readwrite, spl, systemcall
 
 optstr = 'bd:D:hk:lm:ntx'
-ggroups = 'http://groups.google.com/groups?'
+ggroups = 'http://groups.google.com/groups'
+useragent = ('User-Agent', 'w3m')
+urlfailmsg = 'reason of url retrieval failure: '
+urlerrmsg = 'url retrieval error code: '
 muttone = "-e 'set pager_index_lines=0' " \
        "-e 'set quit=yes' -e 'bind pager q quit' " \
        "-e 'push <return>' -f"
@@ -204,32 +207,41 @@ class Kiosk(object):
 		'''Reformats Message-ID to google query.'''
 		query = ({'selm': mid, 'dmode': 'source', 'hl': 'en'},
 				{'selm': mid, 'hl': 'en'})[self.browse]
-		params = urllib.urlencode(query)
-		return '%s%s' % (ggroups, params)
+		return '%s?%s' % (ggroups,  urllib.urlencode(query))
+
+	def gooBrowse(self):
+		'''Visits given urls with browser and exits.'''
+		from cheutils import selbrowser
+		urls = [self.makeQuery(mid) for mid in self.items]
+		selbrowser.selBrowser(urls,
+				tb=self.tb, xb=self.xb)
+		sys.exit()
 
 	def goGoogle(self):
 		'''Gets messages from Google Groups.'''
 		print 'Going google ...'
 		if self.browse:
-			from cheutils import selbrowser
-			urls = [self.makeQuery(mid) for mid in self.items]
-			selbrowser.selBrowser(urls,
-					tb=self.tb, xb=self.xb)
-			sys.exit()
+			self.gooBrowse()
 		print '*Unfortunately Google masks all email addresses*'
 		import urllib2
 		from cheutils.html2text import HTML2Text
 		opener = urllib2.build_opener()
-		opener.addheaders = [('User-Agent', 'w3m')]
-		goOnline()
-		header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
-		found = []
+		opener.addheaders = [useragent]
 		htparser = HTML2Text(strict=False)
+		header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
+		goOnline()
+		found = []
 		for mid in self.items:
-			fp = opener.open(self.makeQuery(mid))
-			htparser.write(fp.read(), append=False)
-			fp.close()
-			liniter = iter(htparser.readlines(nl=False))
+			try:
+				fp = opener.open(self.makeQuery(mid))
+				htparser.write(fp.read(), append=False)
+				fp.close()
+				liniter = iter(htparser.readlines(nl=False))
+			except urllib2.URLError, e:
+				if hasattr(e, 'reason'):
+					raise KioskError, urlfailmsg + e
+				if hasattr(e, 'code'):
+					raise KioskError, urlerrmsg + e
 			line = ''
 			try:
 				while not header_re.match(line):
