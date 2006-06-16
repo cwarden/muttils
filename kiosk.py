@@ -169,23 +169,23 @@ class Kiosk(object):
 			self.kiosk = tempfile.mkstemp('.kiosk')[1]
 			return
 		self.kiosk = filecheck.absolutePath(self.kiosk)
-		if not os.path.exists(self.kiosk):
-			return
 		if not os.path.isfile(self.kiosk):
 			raise KioskError, '%s: not a regular file' \
 					% self.kiosk
-		testline = readwrite.readLine(self.kiosk, 'rb')
-		if not testline:
-			return # empty is fine
+		if not os.path.exists(self.kiosk) \
+				or not os.path.getsize(self.kiosk):
+			# non existant or empty is fine
+			return
 		e = '%s: not a unix mailbox' % self.kiosk
+		testline = readwrite.readLine(self.kiosk, 'rb')
 		try:
 			test = email.message_from_string(testline)
 		except MessageParseError:
 			raise KioskError, e
-		if not test.get_unixfrom():
-			raise KioskError, e
-		else:
+		if test.get_unixfrom():
 			self.muttone = False
+		else:
+			raise KioskError, e
 
 	def hierTest(self):
 		'''Checks whether given directories exist and
