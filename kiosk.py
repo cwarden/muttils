@@ -222,6 +222,39 @@ class Kiosk(object):
 				tb=self.tb, xb=self.xb)
 		sys.exit()
 
+	def gooRetrieve(self, mid, found,
+			opener, htparser, header_re):
+		try:
+			fp = opener.open(self.makeQuery(mid))
+			htparser.write(fp.read(), append=False)
+			fp.close()
+			liniter = iter(htparser.readlines(nl=False))
+		except urllib2.URLError, e:
+			if hasattr(e, 'reason'):
+				raise KioskError, urlfailmsg + e
+			if hasattr(e, 'code'):
+				raise KioskError, urlerrmsg + e
+		line = ''
+		try:
+			while not header_re.match(line):
+				line = liniter.next()
+		except StopIteration:
+			print '%s: not at Google' % mid
+			time.sleep(5)
+		else:
+			lines = [line]
+			try:
+				while not line.startswith('(image) Google Home['):
+					line = liniter.next()
+					lines.append(line)
+			except StopIteration:
+				print '\n'.join(lines)
+				raise KioskError, changedsrcview
+			msg = '\n'.join(lines[:-1])
+			msg = email.message_from_string(msg)
+			found.append(mid)
+			self.msgs.append(msg)
+
 	def goGoogle(self):
 		'''Gets messages from Google Groups.'''
 		print 'Going google ...'
@@ -237,36 +270,8 @@ class Kiosk(object):
 		goOnline()
 		found = []
 		for mid in self.items:
-			try:
-				fp = opener.open(self.makeQuery(mid))
-				htparser.write(fp.read(), append=False)
-				fp.close()
-				liniter = iter(htparser.readlines(nl=False))
-			except urllib2.URLError, e:
-				if hasattr(e, 'reason'):
-					raise KioskError, urlfailmsg + e
-				if hasattr(e, 'code'):
-					raise KioskError, urlerrmsg + e
-			line = ''
-			try:
-				while not header_re.match(line):
-					line = liniter.next()
-			except StopIteration:
-				print '%s: not at Google' % mid
-				time.sleep(5)
-			else:
-				lines = [line]
-				try:
-					while not line.startswith('(image) Google Home['):
-						line = liniter.next()
-						lines.append(line)
-				except StopIteration:
-					print '\n'.join(lines)
-					raise KioskError, changedsrcview
-				msg = '\n'.join(lines[:-1])
-				msg = email.message_from_string(msg)
-				found.append(mid)
-				self.msgs.append(msg)
+			self.gooRetrieve(mid, found,
+					opener, htparser, header_re)
 		htparser.close()
 		for mid in found:
 			self.items.remove(mid)
