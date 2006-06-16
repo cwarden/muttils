@@ -266,8 +266,7 @@ class Kiosk(object):
 			self.gooRetrieve(mid, found,
 					opener, htparser, header_re)
 		htparser.close()
-		for mid in found:
-			self.items.remove(mid)
+		self.items = [mid for mid in self.items if not mid in found]
 
 	def leafSearch(self):
 		try:
@@ -282,7 +281,7 @@ class Kiosk(object):
 			fp = open(article, 'rb')
 			try:
 				msg = email.message_from_file(fp)
-			except email.Errors.MessageParseError, e:
+			except MessageParseError, e:
 				raise KioskError, e
 			fp.close()
 			self.msgs.append(msg)
