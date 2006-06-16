@@ -124,7 +124,6 @@ class Kiosk(object):
 		self.mhiers = [] 	# mailbox hierarchies
 		self.local = False      # limit to local search
 		self.msgs = []          # list of retrieved message objects
-		self.tmp = False        # whether kiosk is a temporary file
 		self.muttone = True     # configure mutt for display of 1 msg only
 		self.xb = False	        # force x-browser
 		self.tb = False         # use text browser
@@ -171,7 +170,6 @@ class Kiosk(object):
 		if not self.kiosk:
 			import tempfile
 			self.kiosk = tempfile.mkstemp('.kiosk')[1]
-			self.tmp = True
 			return
 		self.kiosk = filecheck.absolutePath(self.kiosk)
 		if not os.path.exists(self.kiosk):
@@ -395,8 +393,6 @@ class Kiosk(object):
 			tty = os.ctermid()
 			cmd = '%(cmd)s <%(tty)s >%(tty)s' % vars()
 		systemcall.systemCall(cmd, sh=True)
-		if self.tmp and os.path.isfile(self.kiosk):
-			os.remove(self.kiosk)
 
 	def kioskStore(self):
 		'''Collects messages identified by ID either
