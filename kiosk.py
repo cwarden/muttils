@@ -16,6 +16,7 @@ ggroups = 'http://groups.google.com/groups'
 useragent = ('User-Agent', 'w3m')
 urlfailmsg = 'reason of url retrieval failure: '
 urlerrmsg = 'url retrieval error code: '
+changedsrcview = 'source view format changed at Google'
 muttone = "-e 'set pager_index_lines=0' " \
        "-e 'set quit=yes' -e 'bind pager q quit' " \
        "-e 'push <return>' -f"
@@ -255,9 +256,13 @@ class Kiosk(object):
 				time.sleep(5)
 			else:
 				lines = [line]
-				while not line.startswith('(image) Google Home['):
-					line = liniter.next()
-					lines.append(line)
+				try:
+					while not line.startswith('(image) Google Home['):
+						line = liniter.next()
+						lines.append(line)
+				except StopIteration:
+					print '\n'.join(lines)
+					raise KioskError, changedsrcview
 				msg = '\n'.join(lines[:-1])
 				msg = email.message_from_string(msg)
 				found.append(mid)
