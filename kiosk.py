@@ -253,20 +253,20 @@ class Kiosk(object):
 			except StopIteration:
 				print '%s: not at Google' % mid
 				time.sleep(5)
-				break
-			lines = [line]
-			while not line.startswith('(image) Google Home['):
-				line = liniter.next()
-				lines.append(line)
-			msg = '\n'.join(lines[:-1])
-			msg = email.message_from_string(msg)
-			if 'message-id' in msg:
-				found.append(mid)
-				self.msgs.append(msg)
 			else:
-				print msg.get_payload(decode=True)
-				time.sleep(5)
-				print 'Continuing ...'
+				lines = [line]
+				while not line.startswith('(image) Google Home['):
+					line = liniter.next()
+					lines.append(line)
+				msg = '\n'.join(lines[:-1])
+				msg = email.message_from_string(msg)
+				if 'message-id' in msg:
+					found.append(mid)
+					self.msgs.append(msg)
+				else:
+					print msg.get_payload(decode=True)
+					time.sleep(5)
+					print 'Continuing ...'
 		htparser.close()
 		for mid in found:
 			self.items.remove(mid)
