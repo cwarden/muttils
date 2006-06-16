@@ -66,10 +66,6 @@ def msgFactory(fp):
 	except (HeaderParseError, MessageParseError):
 		return ''
 
-def nakHead(header):
-	'''Strips Message-ID header down to pure ID.'''
-	return header.split('<')[-1].strip('>')
-
 def goOnline():
 	try:
 		from cheutils import conny
@@ -398,7 +394,6 @@ class Kiosk(object):
 		by retrieving them locally or from GoogleGroups.'''
 		if not self.items:
 			raise KioskError, 'need Message-ID(s) as argument(s)'
-		self.items = [nakHead(item) for item in self.items]
 		if self.browse:
 			self.goGoogle()
 		self.kioskTest()
