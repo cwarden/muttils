@@ -89,14 +89,18 @@ def mkUnixfrom(msg):
 	else:
 		date = msg.__getitem__('date')
 	if date:
-		date = time.asctime(email.Utils.parsedate(date))
-		if 'return-path' in msg:
-			ufromaddr = msg['return-path'][1:-1]
+		try:
+			date = time.asctime(email.Utils.parsedate(date))
+		except TypeError:
+			# don't punish wrong date format (very old msgs)
+			pass
 		else:
-			ufromaddr = email.Utils.parseaddr(
-					msg.get('from', 'nobody')
-							)[1]
-		msg.set_unixfrom('From %s  %s' % (ufromaddr, date))
+			if 'return-path' in msg:
+				ufrom = msg['return-path'][1:-1]
+			else:
+				ufrom = email.Utils.parseaddr(
+						msg.get('from', 'nobody'))[1]
+			msg.set_unixfrom('From %s  %s' % (ufrom, date))
 	return msg
 
 
