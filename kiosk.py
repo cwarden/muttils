@@ -4,12 +4,13 @@ kiosk_cset = '$Hg: kiosk.py,v$'
 # needs python version 2.3 #
 ###
 
-import email, os, re, time, urllib, sys
+import email, os, re, time, urllib, urllib2, sys
 from email.Generator import Generator
 from email.Parser import HeaderParser
 from email.Errors import MessageParseError, HeaderParseError
 from mailbox import Maildir, PortableUnixMailbox
 from cheutils import filecheck, readwrite, spl, systemcall
+from cheutils.html2text import HTML2Text
 
 optstr = 'bd:D:hk:lm:ntx'
 ggroups = 'http://groups.google.com/groups'
@@ -259,8 +260,6 @@ class Kiosk(object):
 		if self.browse:
 			self.gooBrowse()
 		print '*Unfortunately Google masks all email addresses*'
-		import urllib2
-		from cheutils.html2text import HTML2Text
 		opener = urllib2.build_opener()
 		opener.addheaders = [useragent]
 		htparser = HTML2Text(strict=False)
