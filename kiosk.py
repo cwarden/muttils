@@ -205,8 +205,8 @@ class Kiosk(object):
 
 	def makeQuery(self, mid):
 		'''Reformats Message-ID to google query.'''
-		query = ({'selm': mid, 'dmode': 'source', 'hl': 'en'},
-				{'selm': mid, 'hl': 'en'})[self.browse]
+		query = ({'selm': mid, 'dmode': 'source'},
+				{'selm': mid})[self.browse]
 		return '%s?%s' % (ggroups,  urllib.urlencode(query))
 
 	def gooBrowse(self):
