@@ -50,8 +50,8 @@ class UrlpagerError(Exception):
 
 class Urlpager(Urlcollector, Kiosk, Tpager):
 	def __init__(self):
-		Urlcollector.__init__(self) # (Urlregex, LastExit) <- nt, proto, items, files, pat
-		Kiosk.__init__(self) # <- browse, google, nt, kiosk, mhiers, mspool, local, xb, tb
+		Urlcollector.__init__(self) # (Urlregex, LastExit) <- proto, items, files, pat
+		Kiosk.__init__(self) # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
 		Tpager.__init__(self, name='url') # <- items, name
 		self.ft = ''	   # ftpclient
 		self.url = ''	   # selected url
@@ -137,13 +137,12 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 				cs = ['ftp']
 			else:
 				cs = [self.ft]
-			self.nt = True
 		if not cs:
 			selbrowser.selBrowser(self.url, tb=self.tb, xb=self.xb)
 		else:
 			if conny:
 				goOnline()
-			if not self.getdir or self.nt: # program needs terminal
+			if not self.getdir or not self.files: # program needs terminal
 				tty = os.ctermid()
 				cs = cs + [self.url, '<', tty, '>', tty]
 				cs = ' '.join(cs)
@@ -153,10 +152,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 				systemcall.systemCall(cs)
 
 	def urlSearch(self):
-		if not self.files:
-			self.nt = True
 		Urlcollector.urlCollect(self)
-		if self.nt:
+		if not self.files:
 			LastExit.termInit(self)
 		self.urlPager()
 		if self.url:
@@ -165,7 +162,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 			else:
 				self.items = [self.url]
 				Kiosk.kioskStore(self)
-		if self.nt:
+		if not self.files:
 			try:
 				LastExit.reInit(self)
 			except IndexError:

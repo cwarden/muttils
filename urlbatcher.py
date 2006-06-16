@@ -52,8 +52,8 @@ class Urlbatcher(Urlcollector, Kiosk):
 	'''
 	def __init__(self):
 		Urlcollector.__init__(self,
-				proto='web') # <- (Urlregex, LastExit) nt, proto, decl, items, files, pat
-		Kiosk.__init__(self)        # <- nt, kiosk, mhiers, mspool, local, google, xb, tb
+				proto='web') # <- (Urlregex, LastExit) proto, decl, items, files, pat
+		Kiosk.__init__(self)        # <- kiosk, mhiers, mspool, local, google, xb, tb
 		self.getdir = ''            # download in dir via wget
 
 	def argParser(self):
@@ -110,10 +110,8 @@ class Urlbatcher(Urlcollector, Kiosk):
 			selbrowser.selBrowser(urls=self.items, tb=False, xb=self.xb)
 					
 	def urlSearch(self):
-		if not self.files:
-			self.nt = True
 		Urlcollector.urlCollect(self)
-		if self.nt:
+		if not self.files:
 			LastExit.termInit(self)
 		if self.items:
 			yorn = '%s\nRetrieve the above %s? yes, [No] ' \
@@ -130,7 +128,7 @@ class Urlbatcher(Urlcollector, Kiosk):
 			msg = 'No %s found. [Ok] ' \
 			      % ('urls', 'message-ids')[self.proto=='mid']
 			raw_input(msg)
-		if self.nt:
+		if not self.files:
 			LastExit.reInit(self)
 
 

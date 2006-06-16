@@ -116,7 +116,6 @@ class Kiosk(object):
 		self.items = items      # message-ids to look for
 		self.kiosk = ''		# path to kiosk mbox
 		self.mask = None	# file mask for mdir (applied to directories too)
-		self.nt = False		# if True: needs terminal
 		self.browse = False	# limit to browse googlegroups
 		self.mhiers = [] 	# mailbox hierarchies
 		self.local = False      # limit to local search
@@ -383,7 +382,7 @@ class Kiosk(object):
 			cmd = cmd % (mutt, muttone, self.kiosk)
 		else:
 			cmd = cmd % (mutt, muttI(firstid), self.kiosk)
-		if self.nt:
+		if not os.isatty(0):
 			tty = os.ctermid()
 			cmd = '%(cmd)s <%(tty)s >%(tty)s' % vars()
 		systemcall.systemCall(cmd, sh=True)

@@ -14,21 +14,22 @@ class Urlcollector(Urlregex, LastExit):
 	Provides function to retrieve urls
 	from files or input stream.
 	'''
-	def __init__(self, proto='all', nt=False):
+	def __init__(self, proto='all'):
 		Urlregex.__init__(self, proto=proto) # <- proto, decl, items
 		LastExit.__init__(self)
 		self.files = []         # files to search
 		self.pat = None         # pattern to match urls against
-		self.nt = nt         	# needs terminal
 
 	def parseError(self):
+		import os
 		errmsg = '%s: encountered malformed html!\n' \
 			 'Might be unable to retrieve every url.\n' \
 			 'Continue? [Yes], no ' % exnam.exNam()
-		if self.nt:
+		needsterm = os.isatty(0) == False
+		if needsterm:
 			LastExit.termInit(self)
 		yorn = raw_input(errmsg)
-		if self.nt:
+		if needsterm:
 			LastExit.reInit(self)
 		if yorn.lower() in ('n', 'no'):
 			sys.exit(1)
