@@ -33,6 +33,11 @@ def msgFactory(fp):
 def unQuote(s):
 	return quote_re.sub('', s)
 
+
+class UrlparserError(Exception):
+	'''Exception class to catch bad HTML.'''
+	pass
+
 class Urlparser(HTMLParser):
 	'''
 	Subclass of Urlregex.
@@ -45,7 +50,6 @@ class Urlparser(HTMLParser):
 		self.url_re = None
 		self.items = []
 		self.msg = ''
-		self.ugly = False
 
 	def protoTest(self):
 		if self.proto in protos:
@@ -69,8 +73,7 @@ class Urlparser(HTMLParser):
 			self.feed(text)
 			self.close()
 		except (HTMLParseError, AssertionError):
-			self.ugly = True
-			pass
+			raise UrlparserError
 
 	def headParser(self, keys):
 		for key in keys:
@@ -128,5 +131,9 @@ class Urlparser(HTMLParser):
 				if subtype == 'plain':
 					sl.append(text)
 				elif subtype.startswith('htm'):
-					self.makeUrlist(text)
+					try:
+						self.makeUrlist(text)
+					except UrlparserError:
+						# make the best of it
+						sl.append(text)
 		return sl

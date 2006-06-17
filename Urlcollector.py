@@ -47,8 +47,6 @@ class Urlcollector(Urlregex, LastExit):
 			for f in self.files:
 				data, kind = datatype.dataType(f)
 				Urlregex.findUrls(self, data, kind)
-		if self.ugly:
-			self.parseError()
 		if self.pat and self.items:
 			try:
 				self.pat = re.compile(r'%s' % self.pat, re.I)
