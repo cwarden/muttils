@@ -62,6 +62,7 @@ class Urlparser(HTMLParser):
 		sys.exit(err)
 
 	def handle_starttag(self, tag, attrs):
+		'''Overrides HTMLParser method in order to grab urls.'''
 		if tag in ('a', 'img'):
 			for name, value in attrs:
 				if name in ('href', 'src') \
@@ -70,8 +71,8 @@ class Urlparser(HTMLParser):
 	
 	def makeUrlist(self, text):
 		try:
-			self.feed(text)
-			self.close()
+			HTMLParser.feed(self, text)
+			HTMLParser.close(self)
 		except (HTMLParseError, AssertionError):
 			raise UrlparserError
 
