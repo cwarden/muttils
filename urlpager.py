@@ -49,8 +49,9 @@ def goOnline():
 class UrlpagerError(Exception):
 	'''Exception class for this module.'''
 
-class Urlpager(Urlcollector, Kiosk, Tpager):
+class Urlpager(Urlcollector, Kiosk, Tpager, selbrowser.Browser):
 	def __init__(self):
+		selbrowser.Browser.__init__(self) # <- items (proto overriden by Urlcollector)
 		Urlcollector.__init__(self) # (Urlregex, LastExit) <- proto, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
 		Tpager.__init__(self, name='url') # <- items, name
@@ -135,7 +136,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 				self.url = self.url + '/'
 			cs = self.ftp
 		if not cs:
-			selbrowser.selBrowser(self.url, tb=self.tb, xb=self.xb)
+			self.items = [self.url]
+			selbrowser.Browser.urlVisit(self)
 		else:
 			if conny:
 				goOnline()

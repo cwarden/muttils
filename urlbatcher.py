@@ -44,13 +44,14 @@ def goOnline():
 class UrlbatcherError(Exception):
 	'''Exception class for this module.'''
 
-class Urlbatcher(Urlcollector, Kiosk):
+class Urlbatcher(Urlcollector, Kiosk, selbrowser.Browser):
 	'''
 	Parses input for either web urls or message-ids.
 	Browses all urls or creates a message tree in mutt.
 	You can specify urls/ids by a regex pattern.
 	'''
 	def __init__(self):
+		selbrowser.Browser.__init__(self) # <- items
 		Urlcollector.__init__(self,
 				proto='web') # <- (Urlregex, LastExit) proto, decl, items, files, pat
 		Kiosk.__init__(self)        # <- kiosk, mhiers, mspool, local, google, xb, tb
@@ -107,7 +108,7 @@ class Urlbatcher(Urlcollector, Kiosk):
 			systemcall.systemCall(
 				[getbin.getBin('wget'), '-P', self.getdir] + self.items)
 		else:
-			selbrowser.selBrowser(urls=self.items, tb=False, xb=self.xb)
+			selbrowser.Browser.urlVisit(self)
 					
 	def urlSearch(self):
 		Urlcollector.urlCollect(self)
