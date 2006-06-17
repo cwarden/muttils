@@ -53,7 +53,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 		Urlcollector.__init__(self) # (Urlregex, LastExit) <- proto, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
 		Tpager.__init__(self, name='url') # <- items, name
-		self.ftp = ''	   # ftpclient
+		self.ftp = 'ftp'   # ftp client
 		self.url = ''	   # selected url
 		self.getdir = ''   # download in dir via wget
 
@@ -128,15 +128,11 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
 				e = 'wget does not retrieve local files'
 				raise UrlpagerError, e
 			cs = [getbin.getBin('wget'), '-P', self.getdir]
-		elif self.proto == 'ftp' or self.ftp \
-				or Urlregex.ftpCheck(self.url):
+		elif self.proto == 'ftp' or Urlregex.ftpCheck(self.url):
 			if not os.path.splitext(self.url)[1] \
 					and not self.url.endswith('/'):
 				self.url = self.url + '/'
-			if not self.ftp:
-				cs = ['ftp']
-			else:
-				cs = [self.ftp]
+			cs = self.ftp
 		if not cs:
 			selbrowser.selBrowser(self.url, tb=self.tb, xb=self.xb)
 		else:
