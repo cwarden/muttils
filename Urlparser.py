@@ -2,7 +2,6 @@
 
 import email, email.Utils, re
 from email.Errors import MessageParseError
-from HTMLParser import HTMLParser, HTMLParseError
 
 protos = ('all', 'web', 'http', 'mailto',
 	  'ftp', 'finger', 'telnet', 'mid')
@@ -34,18 +33,13 @@ def unQuote(s):
 	return quote_re.sub('', s)
 
 
-class UrlparserError(Exception):
-	'''Exception class to catch bad HTML.'''
-	pass
-
-class Urlparser(HTMLParser):
+class Urlparser(object):
 	'''
 	Subclass of Urlregex.
 	Extracts urls from html text
 	messages or mailboxes.
 	'''
 	def __init__(self, proto='all'):
-		HTMLParser.__init__(self)
 		self.proto = proto
 		self.url_re = None
 		self.items = []
@@ -60,21 +54,6 @@ class Urlparser(HTMLParser):
 		      "Use one of: %s" \
 		      % (exnam.exNam(), self.proto, ', '.join(protos))
 		sys.exit(err)
-
-	def handle_starttag(self, tag, attrs):
-		'''Overrides HTMLParser method in order to grab urls.'''
-		if tag in ('a', 'img'):
-			for name, value in attrs:
-				if name in ('href', 'src') \
-				and self.url_re.match(value):
-					self.items.append(value)
-	
-	def makeUrlist(self, text):
-		try:
-			HTMLParser.feed(self, text)
-			HTMLParser.close(self)
-		except (HTMLParseError, AssertionError):
-			raise UrlparserError
 
 	def headParser(self, keys):
 		for key in keys:
@@ -92,6 +71,11 @@ class Urlparser(HTMLParser):
 				self.items += urls
 
 	def mailDeconstructor(self, s):
+		'''Checks if given string is message or mailbox.
+		If no, returns string.
+		Parses message/mailbox for relevant headers
+		adding urls to list of items and returns
+		text parts for further searching.'''
 		try:
 			self.msg = email.message_from_string(s)
 		except MessageParseError:
@@ -128,13 +112,5 @@ class Urlparser(HTMLParser):
 		for part in self.msg.walk(): # use email.Iterator?
 			if part.get_content_maintype() == 'text':
 				text = part.get_payload(decode=True)
-				subtype = part.get_content_subtype()
-				if subtype == 'plain':
-					sl.append(text)
-				elif subtype.startswith('htm'):
-					try:
-						self.makeUrlist(text)
-					except UrlparserError:
-						# make the best of it
-						sl.append(text)
+				sl.append(text)
 		return sl
