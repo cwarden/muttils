@@ -33,6 +33,9 @@ def unQuote(s):
 	return quote_re.sub('', s)
 
 
+class UrlparserError(Exception):
+	'''Exception class for this module.'''
+
 class Urlparser(object):
 	'''
 	Subclass of Urlregex.
@@ -46,14 +49,10 @@ class Urlparser(object):
 		self.msg = ''
 
 	def protoTest(self):
-		if self.proto in protos:
-			return
-		import sys
-		from cheutils import exnam
-		err = "%s: invalid protocol specification `%s'\n" \
-		      "Use one of: %s" \
-		      % (exnam.exNam(), self.proto, ', '.join(protos))
-		sys.exit(err)
+		if not self.proto in protos:
+			err = "`%s': invalid spec, use one of %s" \
+					% (self.proto, ', '.join(protos))
+			raise UrlparserError, err
 
 	def headParser(self, keys):
 		for key in keys:

@@ -14,6 +14,7 @@ from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
 from cheutils import getbin, selbrowser, systemcall
 from Urlcollector import Urlcollector
+from Urlparser import UrlparserError
 from kiosk import Kiosk
 
 optstring = 'bd:D:f:hiIlnp:k:r:tw:x'
@@ -170,7 +171,7 @@ def run():
 	try:
 		up.argParser()
 		up.urlSearch()
-	except UrlpagerError, e:
+	except (UrlpagerError, UrlparserError), e:
 		userHelp(e)
 	except KeyboardInterrupt:
 		pass
