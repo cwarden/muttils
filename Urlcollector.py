@@ -29,7 +29,8 @@ class Urlcollector(Urlregex):
 			import datatype
 			for f in self.files:
 				data, kind = datatype.dataType(f)
-				Urlregex.findUrls(self, data, kind)
+				if kind.startswith('text/'):
+					Urlregex.findUrls(self, data)
 		if self.pat and self.items:
 			try:
 				self.pat = re.compile(r'%s' % self.pat, re.I)

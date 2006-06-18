@@ -281,20 +281,22 @@ class Urlregex(Urlparser):
 			self.url_re = re.compile(simplid,
 					re.IGNORECASE|re.VERBOSE)
 
-	def findUrls(self, data, type='text/plain'):
-		if type.startswith('text/'):
-			self.urlObjects() # compile url_re
-			s = Urlparser.mailDeconstructor(self, data)
-			if self.proto != 'mid':
-				wipe_resub = re.compile(rawwipe,
-						re.IGNORECASE|re.VERBOSE), ''
-				cpan_resub = re.compile(r'CPAN:\s*/?([A-Za-z]+?)'), CPAN 
-				ctan_resub = re.compile(r'CTAN:\s*/?([A-Za-z]+?)'), CTAN
-				for resub in (wipe_resub, cpan_resub, ctan_resub):
-					s = resub[0].sub(resub[1], s)
-			urls = [u[0] for u in self.url_re.findall(s)]
-			if self.kill_re:
-				urls = [self.kill_re.sub('', u) for u in urls]
-			if urls:
-				self.items += urls
-			self.urlFilter()
+	def findUrls(self, data):
+		'''Conducts a search for urls in data.
+		Data is supposed to be text but tested whether
+		it's a message/Mailbox (then passed to Urlparser).'''
+		self.urlObjects() # compile url_re
+		s = Urlparser.mailDeconstructor(self, data)
+		if self.proto != 'mid':
+			wipe_resub = re.compile(rawwipe,
+					re.IGNORECASE|re.VERBOSE), ''
+			cpan_resub = re.compile(r'CPAN:\s*/?([A-Za-z]+?)'), CPAN 
+			ctan_resub = re.compile(r'CTAN:\s*/?([A-Za-z]+?)'), CTAN
+			for resub in (wipe_resub, cpan_resub, ctan_resub):
+				s = resub[0].sub(resub[1], s)
+		urls = [u[0] for u in self.url_re.findall(s)]
+		if self.kill_re:
+			urls = [self.kill_re.sub('', u) for u in urls]
+		if urls:
+			self.items += urls
+		self.urlFilter()
