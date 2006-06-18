@@ -1,20 +1,18 @@
 # $Hg: Urlcollector.py,v$
 
 import re, sys
-from tpager.LastExit import LastExit
 from Urlregex import Urlregex
 
 class UrlcollectorError(Exception):
 	'''Exception class for this module.'''
 
-class Urlcollector(Urlregex, LastExit):
+class Urlcollector(Urlregex):
 	'''
 	Provides function to retrieve urls
 	from files or input stream.
 	'''
 	def __init__(self, proto='all'):
 		Urlregex.__init__(self, proto=proto) # <- proto, decl, items
-		LastExit.__init__(self)
 		self.files = []         # files to search
 		self.pat = None         # pattern to match urls against
 

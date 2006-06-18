@@ -49,9 +49,10 @@ def goOnline():
 class UrlpagerError(Exception):
 	'''Exception class for this module.'''
 
-class Urlpager(Urlcollector, Kiosk, Tpager, selbrowser.Browser):
+class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, selbrowser.Browser):
 	def __init__(self):
 		selbrowser.Browser.__init__(self) # <- items (proto overriden by Urlcollector)
+		LastExit.__init__(self)
 		Urlcollector.__init__(self) # (Urlregex, LastExit) <- proto, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
 		Tpager.__init__(self, name='url') # <- items, name
