@@ -156,11 +156,6 @@ class Urlregex(Urlparser):
 		self.protocol = ''	# pragmatic proto (may include www., ftp.)
 		self.proto_re = None
 
-	def httpAdd(self, url):
-		if not re.match(self.protocol, url):
-			return 'http://%s' % url
-		return url
-
 	def setStrings(self):
 		### intro ###
 		if self.proto in ('all', 'web'): ## groups
