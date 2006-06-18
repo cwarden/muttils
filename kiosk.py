@@ -76,18 +76,35 @@ def goOnline():
 	except ImportError:
 		pass
 
+def ascDate(date):
+	return time.asctime(email.Utils.parsedate(date))
+
+def fixDate(msg):
+	'''Fixes YYYY/mm/dd dates of very old Google messages
+	by using X-Server-Date as a workaround.'''
+	xdate = msg.__getitem__('x-server-date')
+	date = msg.__getitem__('date')
+	if xdate and date:
+		try:
+			date = ascDate(date)
+		except TypeError:
+			date = ascDate(xdate)
+			date = date.replace(' ', ', ', 1)
+			del msg['date']
+			msg['Date'] = date
+	return msg
+
 def mkUnixfrom(msg):
 	'''Creates missing unixfrom.'''
-	date = None
-	if 'received' in msg:
-		date = msg['received'].split('; ')[-1]
+	received = msg.__getitem__('received')
+	if received:
+		date = received.split('; ')[-1]
 	else:
 		date = msg.__getitem__('date')
 	if date:
 		try:
-			date = time.asctime(email.Utils.parsedate(date))
+			date = ascDate(date)
 		except TypeError:
-			# don't punish wrong date format (very old msgs)
 			pass
 		else:
 			if 'return-path' in msg:
@@ -370,6 +387,7 @@ class Kiosk(object):
 			# delete read status and local server info
 			for h in ('Status', 'Xref'):
 				msg.__delitem__(h)
+			msg = fixDate(msg)
 			if not msg.get_unixfrom():
 				msg = mkUnixfrom(msg)
 			g.flatten(msg, unixfrom=True)
