@@ -4,7 +4,7 @@ import re
 from Urlparser import Urlparser
 
 def orJoin(s):
-	return '(%s)' % '|'.join(s.split())
+	return r'(%s)' % '|'.join(s.split())
 
 def mkDomPat(top, any, delim):
 	'''Creates the raw domain parts of the url patterns.
@@ -33,13 +33,12 @@ def mkDomPat(top, any, delim):
 	return dom, spdom
 
 # and now to the url parts
-#any = '_a-z0-9/#~:.?+=&%!@\-'   # valid url-chars
-any = '-._a-z0-9/#~:,;?+=&%!@()' # valid url-chars+comma+semicolon+parenthesises
+any = r'-._a-z0-9/#~:,;?+=&%!()' # valid url-chars+comma+semicolon+parenthesises
 			        # Message-ID: <10rb6mngqccs018@corp.supernews.com>
                                 # Message-id: <20050702131039.GA10840@oreka.com>
 				# Message-ID: <e2jctg$kgp$1@news1.nefonline.de>
-idy = '-._a-z0-9#~?+=&%!$\][' # valid message-id-chars ### w/o ':/'?
-delim = '-.,:?!)('	      # punctuation (how 'bout '!'?)
+idy = r'-._a-z0-9#~?+=&%!$\][' # valid message-id-chars ### w/o ':/'?
+delim = r'-.,:?!)('	      # punctuation (how 'bout '!'?)
 
 # international domains
 intls = 'arpa com edu gov int mil net org aero biz coop info name pro'
@@ -57,8 +56,8 @@ tops =	'%s ' \
 	't[cdfghjkmnoprtvwz] u[agkmsyz] ' \
 	'v[acegivu] w[fs] y[etu] z[amw]' % intls
 
-top = '\.%s' % orJoin(tops)
-intl = '\.%s' % orJoin(intls)
+top = r'\.%s' % orJoin(tops)
+intl = r'\.%s' % orJoin(intls)
 
 proto_dom, proto_spdom = mkDomPat(top, any, delim)
 any_dom, any_spdom = mkDomPat(intl, any, delim)
@@ -126,9 +125,6 @@ mail_re = re.compile(mail, re.IGNORECASE|re.VERBOSE)
 	
 ## filter functions ##
 
-def mailKill(url):
-	return not mail_re.match(url)
-
 def ftpCheck(url):
 	return ftp_re.match(url)
 
@@ -138,8 +134,7 @@ def httpCheck(url):
 def mailCheck(url):
 	return mail_re.match(url)
 
-filterdict = {	'web':	mailKill,
-		'ftp':	ftpCheck,
+filterdict = {	'ftp':	ftpCheck,
 		'http':	httpCheck,
 		'mailto': mailCheck }
 
@@ -216,8 +211,8 @@ class Urlregex(Urlparser):
                                 'spdom': proto_spdom,
 				'dom':   proto_dom }
 
-		if self.decl:
-			return '(%s)' % proto_url
+		proto_pat = (r'(%s|%s)' % (mail, proto_url),
+				r'(%s)' % proto_url)[self.proto!='all']
 
 		## follows an attempt to comprise as much urls as possible
 		## some bad formatted stuff too
@@ -233,7 +228,9 @@ class Urlregex(Urlparser):
 				'spdom': any_spdom,
 				'dom':   any_dom }
 		
-		return '(%s|%s)' % (proto_url, any_url)
+		any_pat = (r'(%s|%s|%s)' % (mail, proto_url, any_url),
+				r'(%s|%s)' % (proto_url, any_url))[self.proto!='all']
+		return (proto_pat, any_pat)[self.decl==False]
 
 	def uniDeluxe(self):
 		'''remove duplicates deluxe:
