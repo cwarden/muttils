@@ -142,7 +142,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, selbrowser.Browser):
 		else:
 			if conny:
 				goOnline()
-			if not self.getdir or not self.files: # program needs terminal
+			if not self.getdir and not self.files: # program needs terminal
 				tty = os.ctermid()
 				cs = cs + [self.url, '<', tty, '>', tty]
 				cs = ' '.join(cs)
