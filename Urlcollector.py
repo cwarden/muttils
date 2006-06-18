@@ -20,20 +20,6 @@ class Urlcollector(Urlregex, LastExit):
 		self.files = []         # files to search
 		self.pat = None         # pattern to match urls against
 
-	def parseError(self):
-		import os
-		errmsg = '%s: encountered malformed html!\n' \
-			 'Might be unable to retrieve every url.\n' \
-			 'Continue? [Yes], no ' % exnam.exNam()
-		needsterm = os.isatty(0) == False
-		if needsterm:
-			LastExit.termInit(self)
-		yorn = raw_input(errmsg)
-		if needsterm:
-			LastExit.reInit(self)
-		if yorn.lower() in ('n', 'no'):
-			sys.exit(1)
-
 	def urlCollect(self):
 		if not self.files: # read from stdin
 			try:
