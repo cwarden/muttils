@@ -145,7 +145,7 @@ class Urlregex(Urlparser):
 	and urls spanning more than 1 line
 	if they are enclosed in '<>'.
 	'''
-	def __init__(self, proto='all', find=True, uniq=True):
+	def __init__(self, proto='all', uniq=True):
 		Urlparser.__init__(self, proto=proto) # <- id, proto, items, url_re
 		self.proto = proto
 		self.uniq = uniq        # list only unique urls
@@ -241,7 +241,7 @@ class Urlregex(Urlparser):
 			if self.proto != 'mid' and not self.decl:
 				self.uniDeluxe()
 
-	def urlObjects(self, kill=True):
+	def urlObjects(self, search=True):
 		'''Creates customized regex objects of url.'''
 		Urlparser.protoTest(self)
 		if self.proto == 'mailto':# be pragmatic and list not only declared
@@ -252,17 +252,17 @@ class Urlregex(Urlparser):
 			rawurl = self.getRaw()
 			self.url_re = re.compile(rawurl,
 					re.IGNORECASE|re.VERBOSE)
-			if kill:
+			if search:
 				self.kill_re = re.compile(r'\s+?|^url:',
 						re.IGNORECASE) 
-				if not self.decl:
-					self.proto_re = re.compile(
-							r'^%s' % self.protocol,
+			if not self.decl:
+				self.proto_re = re.compile(
+						r'^%s' % self.protocol,
 							re.IGNORECASE)
 		elif self.decl:
 			self.url_re = re.compile(declid,
 					re.IGNORECASE|re.VERBOSE)
-			if kill:
+			if search:
 				self.kill_re = re.compile(nproto, re.I)
 		else:
 			self.url_re = re.compile(simplid,
