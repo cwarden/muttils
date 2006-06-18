@@ -9,10 +9,11 @@ urlbatcher_cset = '$Hg: urlbatcher.py,v$'
 # input is checked anew for each file.
 ###
 
-from cheutils import selbrowser, spl, systemcall
-from tpager.LastExit import LastExit
 from Urlcollector import Urlcollector, UrlcollectorError
 from kiosk import Kiosk
+from tpager.LastExit import LastExit
+from cheutils import spl, systemcall
+from cheutils.selbrowser import Browser
 
 optstring = 'd:D:hiIk:lnr:w:x'
 
@@ -44,14 +45,14 @@ def goOnline():
 class UrlbatcherError(Exception):
 	'''Exception class for this module.'''
 
-class Urlbatcher(Urlcollector, Kiosk, LastExit, selbrowser.Browser):
+class Urlbatcher(Urlcollector, Kiosk, LastExit, Browser):
 	'''
 	Parses input for either web urls or message-ids.
 	Browses all urls or creates a message tree in mutt.
 	You can specify urls/ids by a regex pattern.
 	'''
 	def __init__(self):
-		selbrowser.Browser.__init__(self) # <- items
+		Browser.__init__(self) # <- items
 		LastExit.__init__(self)
 		Urlcollector.__init__(self,
 				proto='web') # <- (Urlregex) proto, decl, items, files, pat
@@ -101,15 +102,11 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit, selbrowser.Browser):
 	def urlGo(self):
 		if self.getdir:
 			from cheutils import getbin
-			for url in self.items:
-				if selbrowser.local_re.match(url):
-					raise UrlbatcherError, \
-						'wget does not retrieve local files'
 			goOnline()
 			systemcall.systemCall(
 				[getbin.getBin('wget'), '-P', self.getdir] + self.items)
 		else:
-			selbrowser.Browser.urlVisit(self)
+			Browser.urlVisit(self)
 					
 	def urlSearch(self):
 		Urlcollector.urlCollect(self)

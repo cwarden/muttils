@@ -12,10 +12,11 @@ urlpager_cset = '$Hg: urlpager.py,v$'
 import os, readline, Urlregex
 from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
-from cheutils import getbin, selbrowser, systemcall
 from Urlcollector import Urlcollector, UrlcollectorError
 from Urlparser import UrlparserError
 from kiosk import Kiosk
+from cheutils.selbrowser import Browser
+from cheutils import getbin, systemcall
 
 optstring = 'bd:D:f:hiIlnp:k:r:tw:x'
 mailers = ('mutt', 'pine', 'elm', 'mail') 
@@ -49,9 +50,9 @@ def goOnline():
 class UrlpagerError(Exception):
 	'''Exception class for this module.'''
 
-class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, selbrowser.Browser):
+class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, Browser):
 	def __init__(self):
-		selbrowser.Browser.__init__(self) # <- items (proto overriden by Urlcollector)
+		Browser.__init__(self) # <- items (proto overriden by Urlcollector)
 		LastExit.__init__(self)
 		Urlcollector.__init__(self) # (Urlregex, LastExit) <- proto, items, files, pat
 		Kiosk.__init__(self) # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
@@ -119,17 +120,13 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, selbrowser.Browser):
 		self.url = Tpager.interAct(self)
 
 	def urlGo(self):
-		cs = []
-		conny = selbrowser.local_re.match(self.url) == None
+		cs, conny = [], True
 		if self.proto == 'mailto' \
 				or self.proto == 'all' \
 				and Urlregex.mailCheck(self.url):
 			cs = [getbin.getBin(mailers)]
 			conny = False
 		elif self.getdir:
-			if not conny:
-				e = 'wget does not retrieve local files'
-				raise UrlpagerError, e
 			cs = [getbin.getBin('wget'), '-P', self.getdir]
 		elif self.proto == 'ftp' or Urlregex.ftpCheck(self.url):
 			if not os.path.splitext(self.url)[1] \
@@ -138,7 +135,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, selbrowser.Browser):
 			cs = self.ftp
 		if not cs:
 			self.items = [self.url]
-			selbrowser.Browser.urlVisit(self)
+			Browser.urlVisit(self)
 		else:
 			if conny:
 				goOnline()
