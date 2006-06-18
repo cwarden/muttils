@@ -21,6 +21,9 @@ changedsrcview = 'source view format changed at Google'
 muttone = "-e 'set pager_index_lines=0' " \
        "-e 'set quit=yes' -e 'bind pager q quit' " \
        "-e 'push <return>' -f"
+muttI = "-e 'set uncollapse_jump' " \
+		"-e 'push <search>~i\ \'%s\'<return>' -f"
+
 
 kiosk_help = '''
 [-l][-d <mail hierarchy>[:<mail hierarchy> ...]]' \\
@@ -72,12 +75,6 @@ def goOnline():
 		conny.appleConnect()
 	except ImportError:
 		pass
-
-def muttI(mid): # uncollapse??
-	'''Opens kiosk mailbox and goes to mid.'''
-	return "-e 'set uncollapse_jump' " \
-		"-e 'push <search>~i\ \'%s\'<return>' -f" \
-		% mid
 
 def mkUnixfrom(msg):
 	'''Creates missing unixfrom.'''
@@ -381,7 +378,7 @@ class Kiosk(object):
 		if len(self.msgs) == 1 and self.muttone:
 			cmd = cmd % (mutt, muttone, self.kiosk)
 		else:
-			cmd = cmd % (mutt, muttI(firstid), self.kiosk)
+			cmd = cmd % (mutt, muttI % firstid, self.kiosk)
 		if not os.isatty(0):
 			tty = os.ctermid()
 			cmd = '%(cmd)s <%(tty)s >%(tty)s' % vars()
