@@ -13,7 +13,7 @@ import os, readline, Urlregex
 from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
 from cheutils import getbin, selbrowser, systemcall
-from Urlcollector import Urlcollector
+from Urlcollector import Urlcollector, UrlcollectorError
 from Urlparser import UrlparserError
 from kiosk import Kiosk
 
@@ -173,7 +173,7 @@ def run():
 	try:
 		up.argParser()
 		up.urlSearch()
-	except (UrlpagerError, UrlparserError), e:
+	except (UrlpagerError, UrlcollectorError, UrlparserError), e:
 		userHelp(e)
 	except KeyboardInterrupt:
 		pass

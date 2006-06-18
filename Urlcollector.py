@@ -3,11 +3,9 @@
 import re, sys
 from tpager.LastExit import LastExit
 from Urlregex import Urlregex
-from cheutils import exnam
 
-def collectErr(err):
-	sys.exit('%s: %s' % (exnam.exNam(), err))
-
+class UrlcollectorError(Exception):
+	'''Exception class for this module.'''
 
 class Urlcollector(Urlregex, LastExit):
 	'''
@@ -26,7 +24,8 @@ class Urlcollector(Urlregex, LastExit):
 				data = sys.stdin.read()
 			except KeyboardInterrupt:
 				print
-				collectErr('needs stdin or filename(s)')
+				raise UrlcollectorError, \
+					'needs stdin or filename(s)'
 			Urlregex.findUrls(self, data)
 		else:
 			import datatype
@@ -37,6 +36,7 @@ class Urlcollector(Urlregex, LastExit):
 			try:
 				self.pat = re.compile(r'%s' % self.pat, re.I)
 			except re.error, e:
-				collectErr("%s in pattern `%s'" % (e, self.pat))
+				raise UrlcollectorError, \
+					"%s in pattern `%s'" % (e, self.pat)
 			self.items = filter(lambda i: self.pat.search(i),
 					self.items)

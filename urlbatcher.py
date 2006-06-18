@@ -11,7 +11,7 @@ urlbatcher_cset = '$Hg: urlbatcher.py,v$'
 
 from cheutils import selbrowser, spl, systemcall
 from tpager.LastExit import LastExit
-from Urlcollector import Urlcollector
+from Urlcollector import Urlcollector, UrlcollectorError
 from kiosk import Kiosk
 
 optstring = 'd:D:hiIk:lnr:w:x'
@@ -138,7 +138,7 @@ def run():
 		up = Urlbatcher()
 		up.argParser()
 		up.urlSearch()
-	except UrlbatcherError, e:
+	except (UrlbatcherError, UrlcollectorError), e:
 		userHelp(e)
 	except KeyboardInterrupt:
 		print
