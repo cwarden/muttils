@@ -230,7 +230,7 @@ class Urlregex(Urlparser):
 		
 		any_pat = (r'(%s|%s|%s)' % (mail, proto_url, any_url),
 				r'(%s|%s)' % (proto_url, any_url))[self.proto!='all']
-		return (proto_pat, any_pat)[self.decl==False]
+		return (any_pat, proto_pat)[self.decl]
 
 	def uniDeluxe(self):
 		'''remove duplicates deluxe:
