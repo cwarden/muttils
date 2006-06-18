@@ -121,7 +121,6 @@ mail = r'''
 	)\b			# close group and word boundary
 	''' % vars()
 mail_re = re.compile(mail, re.IGNORECASE|re.VERBOSE)
-# chris@localhost necessary
 	
 ## filter functions ##
 
@@ -159,28 +158,27 @@ class Urlregex(Urlparser):
 	def setStrings(self):
 		### intro ###
 		if self.proto in ('all', 'web'): ## groups
-			protocols = '(www|ftp)\. https?:// ' \
-				'finger:// s?ftp:// telnet:// mailto:'.split()
-#                                '(file://(localhost)?/|http://(localhost|127\.) ' \
-				# TO DO: local switch!
-			# gopher? wais?
+			# list protocols
+			protocols = [r'(www|ftp)\.',  r'https?://', r's?ftp://',
+				r'finger://', r'telnet://', r'mailto:']
+			# gopher, whois, wais?
 			if self.proto == 'web':
-				protocols = protocols[:-1] # web only
-			intros = '%s' % '|'.join(protocols)
-			protocols = '%s' % '|'.join(protocols[1:])
-			self.intro = '(%s)' % intros
-			self.protocol = '(%s)' % protocols
+				protocols = protocols[:-3] # http, ftp
+			intros = r'%s' % '|'.join(protocols)
+			decl_protos = r'%s' % '|'.join(protocols[1:]) # w/o (www|ftp)\.
+			self.intro = r'(%s)' % intros
+			self.protocol = r'(%s)' % decl_protos
 
 		else:				  ## singles
 			self.decl = True
 			self.protocol = '%s://' % self.proto
 			if self.proto == 'http':
-				self.intro = '(https?://|www\.)'
+				self.intro = r'(https?://|www\.)'
 			elif self.proto == 'ftp':
-				self.intro = '(s?ftp://|ftp\.)'
+				self.intro = r'(s?ftp://|ftp\.)'
 			else:
 				self.intro = self.protocol
-		self.intro = '(url:)?%s' % self.intro
+		self.intro = r'(url:)?%s' % self.intro
 
 	def getRaw(self):
 
