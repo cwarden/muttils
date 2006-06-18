@@ -3,8 +3,11 @@
 import email, email.Utils, re
 from email.Errors import MessageParseError
 
-protos = ('all', 'web', 'http', 'mailto',
-	  'ftp', 'finger', 'telnet', 'mid')
+protos = ('all', 'web',
+		'http', 'ftp', 'gopher',
+		'mailto',
+		'mid')
+# finger, telnet, whois, wais?
 
 # header tuples (to be extended)
 searchkeys = ('subject', 'organization',

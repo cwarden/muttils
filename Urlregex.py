@@ -159,11 +159,12 @@ class Urlregex(Urlparser):
 		### intro ###
 		if self.proto in ('all', 'web'): ## groups
 			# list protocols
-			protocols = [r'(www|ftp)\.',  r'https?://', r's?ftp://',
-				r'finger://', r'telnet://', r'mailto:']
-			# gopher, whois, wais?
+			protocols = [r'(www|ftp)\.', 
+					r'https?://', r's?ftp://', r'gopher://',
+					r'mailto:']
+			# finger, telnet, whois, wais?
 			if self.proto == 'web':
-				protocols = protocols[:-3] # http, ftp
+				protocols = protocols[:4] # http, ftp, gopher
 			intros = r'%s' % '|'.join(protocols)
 			decl_protos = r'%s' % '|'.join(protocols[1:]) # w/o (www|ftp)\.
 			self.intro = r'(%s)' % intros
