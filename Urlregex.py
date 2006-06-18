@@ -149,7 +149,6 @@ class Urlregex(Urlparser):
 	def __init__(self, proto='all', find=True, uniq=True):
 		Urlparser.__init__(self, proto=proto) # <- id, proto, items, url_re
 		self.proto = proto
-		self.find = find    	# for grabbing regexes only
 		self.uniq = uniq        # list only unique urls
 		self.decl = False       # list only declared urls
 		self.kill_re = None	# customized pattern to find non url chars
@@ -161,12 +160,6 @@ class Urlregex(Urlparser):
 		if not re.match(self.protocol, url):
 			return 'http://%s' % url
 		return url
-
-	def urlCheck(self, s):
-		self.urlObjects()
-		url = self.kill_re.sub('', s)
-		return self.url_re.match(url)
-
 
 	def setStrings(self):
 		### intro ###
@@ -254,7 +247,7 @@ class Urlregex(Urlparser):
 			if self.proto != 'mid' and not self.decl:
 				self.uniDeluxe()
 
-	def urlObjects(self):
+	def urlObjects(self, kill=True):
 		'''Creates customized regex objects of url.'''
 		Urlparser.protoTest(self)
 		if self.proto == 'mailto':# be pragmatic and list not only declared
@@ -265,7 +258,7 @@ class Urlregex(Urlparser):
 			rawurl = self.getRaw()
 			self.url_re = re.compile(rawurl,
 					re.IGNORECASE|re.VERBOSE)
-			if self.find:
+			if kill:
 				self.kill_re = re.compile(r'\s+?|^url:',
 						re.IGNORECASE) 
 				if not self.decl:
@@ -275,7 +268,7 @@ class Urlregex(Urlparser):
 		elif self.decl:
 			self.url_re = re.compile(declid,
 					re.IGNORECASE|re.VERBOSE)
-			if self.find:
+			if kill:
 				self.kill_re = re.compile(nproto, re.I)
 		else:
 			self.url_re = re.compile(simplid,
