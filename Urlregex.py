@@ -33,10 +33,12 @@ def mkDomPat(top, any, delim):
 	return dom, spdom
 
 # and now to the url parts
-any = r'-._a-z0-9/#~:,;?+=&%!()' # valid url-chars+comma+semicolon+parenthesises
-			        # Message-ID: <10rb6mngqccs018@corp.supernews.com>
-                                # Message-id: <20050702131039.GA10840@oreka.com>
-				# Message-ID: <e2jctg$kgp$1@news1.nefonline.de>
+any = r'-._a-z0-9/#~:,;?+=&%!()@' # valid url-chars+comma+semicolon+parenthesises+@
+                                  # @: filtered with webCheck, false positives with
+				  # che@*blacktrash.org* otherwise
+				  # Message-ID: <10rb6mngqccs018@corp.supernews.com>
+				  # Message-id: <20050702131039.GA10840@oreka.com>
+				  # Message-ID: <e2jctg$kgp$1@news1.nefonline.de>
 idy = r'-._a-z0-9#~?+=&%!$\][' # valid message-id-chars ### w/o ':/'?
 delim = r'-.,:?!)('	      # punctuation (how 'bout '!'?)
 
@@ -124,6 +126,9 @@ mail_re = re.compile(mail, re.IGNORECASE|re.VERBOSE)
 	
 ## filter functions ##
 
+def webCheck(url):
+	return not mail_re.match(url)
+
 def ftpCheck(url):
 	return ftp_re.match(url)
 
@@ -133,8 +138,9 @@ def httpCheck(url):
 def mailCheck(url):
 	return mail_re.match(url)
 
-filterdict = {	'ftp':	ftpCheck,
-		'http':	httpCheck,
+filterdict = {	'web':    webCheck,
+		'ftp':	  ftpCheck,
+		'http':	  httpCheck,
 		'mailto': mailCheck }
 
 class Urlregex(Urlparser):
