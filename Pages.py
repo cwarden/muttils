@@ -32,7 +32,7 @@ class Pages(Tformat):
 	def softCount(self):
 		'''Counts lines of item as displayed in
 		a terminal with cols columns.'''
-		lines = self.item.split('\n')[:-1] # skip trailing newline
+		lines = self.item.splitlines()
 		return reduce(lambda a, b: a+b,
 			[len(line)/self.cols + 1 for line in lines])
 
