@@ -56,17 +56,17 @@ class Urlparser(object):
                     % (self.proto, ', '.join(protos))
             raise UrlparserError, err
 
-    def headParser(self, keys):
-        for key in keys:
-            vals = self.msg.get_all(key)
+    def headParser(self, hkeys):
+        for hkey in hkeys:
+            vals = self.msg.get_all(hkey)
             if vals:
                 pairs = email.Utils.getaddresses(vals)
                 urls = [pair[1] for pair in pairs if pair[1]]
                 self.items += urls
 
     def headSearcher(self):
-        for key in searchkeys:
-            vals = self.msg.get_all(key, [])
+        for skey in searchkeys:
+            vals = self.msg.get_all(skey, [])
             for val in vals:
                 urls = [u[0] for u in self.url_re.findall(val)]
                 self.items += urls
