@@ -420,13 +420,10 @@ class Kiosk(object):
 			if self.items:
 				print '%s not in specified local mailboxes.' \
 				      % spl.sPl(len(self.items), 'message')
-                if self.items:
-			print '%s not found' \
-				% spl.sPl(len(self.items), 'message')
-			if not self.local:
-				self.goGoogle()
-			else:
-				time.sleep(3)
+        if self.items and not self.local:
+            self.goGoogle()
+        else:
+            time.sleep(3)
 		if self.msgs:
 			firstid = None
 			for mid in itemscopy:
