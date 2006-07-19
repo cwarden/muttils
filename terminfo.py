@@ -22,5 +22,4 @@ elif osname == 'Linux':
     t_cols = int(attribs[2].split()[1])
 
 def _test():
-    print 'This terminal has %d rows and %d columns.' \
-        % (t_rows, t_cols)
+    print 'This terminal has %d rows and %d columns.' % (t_rows, t_cols)
