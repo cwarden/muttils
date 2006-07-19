@@ -12,8 +12,7 @@ class Tformat(object):
         self.keys = []      # itemsdict's keys
         self.maxl = 0       # length of last key
         # dictionary of format functions
-        self.formdict = {'sf': self.simpleFormat,
-                     'bf': self.bracketFormat}
+        self.formdict = {'sf': self.simpleFormat, 'bf': self.bracketFormat}
 
     def formatItems(self):
         if not self.keys: return []
