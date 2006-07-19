@@ -2,7 +2,7 @@
 
 import terminfo
 from Tformat import Tformat
-    
+
 class Pages(Tformat):
     '''
     Subclass for Tpager.
