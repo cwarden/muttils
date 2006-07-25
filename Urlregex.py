@@ -48,7 +48,7 @@ intls = 'arpa com edu gov int mil net org aero biz coop info name pro'
 # top level domains
 tops = '%s ' \
     'a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] ' \
-    'c[acdfghiklmnoruvxyz] d[ejkmoz] e[ceghrst] ' \
+    'c[acdfghiklmnoruvxyz] d[ejkmoz] e[ceghrstu] ' \
     'f[ijkmor] g[abdefghilmnpqrstuwy] ' \
     'h[kmnrtu] i[delnmoqrst] j[emop] ' \
     'k[eghimnprwyz] l[abcikrstuvy] ' \
