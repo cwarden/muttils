@@ -24,8 +24,7 @@ class Tformat(object):
     def simpleFormat(self, key):
         '''Simple format of choice menu,
         recommended for 1 line items.'''
-        blank = ' ' * (self.maxl-len(key))
-        return '%s%s) %s\n' % (blank, key, self.itemsdict[key])
+        return '%s) %s\n' % (key.rjust(self.maxl), self.itemsdict[key])
 
     def bracketFormat(self, key):
         '''Format of choice menu with items
