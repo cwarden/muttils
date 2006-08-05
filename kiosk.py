@@ -119,13 +119,14 @@ def mkUnixfrom(msg):
 class KioskError(Exception):
     '''Exception class for kiosk.'''
 
-class Kiosk(Browser):
+class Kiosk(Browser, HTML2Text):
     '''
     Provides methods to search for and retrieve
     messages via their Message-ID.
     '''
     def __init__(self, items=None):
         Browser.__init__(self)
+        HTML2Text.__init__(self, strict=False)
         if items == None:
             items = []
         self.items = items  # message-ids to look for
@@ -227,12 +228,12 @@ class Kiosk(Browser):
         Browser.urlVisit(self)
         sys.exit()
 
-    def gooRetrieve(self, mid, found, opener, htparser, header_re):
+    def gooRetrieve(self, mid, found, opener, header_re):
         try:
             fp = opener.open(self.makeQuery(mid))
-            htparser.write(fp.read(), append=False)
+            HTML2Text.write(self, fp.read(), append=False)
             fp.close()
-            liniter = iter(htparser.readlines(nl=False))
+            liniter = iter(HTML2Text.readlines(self, nl=False))
         except urllib2.URLError, e:
             if hasattr(e, 'reason'):
                 raise KioskError, urlfailmsg + e
@@ -267,13 +268,12 @@ class Kiosk(Browser):
         print '*Unfortunately Google masks all email addresses*'
         opener = urllib2.build_opener()
         opener.addheaders = [useragent]
-        htparser = HTML2Text(strict=False)
         header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
         goOnline()
         found = []
         for mid in self.items:
-            self.gooRetrieve(mid, found, opener, htparser, header_re)
-        htparser.close()
+            self.gooRetrieve(mid, found, opener, header_re)
+        HTML2Text.close(self)
         self.items = [mid for mid in self.items if not mid in found]
 
     def leafSearch(self):
