@@ -53,8 +53,8 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit, Browser):
     '''
     def __init__(self):
         Browser.__init__(self)      # <- items
-        LastExit.__init__(self)
         Kiosk.__init__(self)        # <- kiosk, mhiers, mspool, local, google, xb, tb
+        LastExit.__init__(self)
         Urlcollector.__init__(self, proto='web') # <- (Urlregex) proto, decl, items, files, pat
         self.getdir = ''            # download in dir via wget
 

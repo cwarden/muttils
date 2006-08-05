@@ -231,7 +231,7 @@ class Kiosk(Browser, HTML2Text):
     def gooRetrieve(self, mid, found, opener, header_re):
         try:
             fp = opener.open(self.makeQuery(mid))
-            HTML2Text.write(self, fp.read(), append=False)
+            HTML2Text.write(self, html=fp.read(), append=False)
             fp.close()
             liniter = iter(HTML2Text.readlines(self, nl=False))
         except urllib2.URLError, e:
@@ -271,6 +271,7 @@ class Kiosk(Browser, HTML2Text):
         header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
         goOnline()
         found = []
+        HTML2Text.open(self)
         for mid in self.items:
             self.gooRetrieve(mid, found, opener, header_re)
         HTML2Text.close(self)
