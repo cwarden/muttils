@@ -11,6 +11,7 @@ from email.Errors import MessageParseError, HeaderParseError
 from mailbox import Maildir, PortableUnixMailbox
 from cheutils import filecheck, readwrite, spl, systemcall
 from cheutils.html2text import HTML2Text
+from cheutils.selbrowser import Browser
 
 optstr = 'bd:D:hk:lm:ntx'
 ggroups = 'http://groups.google.com/groups'
@@ -118,12 +119,13 @@ def mkUnixfrom(msg):
 class KioskError(Exception):
     '''Exception class for kiosk.'''
 
-class Kiosk(object):
+class Kiosk(Browser):
     '''
     Provides methods to search for and retrieve
     messages via their Message-ID.
     '''
     def __init__(self, items=None):
+        Browser.__init__(self)
         if items == None:
             items = []
         self.items = items  # message-ids to look for
@@ -221,10 +223,8 @@ class Kiosk(object):
 
     def gooBrowse(self):
         '''Visits given urls with browser and exits.'''
-        from cheutils import selbrowser
-        urls = [self.makeQuery(mid) for mid in self.items]
-        selbrowser.selBrowser(urls,
-                tb=self.tb, xb=self.xb)
+        self.items = [self.makeQuery(mid) for mid in self.items]
+        Browser.urlVisit(self)
         sys.exit()
 
     def gooRetrieve(self, mid, found, opener, htparser, header_re):

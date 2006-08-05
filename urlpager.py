@@ -53,10 +53,10 @@ class UrlpagerError(Exception):
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, Browser):
     def __init__(self):
         Browser.__init__(self)      # <- items (proto overriden by Urlcollector)
-        LastExit.__init__(self)
-        Urlcollector.__init__(self) # (Urlregex, LastExit) <- proto, items, files, pat
         Kiosk.__init__(self)        # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
+        LastExit.__init__(self)
         Tpager.__init__(self, name='url') # <- items, name
+        Urlcollector.__init__(self) # (Urlregex, LastExit) <- proto, items, files, pat
         self.ftp = 'ftp'            # ftp client
         self.url = ''               # selected url
         self.getdir = ''            # download in dir via wget
