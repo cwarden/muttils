@@ -272,9 +272,11 @@ class Kiosk(Browser, HTML2Text):
         goOnline()
         found = []
         HTML2Text.open(self)
-        for mid in self.items:
-            self.gooRetrieve(mid, found, opener, header_re)
-        HTML2Text.close(self)
+        try:
+            for mid in self.items:
+                self.gooRetrieve(mid, found, opener, header_re)
+        finally:
+            HTML2Text.close(self)
         self.items = [mid for mid in self.items if not mid in found]
 
     def leafSearch(self):
