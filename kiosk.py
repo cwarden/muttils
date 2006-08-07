@@ -82,37 +82,37 @@ def ascDate(date):
 
 def fixDate(msg):
     '''Fixes YYYY/mm/dd dates of very old Google messages
-    by using X-Server-Date as a workaround.'''
-    xdate = msg.__getitem__('x-server-date')
-    date = msg.__getitem__('date')
-    if xdate and date:
-        try:
-            date = ascDate(date)
-        except TypeError:
-            date = ascDate(xdate)
-            date = date.replace(' ', ', ', 1)
+    by using any ...-Date header as a workaround.'''
+    fixdate = ''
+    try:
+        fixdate = ascDate(msg['date'])
+    except TypeError:
+        for header in msg.keys():
+            if header.lower().endswith('-date'):
+                try:
+                    fixdate = ascDate(msg[header])
+                    break
+                except TypeError:
+                    pass
+    if fixdate:
+            fixdate = fixdate.replace(' ', ', ', 1)
             del msg['date']
-            msg['Date'] = date
+            msg['Date'] = fixdate
     return msg
 
 def mkUnixfrom(msg):
-    '''Creates missing unixfrom.'''
-    received = msg.__getitem__('received')
-    if received:
-        date = received.split('; ')[-1]
-    else:
-        date = msg.__getitem__('date')
-    if date:
-        try:
-            date = ascDate(date)
-        except TypeError:
-            pass
+    '''Tries to create an improved unixfrom.'''
+    udate = ''
+    if msg['received']:
+        udate = msg['received'].split('; ')[-1]
+    elif msg['date']:
+        udate = msg['date'].replace(',', '')
+    if udate:
+        if msg['return-path']:
+            ufrom = msg['return-path'][1:-1]
         else:
-            if 'return-path' in msg:
-                ufrom = msg['return-path'][1:-1]
-            else:
-                ufrom = email.Utils.parseaddr(msg.get('from', 'nobody'))[1]
-            msg.set_unixfrom('From %s  %s' % (ufrom, date))
+            ufrom = email.Utils.parseaddr(msg.get('from', 'nobody'))[1]
+        msg.set_unixfrom('From %s  %s' % (ufrom, udate))
     return msg
 
 
@@ -386,6 +386,7 @@ class Kiosk(Browser, HTML2Text):
                 msg = mkUnixfrom(msg)
             g.flatten(msg, unixfrom=True)
         outfp.close()
+        fp = open(self.kiosk)
         cmd = "%s %s '%s'"
         if len(self.msgs) == 1 and self.muttone:
             cmd = cmd % (mutt, muttone, self.kiosk)
