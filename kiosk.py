@@ -6,8 +6,8 @@ kiosk_cset = '$Hg: kiosk.py,v$'
 
 import email, os, re, time, urllib, urllib2, sys
 from email.Generator import Generator
-from email.Parser import HeaderParser
-from email.Errors import MessageParseError, HeaderParseError
+from email.Parser import Parser
+from email.Errors import MessageParseError
 from mailbox import Maildir, PortableUnixMailbox
 from cheutils import filecheck, readwrite, spl, systemcall
 from cheutils.html2text import HTML2Text
@@ -65,9 +65,9 @@ def mailHier():
 
 def msgFactory(fp):
     try:
-        p = HeaderParser()
-        return p.parse(fp)
-    except (HeaderParseError, MessageParseError):
+        p = Parser()
+        return p.parse(fp, headersonly=True)
+    except  MessageParseError:
         return ''
 
 def goOnline():
