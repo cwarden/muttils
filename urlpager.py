@@ -131,7 +131,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, Browser):
             if not os.path.splitext(self.url)[1] \
                     and not self.url.endswith('/'):
                 self.url = self.url + '/'
-            cs = self.ftp
+            cs = [self.ftp]
         if not cs:
             self.items = [self.url]
             Browser.urlVisit(self)
