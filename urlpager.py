@@ -18,19 +18,19 @@ from kiosk import Kiosk
 from cheutils.selbrowser import Browser
 from cheutils import getbin, systemcall
 
-optstring = 'bd:D:f:hiIlnp:k:r:tw:x'
+optstring = 'bd:D:f:hiIlM:np:k:r:tw:x'
 mailers = ('mutt', 'pine', 'elm', 'mail') 
 
 urlpager_help = '''
 [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]
 -w <download dir> [-r <pattern]
--i [-r <pattern>][-k <mbox>][<file> ...]
--I [-r <pattern>][-k <mbox>][<file> ...]
--l [-I][-r <pattern>][-k <mbox>][<file> ...]
+-i [-M <filemask>][-r <pattern>][-k <mbox>][<file> ...]
+-I [-M <filemask>][-r <pattern>][-k <mbox>][<file> ...]
+-l [-I][-M <filemask>][-r <pattern>][-k <mbox>][<file> ...]
 -d <mail hierarchy>[:<mail hierarchy>[:...]] \\
-        [-I][-l][-r <pattern>][-k <mbox>][<file> ...]
+        [-I][-l][-M <filemask>][-r <pattern>][-k <mbox>][<file> ...]
 -D <mail hierarchy>[:<mail hierarchy>[:...]] \\
-        [-I][-l][-r <pattern>][-k <mbox>][<file> ...]
+        [-I][-l][-M <filemask>][-r <pattern>][-k <mbox>][<file> ...]
 -n [-r <pattern][-I][-l][-k <mbox>][<file> ...]
 -b [-r <pattern][-I][<file> ...]
 -h (display this help)'''
@@ -93,6 +93,9 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, Browser):
             if o == '-l': # only local search for message-ids
                 self.proto = 'mid'
                 self.local = True
+            if o == '-M': # file mask
+                self.proto = 'mid'
+                self.mask = a
             if o == '-n': # don't search mailboxes for message-ids
                 self.proto = 'mid'
                 self.mhiers = None

@@ -13,7 +13,7 @@ from cheutils import filecheck, readwrite, spl, systemcall
 from cheutils.html2text import HTML2Text
 from cheutils.selbrowser import Browser
 
-optstr = 'bd:D:hk:lm:ntx'
+optstr = 'bd:D:hk:lM:ntx'
 ggroups = 'http://groups.google.com/groups'
 useragent = ('User-Agent', 'w3m')
 urlfailmsg = 'reason of url retrieval failure: '
@@ -28,9 +28,9 @@ mutti = "-e 'set uncollapse_jump' " \
 
 kiosk_help = '''
 [-l][-d <mail hierarchy>[:<mail hierarchy> ...]] \\
-        [-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]
+        [-k <mbox>][-M <filemask>][-t] <ID> [<ID> ...]
 [-l][-D <mail hierarchy>[:<mail hierarchy> ...]] \\
-        [-k <mbox>][-m <filemask>][-t] <ID> [<ID> ...]
+        [-k <mbox>][-M <filemask>][-t] <ID> [<ID> ...]
 -n [-l][-k <mbox>][-t] <ID> [<ID> ...]
 -b <ID> [<ID> ...]
 -h (display this help)'''
@@ -133,7 +133,7 @@ class Kiosk(Browser, HTML2Text):
                 self.local = True
             if o == '-k':
                 self.kiosk = a
-            if o == '-m':
+            if o == '-M':
                 self.mask = a
             if o == '-n':
                 self.mhiers = None # don't search local mailboxes
