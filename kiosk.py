@@ -77,19 +77,6 @@ def goOnline():
     except ImportError:
         pass
 
-def fixDate(msg):
-    '''Tries to fix eg. YYYY/mm/dd dates of very old Google messages
-    by checking every header for a RFC 2822 date.'''
-    if not email.Utils.parsedate_tz(msg['date']):
-        for header in msg.keys():
-            fixdate = email.Utils.parsedate_tz(msg[header])
-            if fixdate:
-                fixdate = email.Utils.mktime_tz(fixdate)
-                del msg['date']
-                msg['Date'] = email.Utils.formatdate(fixdate)
-                break
-    return msg
-
 def mkUnixfrom(msg):
     '''Tries to create an improved unixfrom.'''
     if msg['return-path']:
@@ -368,7 +355,6 @@ class Kiosk(Browser, HTML2Text):
             # delete read status and local server info
             for h in ('Status', 'Xref'):
                 del msg[h]
-            msg = fixDate(msg)
             if not msg.get_unixfrom():
                 msg = mkUnixfrom(msg)
             g.flatten(msg, unixfrom=True)
