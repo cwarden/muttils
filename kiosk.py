@@ -77,42 +77,26 @@ def goOnline():
     except ImportError:
         pass
 
-def ascDate(date):
-    return time.asctime(email.Utils.parsedate(date))
-
 def fixDate(msg):
-    '''Fixes YYYY/mm/dd dates of very old Google messages
-    by using any ...-Date header as a workaround.'''
-    fixdate = ''
-    try:
-        fixdate = ascDate(msg['date'])
-    except TypeError:
+    '''Tries to fix eg. YYYY/mm/dd dates of very old Google messages
+    by checking every header for a RFC 2822 date.'''
+    if not email.Utils.parsedate_tz(msg['date']):
         for header in msg.keys():
-            if header.lower().endswith('-date'):
-                try:
-                    fixdate = ascDate(msg[header])
-                    break
-                except TypeError:
-                    pass
-    if fixdate:
-            fixdate = fixdate.replace(' ', ', ', 1)
-            del msg['date']
-            msg['Date'] = fixdate
+            fixdate = email.Utils.parsedate_tz(msg[header])
+            if fixdate:
+                fixdate = email.Utils.mktime_tz(fixdate)
+                del msg['date']
+                msg['Date'] = email.Utils.formatdate(fixdate)
+                break
     return msg
 
 def mkUnixfrom(msg):
     '''Tries to create an improved unixfrom.'''
-    udate = ''
-    if msg['received']:
-        udate = msg['received'].split('; ')[-1]
-    elif msg['date']:
-        udate = msg['date'].replace(',', '')
-    if udate:
-        if msg['return-path']:
-            ufrom = msg['return-path'][1:-1]
-        else:
-            ufrom = email.Utils.parseaddr(msg.get('from', 'nobody'))[1]
-        msg.set_unixfrom('From %s  %s' % (ufrom, udate))
+    if msg['return-path']:
+        ufrom = msg['return-path'][1:-1]
+    else:
+        ufrom = email.Utils.parseaddr(msg.get('from', 'nobody'))[1]
+    msg.set_unixfrom('From %s  %s' % (ufrom, time.asctime()))
     return msg
 
 
@@ -304,7 +288,10 @@ class Kiosk(Browser, HTML2Text):
                 self.mask and self.mask.search(path) != None:
             return
         if maildir:
-            dl = os.listdir(path)
+            try:
+                dl = os.listdir(path)
+            except OSError:
+                return
             for d in 'cur', 'new':
                 if not d in dl:
                     return
@@ -374,24 +361,25 @@ class Kiosk(Browser, HTML2Text):
     def openKiosk(self, firstid):
         '''Opens mutt on kiosk mailbox.'''
         from cheutils import getbin
-        mutt = getbin.getBin('mutt', 'muttng')
-        outfp = open(self.kiosk, 'ab')
-        g = Generator(outfp, maxheaderlen=0)
+        client = getbin.getBin('mutt', 'muttng', 'mail')
+        fp = open(self.kiosk, 'ab')
+        g = Generator(fp, maxheaderlen=0)
         for msg in self.msgs:
             # delete read status and local server info
             for h in ('Status', 'Xref'):
-                msg.__delitem__(h)
+                del msg[h]
             msg = fixDate(msg)
             if not msg.get_unixfrom():
                 msg = mkUnixfrom(msg)
             g.flatten(msg, unixfrom=True)
-        outfp.close()
-        fp = open(self.kiosk)
+        fp.close()
         cmd = "%s %s '%s'"
-        if len(self.msgs) == 1 and self.muttone:
-            cmd = cmd % (mutt, muttone, self.kiosk)
+        if client == 'mail':
+            cmd = "%s -f '%s'" % (client, self.kiosk)
+        elif len(self.msgs) == 1 and self.muttone:
+            cmd = cmd % (client, muttone, self.kiosk)
         else:
-            cmd = cmd % (mutt, mutti % firstid, self.kiosk)
+            cmd = cmd % (client, mutti % firstid, self.kiosk)
         if not os.isatty(0):
             tty = os.ctermid()
             cmd = '%(cmd)s <%(tty)s >%(tty)s' % vars()
