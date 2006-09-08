@@ -271,8 +271,8 @@ class Kiosk(Browser, HTML2Text):
                     % spl.sPl(len(self.items), 'message')
 
     def boxParser(self, path, maildir=False, isspool=False):
-        if not isspool and path == self.mspool or \
-                self.mask and self.mask.search(path) != None:
+        if (not isspool and path == self.mspool) or \
+                (self.mask and self.mask.search(path) != None):
             return
         if maildir:
             try:

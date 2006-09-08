@@ -125,7 +125,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, Browser):
     def urlGo(self):
         cs, conny = [], True
         if self.proto == 'mailto' \
-                or self.proto == 'all' and Urlregex.mailCheck(self.url):
+                or (self.proto == 'all' and Urlregex.mailCheck(self.url)):
             cs = [getbin.getBin(mailers)]
             conny = False
         elif self.getdir:
