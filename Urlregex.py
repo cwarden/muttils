@@ -52,8 +52,8 @@ tops = '%s ' \
     'f[ijkmor] g[abdefghilmnpqrstuwy] ' \
     'h[kmnrtu] i[delnmoqrst] j[emop] ' \
     'k[eghimnprwyz] l[abcikrstuvy] ' \
-    'm[acdghklmnopqrstuvwxyz] n[acefgilopruz] om ' \
-    'p[aefghklmnrstwy] qa r[eouw] ' \
+    'm[acdeghklmnopqrstuvwxyz] n[acefgilopruz] om ' \
+    'p[aefghklmnrstwy] qa r[eosuw] ' \
     's[abcdeghijklmnortuvyz] ' \
     't[cdfghjkmnoprtvwz] u[agkmsyz] ' \
     'v[acegivu] w[fs] y[etu] z[amw]' % intls
