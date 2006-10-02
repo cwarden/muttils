@@ -7,7 +7,7 @@ kiosk_cset = '$Hg: kiosk.py,v$'
 import email, os, re, time, urllib, urllib2, sys
 from email.Generator import Generator
 from email.Parser import Parser
-from email.Errors import MessageParseError
+from email.Errors import MessageParseError, HeaderParseError
 from mailbox import Maildir, PortableUnixMailbox
 from cheutils import filecheck, readwrite, spl, systemcall
 from cheutils.html2text import HTML2Text
@@ -67,7 +67,7 @@ def msgFactory(fp):
     try:
         p = Parser()
         return p.parse(fp, headersonly=True)
-    except  MessageParseError:
+    except HeaderParseError:
         return ''
 
 def goOnline():
@@ -155,19 +155,20 @@ class Kiosk(Browser, HTML2Text):
             self.kiosk = tempfile.mkstemp('.kiosk')[1]
             return
         self.kiosk = filecheck.absolutePath(self.kiosk)
-        if not os.path.isfile(self.kiosk):
-            raise KioskError, '%s: not a regular file' \
-                    % self.kiosk
         if not os.path.exists(self.kiosk) or not os.path.getsize(self.kiosk):
             # non existant or empty is fine
             return
+        if not os.path.isfile(self.kiosk):
+            raise KioskError, '%s: not a regular file' \
+                    % self.kiosk
         e = '%s: not a unix mailbox' % self.kiosk
         testline = readwrite.readLine(self.kiosk, 'rb')
         try:
-            test = email.message_from_string(testline)
-        except MessageParseError:
+            p = Parser()
+            check = p.parsestr(testline, headersonly=True)
+        except HeaderParseError:
             raise KioskError, e
-        if test.get_unixfrom():
+        if check.get_unixfrom():
             self.muttone = False
         else:
             raise KioskError, e
