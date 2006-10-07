@@ -13,7 +13,6 @@ from Urlcollector import Urlcollector
 from kiosk import Kiosk
 from tpager.LastExit import LastExit
 from cheutils import spl, systemcall
-from cheutils.selbrowser import Browser
 
 optstring = 'd:D:hiIk:lnr:w:x'
 
@@ -45,14 +44,13 @@ def goOnline():
 class UrlbatcherError(Exception):
     '''Exception class for this module.'''
 
-class Urlbatcher(Urlcollector, Kiosk, LastExit, Browser):
+class Urlbatcher(Urlcollector, Kiosk, LastExit):
     '''
     Parses input for either web urls or message-ids.
     Browses all urls or creates a message tree in mutt.
     You can specify urls/ids by a regex pattern.
     '''
     def __init__(self):
-        Browser.__init__(self)      # <- items
         Kiosk.__init__(self)        # <- kiosk, mhiers, mspool, local, google, xb, tb
         LastExit.__init__(self)
         Urlcollector.__init__(self, proto='web') # <- (Urlregex) proto, decl, items, files, pat
@@ -105,7 +103,9 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit, Browser):
             systemcall.systemCall(
                 [getbin.getBin('wget'), '-P', self.getdir] + self.items)
         else:
-            Browser.urlVisit(self)
+            from cheutils.selbrowser import Browser
+            b = Browser(items=self.items, tb=self.tb, xb=self.xb)
+            b.urlVisit()
                     
     def urlSearch(self):
         Urlcollector.urlCollect(self)

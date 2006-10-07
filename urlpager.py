@@ -14,7 +14,6 @@ from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
 from Urlcollector import Urlcollector
 from kiosk import Kiosk
-from cheutils.selbrowser import Browser
 from cheutils import getbin, systemcall
 
 optstring = 'bd:D:f:hiIlM:np:k:r:tw:x'
@@ -49,9 +48,8 @@ def goOnline():
 class UrlpagerError(Exception):
     '''Exception class for this module.'''
 
-class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, Browser):
+class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
     def __init__(self):
-        Browser.__init__(self)      # <- items (proto overriden by Urlcollector)
         Kiosk.__init__(self)        # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
         LastExit.__init__(self)
         Tpager.__init__(self, name='url') # <- items, name
@@ -135,8 +133,9 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, Browser):
                 self.url = self.url + '/'
             cs = [self.ftp]
         if not cs:
-            self.items = [self.url]
-            Browser.urlVisit(self)
+            from cheutils.selbrowser import Browser
+            b = Browser(items=[self.url], tb=self.tb, xb=self.xb)
+            b.urlVisit()
         else:
             if conny:
                 goOnline()
