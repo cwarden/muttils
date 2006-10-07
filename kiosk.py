@@ -159,8 +159,7 @@ class Kiosk(Browser, HTML2Text):
             # non existant or empty is fine
             return
         if not os.path.isfile(self.kiosk):
-            raise KioskError, '%s: not a regular file' \
-                    % self.kiosk
+            raise KioskError, '%s: not a regular file' % self.kiosk
         e = '%s: not a unix mailbox' % self.kiosk
         testline = readwrite.readLine(self.kiosk, 'rb')
         try:
@@ -401,15 +400,3 @@ class Kiosk(Browser, HTML2Text):
                     firstid = mid
                     break
             self.openKiosk(firstid)
-
-
-def run():
-    k = Kiosk()
-    try:
-        k.argParser()
-        k.kioskStore()
-    except KioskError, e:
-        userHelp(e)
-    except KeyboardInterrupt:
-        print
-        pass

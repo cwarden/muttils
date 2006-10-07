@@ -9,7 +9,7 @@ urlbatcher_cset = '$Hg: urlbatcher.py,v$'
 # input is checked anew for each file.
 ###
 
-from Urlcollector import Urlcollector, UrlcollectorError
+from Urlcollector import Urlcollector
 from kiosk import Kiosk
 from tpager.LastExit import LastExit
 from cheutils import spl, systemcall
@@ -127,15 +127,3 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit, Browser):
             raw_input(msg)
         if not self.files:
             LastExit.reInit(self)
-
-
-def run():
-    try:
-        up = Urlbatcher()
-        up.argParser()
-        up.urlSearch()
-    except (UrlbatcherError, UrlcollectorError), e:
-        userHelp(e)
-    except KeyboardInterrupt:
-        print
-        pass

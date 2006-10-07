@@ -2,4 +2,10 @@
 # $Hg: kiosk,v$
 
 from urlregex import kiosk
-kiosk.run()
+
+try:
+    k = kiosk.Kiosk()
+    k.argParser()
+    k.kioskStore()
+except kiosk.KioskError, e:
+    kiosk.userHelp(e)

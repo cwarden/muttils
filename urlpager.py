@@ -12,8 +12,7 @@ urlpager_cset = '$Hg: urlpager.py,v$'
 import os, readline, Urlregex
 from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
-from Urlcollector import Urlcollector, UrlcollectorError
-from Urlparser import UrlparserError
+from Urlcollector import Urlcollector
 from kiosk import Kiosk
 from cheutils.selbrowser import Browser
 from cheutils import getbin, systemcall
@@ -166,14 +165,3 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit, Browser):
                 LastExit.reInit(self)
             except IndexError:
                 pass
-
-
-def run():
-    up = Urlpager()
-    try:
-        up.argParser()
-        up.urlSearch()
-    except (UrlpagerError, UrlcollectorError, UrlparserError), e:
-        userHelp(e)
-    except KeyboardInterrupt:
-        pass

@@ -2,4 +2,14 @@
 # $Hg: urlbatcher,v$
 
 from urlregex import urlbatcher
-urlbatcher.run()
+from urlregex.Urlcollector import UrlcollectorError
+
+try:
+    up = urlbatcher.Urlbatcher()
+    up.argParser()
+    up.urlSearch()
+except (urlbatcher.UrlbatcherError, UrlcollectorError), e:
+    urlbatcher.userHelp(e)
+except KeyboardInterrupt:
+    print
+    pass
