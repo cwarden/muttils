@@ -202,9 +202,9 @@ class Kiosk(Browser, HTML2Text):
     def gooRetrieve(self, mid, found, opener, header_re):
         try:
             fp = opener.open(self.makeQuery(mid))
-            HTML2Text.write(self, html=fp.read(), append=False)
+            HTML2Text.htpWrite(self, html=fp.read(), append=False)
             fp.close()
-            liniter = iter(HTML2Text.readlines(self, nl=False))
+            liniter = iter(HTML2Text.htpReadlines(self, nl=False))
         except urllib2.URLError, e:
             if hasattr(e, 'reason'):
                 raise KioskError, urlfailmsg + e
