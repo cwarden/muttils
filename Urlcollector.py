@@ -22,7 +22,7 @@ class Urlcollector(Urlregex):
                 data = sys.stdin.read()
             except KeyboardInterrupt:
                 print
-                raise UrlcollectorError, 'needs stdin or filename(s)'
+                raise UrlcollectorError('needs stdin or filename(s)')
             Urlregex.findUrls(self, data)
         else:
             import datatype
@@ -34,5 +34,5 @@ class Urlcollector(Urlregex):
             try:
                 self.pat = re.compile(r'%s' % self.pat, re.I)
             except re.error, e:
-                raise UrlcollectorError, "%s in pattern `%s'" % (e, self.pat)
+                raise UrlcollectorError("%s in pattern `%s'" % (e, self.pat))
             self.items = filter(lambda i: self.pat.search(i), self.items)

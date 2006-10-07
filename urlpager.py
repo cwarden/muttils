@@ -53,7 +53,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
         Kiosk.__init__(self)        # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
         LastExit.__init__(self)
         Tpager.__init__(self, name='url') # <- items, name
-        Urlcollector.__init__(self) # (Urlregex, LastExit) <- proto, items, files, pat
+        Urlcollector.__init__(self) # (Urlregex) <- proto, items, files, pat
         self.ftp = 'ftp'            # ftp client
         self.url = ''               # selected url
         self.getdir = ''            # download in dir via wget
@@ -63,7 +63,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
         try:
             opts, self.files = getopt.getopt(sys.argv[1:], optstring)
         except getopt.GetoptError, e:
-            raise UrlpagerError, e
+            raise UrlpagerError(e)
         for o, a in opts:
             if o == '-b': # don't look up msgs locally
                 self.proto = 'mid'

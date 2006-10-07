@@ -117,7 +117,7 @@ class Kiosk(HTML2Text):
         try:
             opts, args = getopt.getopt(sys.argv[1:], optstr)
         except getopt.GetoptError, e:
-            raise KioskError, e
+            raise KioskError(e)
         for o, a in opts:
             if o == '-b':
                 self.browse, self.mhiers = True, None
@@ -144,7 +144,7 @@ class Kiosk(HTML2Text):
         if ur.items:
             self.items = ur.items
         else:
-            raise KioskError, 'no valid Message-ID found'
+            raise KioskError('no valid Message-ID found')
 
     def kioskTest(self):
         '''Provides the path to an mbox file to store retrieved messages.'''
@@ -157,18 +157,18 @@ class Kiosk(HTML2Text):
             # non existant or empty is fine
             return
         if not os.path.isfile(self.kiosk):
-            raise KioskError, '%s: not a regular file' % self.kiosk
+            raise KioskError('%s: not a regular file' % self.kiosk)
         e = '%s: not a unix mailbox' % self.kiosk
         testline = readwrite.readLine(self.kiosk, 'rb')
         try:
             p = Parser()
             check = p.parsestr(testline, headersonly=True)
         except HeaderParseError:
-            raise KioskError, e
+            raise KioskError(e)
         if check.get_unixfrom():
             self.muttone = False
         else:
-            raise KioskError, e
+            raise KioskError(e)
 
     def hierTest(self):
         '''Checks whether given directories exist and
@@ -207,9 +207,9 @@ class Kiosk(HTML2Text):
             liniter = iter(HTML2Text.htpReadlines(self, nl=False))
         except urllib2.URLError, e:
             if hasattr(e, 'reason'):
-                raise KioskError, urlfailmsg + e
+                raise KioskError(urlfailmsg + e)
             if hasattr(e, 'code'):
-                raise KioskError, urlerrmsg + e
+                raise KioskError(urlerrmsg + e)
         line = ''
         try:
             while not header_re.match(line):
@@ -225,7 +225,7 @@ class Kiosk(HTML2Text):
                     lines.append(line)
             except StopIteration:
                 print '\n'.join(lines)
-                raise KioskError, changedsrcview
+                raise KioskError(changedsrcview)
             msg = '\n'.join(lines[:-1])
             msg = email.message_from_string(msg)
             found.append(mid)
@@ -263,7 +263,7 @@ class Kiosk(HTML2Text):
             try:
                 msg = email.message_from_file(fp)
             except MessageParseError, e:
-                raise KioskError, e
+                raise KioskError(e)
             fp.close()
             self.msgs.append(msg)
         if self.items:
@@ -343,7 +343,7 @@ class Kiosk(HTML2Text):
         try:
             self.mask = re.compile(r'%s' % self.mask)
         except re.error, e:
-            raise KioskError, "%s in pattern `%s'" % (e, self.mask)
+            raise KioskError("%s in pattern `%s'" % (e, self.mask))
 
     def openKiosk(self, firstid):
         '''Opens mutt on kiosk mailbox.'''
@@ -375,7 +375,7 @@ class Kiosk(HTML2Text):
         '''Collects messages identified by ID either
         by retrieving them locally or from GoogleGroups.'''
         if not self.items:
-            raise KioskError, 'need Message-ID(s) as argument(s)'
+            raise KioskError('need Message-ID(s) as argument(s)')
         if self.browse:
             self.goGoogle()
         self.kioskTest()

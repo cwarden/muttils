@@ -52,9 +52,8 @@ class Urlparser(object):
 
     def protoTest(self):
         if not self.proto in protos:
-            err = "`%s': invalid spec, use one of %s" \
-                    % (self.proto, ', '.join(protos))
-            raise UrlparserError, err
+            raise UrlparserError("`%s': invalid spec, use one of %s"
+                    % (self.proto, ', '.join(protos)))
 
     def headParser(self, hkeys):
         for hkey in hkeys:

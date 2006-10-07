@@ -61,7 +61,7 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
         try:
             opts, self.files = getopt.getopt(sys.argv[1:], optstring)
         except getopt.GetoptError, e:
-            raise UrlbatcherError, e
+            raise UrlbatcherError(e)
         for o, a in opts:
             if o == '-d': # specific mail hierarchies
                 self.proto = 'mid'
