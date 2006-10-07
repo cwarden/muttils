@@ -50,6 +50,7 @@ class Tpager(Pages):
 
     def interAct(self, newdict=True):
         '''Lets user page through a list of items and make a choice.'''
+        retval = 0
         if newdict:
             Pages.pagesDict(self)
         self.header = '*%s*' % spl.sPl(self.ilen, self.name)
@@ -63,14 +64,13 @@ class Tpager(Pages):
                 cs = '%s, number' % cs
             menu = 'Page 1 of 1 [%s]%s ' % (self.qfunc, cs)
             reply = self.pageDisplay(menu)
-            if not reply:
-                return 0
-            elif reply in self.itemsdict:
-                return self.itemsdict[reply]
-            elif self.ckey and reply.startswith(self.ckey):
-                return reply
-            else:
-                self.interAct(newdict=False) # display same page
+            if reply:
+                if reply in self.itemsdict:
+                    retval = self.itemsdict[reply]
+                elif self.ckey and reply.startswith(self.ckey):
+                    retval = reply
+                else:
+                    self.interAct(newdict=False) # display same page
         else: # more than 1 page
             pn = 1 # start at first page
             pdir = -1 # initial paging direction reversed
@@ -88,14 +88,17 @@ class Tpager(Pages):
                 reply = self.pageDisplay(menu, pn)
                 if reply:
                     if reply in 'qQ':
-                        return 0
+                        break
                     elif reply in self.itemsdict:
-                        return self.itemsdict[reply]
+                        retval = self.itemsdict[reply]
+                        break
                     elif self.ckey and reply.startswith(self.ckey):
-                        return reply
+                        retval = reply
+                        break
                     elif reply == '-' and bs:
                         pdir *= -1
                         pn = valclamp.valClamp(pn+pdir, 1, plen)
                     #else: same page displayed on invalid response
                 else:
                     pn = valclamp.valClamp(pn+pdir, 1, plen)
+        return retval
