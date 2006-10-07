@@ -72,16 +72,15 @@ class Signature(Tpager, LastExit):
     def getSig(self):
         siglist = filter(lambda f: f.endswith(self.tail),
                 os.listdir(self.sdir) )
-        if not siglist:
-            return ''
-        random.shuffle(siglist)
-        self.items = [self.getString(fn) for fn in siglist]
-        if self.pat and self.items:
-            self.items = filter(lambda i: self.pat.search(i), self.items)
-        try:
-            self.sign = Tpager.interAct(self)
-        except KeyboardInterrupt:
-            self.sign = None
+        if siglist:
+            random.shuffle(siglist)
+            self.items = [self.getString(fn) for fn in siglist]
+            if self.pat and self.items:
+                self.items = filter(lambda i: self.pat.search(i), self.items)
+            try:
+                self.sign = Tpager.interAct(self)
+            except KeyboardInterrupt:
+                self.sign = None
 
     def checkPattern(self):
         try:
