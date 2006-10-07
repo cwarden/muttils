@@ -20,12 +20,10 @@ class Tpager(Pages):
         if format in ('sf', 'bf'):  # available formats
             self.format = format    # key to format function
         else:
-            e = "the `%s' format is invalid." % format
-            raise TpagerError, e
+            raise TpagerError("the `%s' format is invalid." % format)
         self.qfunc = qfunc          # name of exit function
         if ckey and ckey in 'qQ-':
-            e = "the `%s' key is internally reserved." % ckey
-            raise TpagerError, e
+            raise TpagerError("the `%s' key is internally reserved." % ckey)
         else:
             self.ckey = ckey        # key to customize pager
         self.crit = crit            # criterion for customizing
