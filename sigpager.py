@@ -34,7 +34,7 @@ class Signature(Tpager, LastExit):
     '''
     def __init__(self):
         Tpager.__init__(self,   # <- item, name, format, qfunc
-            name='sig', format='bf', qfunc='default sig, C-c:cancel', ckey='/')
+            name='sig', format='bf', qfunc='default sig', ckey='/')
         LastExit.__init__(self)
         self.sign = ''          # chosen self.signature
         self.sig = defaultsig   # self.signature file

@@ -55,11 +55,11 @@ class Tpager(Pages):
         self.header = '%s\n\n' % self.colTrunc(self.header, self.cols-2)
         plen = len(self.pages)
         if plen == 1: # no paging
-            cs = ''
+            cs = ', ^C:Cancel'
             if self.ckey:
-                cs = ', %s<%s>' % (self.ckey, self.crit)
+                cs = '%s, %s<%s>' % (cs, self.ckey, self.crit)
             if self.itemsdict:
-                cs = '%s, number' % cs
+                cs = '%s, Number' % cs
             menu = 'Page 1 of 1 [%s]%s ' % (self.qfunc, cs)
             reply = self.pageDisplay(menu)
             if reply:
@@ -78,11 +78,11 @@ class Tpager(Pages):
                     bs = '-:%s, ' % pds[pdir*-1]
                 else:
                     pdir *= -1
-                menu = 'Page %d of %d [%s], %sq:%s' \
+                menu = 'Page %d of %d [%s], ^C:Cancel, %sq:%s' \
                     % (pn, plen, pds[pdir], bs, self.qfunc)
                 if self.ckey:
                     menu = '%s, %s<%s>' % (menu, self.ckey, self.crit)
-                menu = '%s, number ' % menu
+                menu = '%s, Number ' % menu
                 reply = self.pageDisplay(menu, pn)
                 if reply:
                     if reply in 'qQ':
