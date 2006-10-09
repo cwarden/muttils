@@ -101,7 +101,7 @@ class Signature(Tpager, LastExit):
             self.checkPattern()
 
     def siggiLoop(self):
-        while 1:
+        while True:
             self.getSig()
             if self.sign and self.sign.startswith(self.ckey):
                 self.pat = self.sign[1:]
