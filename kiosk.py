@@ -290,20 +290,23 @@ class Kiosk(HTML2Text):
                 print e
                 return
             mbox = PortableUnixMailbox(fp, msgFactory)
-        print 'Searching %s ...' % path
+        sys.stdout.write('searching %s ' % path)
         while True:
             try:
                 msg = mbox.next()
+                sys.stdout.write('.')
+                sys.stdout.flush()
             except IOError, e:
-                print e
+                print '\n' + e
                 break
             if msg == None:
+                print
                 break
             msgid = msg.get('message-id','')[1:-1]
             if msgid in self.items:
                 self.msgs.append(msg)
                 self.items.remove(msgid)
-                print 'retrieving Message-ID <%s>' % msgid
+                print '\nretrieving Message-ID <%s>' % msgid
                 if not self.items:
                     break
         if not maildir:
