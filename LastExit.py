@@ -17,6 +17,9 @@ class Termplus(object):
     def readline(self, size=-1):
         return readwrite.readLine(self.dev, mode='rb', size=size)
 
+    def flush(self):
+        pass
+
 
 class LastExit(Termplus):
     '''
