@@ -22,8 +22,8 @@ sigpager_help = '''
 -h (display this help)'''
 
 def userHelp(error=''):
-    from cheutils import exnam
-    u = exnam.Usage(help=sigpager_help, rcsid=sigpager_cset)
+    from cheutils import usage
+    u = usage.Usage(help=sigpager_help, rcsid=sigpager_cset)
     u.printHelp(err=error)
 
 
