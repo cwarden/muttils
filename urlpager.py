@@ -34,7 +34,7 @@ urlpager_help = '''
 -h (display this help)'''
 
 def userHelp(error=''):
-    from cheutils.exnam import Usage
+    from cheutils.usage import Usage
     u = Usage(help=urlpager_help, rcsid=urlpager_cset)
     u.printHelp(err=error)
 

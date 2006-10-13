@@ -30,7 +30,7 @@ urlbatcher_help = '''
 -h (display this help)'''
 
 def userHelp(error=''):
-    from cheutils.exnam import Usage
+    from cheutils.usage import Usage
     u = Usage(help=urlbatcher_help, rcsid=urlbatcher_cset)
     u.printHelp(err=error)
 
