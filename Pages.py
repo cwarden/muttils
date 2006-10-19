@@ -24,7 +24,7 @@ class Pages(Tformat):
     def itemsDict(self):
         '''Populates itemsdict and keys.'''
         self.ilen = len(self.items)
-        numkeys = range(1, self.ilen+1)
+        numkeys = xrange(1, self.ilen+1)
         self.keys = map(str, numkeys)
         map(self.itemsdict.__setitem__, self.keys, self.items)
 
