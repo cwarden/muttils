@@ -231,7 +231,7 @@ class Urlregex(Urlparser):
         keep only the first, declared version.'''
         truncs = [self.proto_re.sub('', u) for u in self.items]
         deluxurls = []
-        for i in range(len(self.items)):
+        for i in xrange(len(self.items)):
             url = self.items[i]
             trunc = truncs[i]
             if truncs.count(trunc) == 1 or len(url) > len(trunc):
