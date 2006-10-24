@@ -118,7 +118,7 @@ class Signature(Tpager, LastExit):
         self.siggiLoop()
         if not self.targets:
             LastExit.reInit(self)
-        if self.sign != None:
+        if self.sign is not None:
             if not self.sign:
                 self.sign = readwrite.readFile(self.sig)
             if self.full:
