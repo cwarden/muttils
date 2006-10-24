@@ -96,7 +96,7 @@ class Kiosk(HTML2Text):
     '''
     def __init__(self, items=None):
         HTML2Text.__init__(self, strict=False)
-        if items == None:
+        if items is None:
             items = []
         self.items = items  # message-ids to look for
         self.kiosk = ''     # path to kiosk mbox
@@ -272,7 +272,7 @@ class Kiosk(HTML2Text):
 
     def boxParser(self, path, maildir=False, isspool=False):
         if (not isspool and path == self.mspool) or \
-                (self.mask and self.mask.search(path) != None):
+                (self.mask and self.mask.search(path) is not None):
             return
         if maildir:
             try:
@@ -299,7 +299,7 @@ class Kiosk(HTML2Text):
             except IOError, e:
                 print '\n' + e
                 break
-            if msg == None:
+            if msg is None:
                 print
                 break
             msgid = msg.get('message-id','')[1:-1]
@@ -318,7 +318,7 @@ class Kiosk(HTML2Text):
         for root, dirs, files in os.walk(mdir):    
             if not self.items:
                 break
-            rmdl = [d for d in dirs if self.mdmask.search(d)!=None]
+            rmdl = [d for d in dirs if self.mdmask.search(d) is not None]
             for d in rmdl:
                 dirs.remove(d)
             for name in dirs:
@@ -386,7 +386,7 @@ class Kiosk(HTML2Text):
             self.masKompile()
         itemscopy = self.items[:]
         self.leafSearch()
-        if self.items and self.mhiers != None:
+        if self.items and self.mhiers is not None:
             self.hierTest()
             self.mailSearch()
             if self.items:

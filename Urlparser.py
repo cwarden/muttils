@@ -92,7 +92,7 @@ class Urlparser(object):
             fp = StringIO()
             fp.write(s)
             mbox = PortableUnixMailbox(fp, msgFactory)
-            while self.msg != None:
+            while self.msg is not None:
                 self.msg = mbox.next()
                 if self.msg:
                     sl = self.msgDeconstructor(sl)
@@ -101,7 +101,7 @@ class Urlparser(object):
         return unQuote(s) # get quoted urls spanning more than 1 line
 
     def msgDeconstructor(self, sl=None):
-        if sl == None:
+        if sl is None:
             sl = []
         if self.proto != 'mid':
             if self.proto in ('all', 'mailto'):
