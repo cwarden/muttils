@@ -51,7 +51,7 @@ class Urlparser(object):
         self.msg = ''
 
     def protoTest(self):
-        if not self.proto in protos:
+        if self.proto not in protos:
             raise UrlparserError("`%s': invalid spec, use one of %s"
                     % (self.proto, ', '.join(protos)))
 

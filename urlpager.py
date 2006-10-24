@@ -112,7 +112,7 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
                         spec='isdir', absolute=True)
 
     def urlPager(self):
-        if not self.proto in ('all', 'mid'):
+        if self.proto not in ('all', 'mid'):
             self.name = '%s %s' % (self.proto, self.name)
         elif self.proto == 'mid':
             self.name = 'message-id'
@@ -121,15 +121,15 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
 
     def urlGo(self):
         cs, conny = [], True
-        if self.proto == 'mailto' \
-                or (self.proto == 'all' and Urlregex.mailCheck(self.url)):
+        if (self.proto == 'mailto'
+                or self.proto == 'all' and Urlregex.mailCheck(self.url)):
             cs = [getbin.getBin(mailers)]
             conny = False
         elif self.getdir:
             cs = [getbin.getBin('wget'), '-P', self.getdir]
         elif self.proto == 'ftp' or Urlregex.ftpCheck(self.url):
-            if not os.path.splitext(self.url)[1] \
-                    and not self.url.endswith('/'):
+            if (not os.path.splitext(self.url)[1]
+                    and not self.url.endswith('/')):
                 self.url = self.url + '/'
             cs = [self.ftp]
         if not cs:

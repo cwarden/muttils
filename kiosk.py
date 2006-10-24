@@ -248,7 +248,7 @@ class Kiosk(HTML2Text):
                 self.gooRetrieve(mid, found, opener, header_re)
         finally:
             HTML2Text.close(self)
-        self.items = [mid for mid in self.items if not mid in found]
+        self.items = [mid for mid in self.items if mid not in found]
 
     def leafSearch(self):
         try:
@@ -271,8 +271,8 @@ class Kiosk(HTML2Text):
                     % spl.sPl(len(self.items), 'message')
 
     def boxParser(self, path, maildir=False, isspool=False):
-        if (not isspool and path == self.mspool) or \
-                (self.mask and self.mask.search(path) is not None):
+        if (not isspool and path == self.mspool
+                or self.mask and self.mask.search(path) is not None):
             return
         if maildir:
             try:
@@ -280,7 +280,7 @@ class Kiosk(HTML2Text):
             except OSError:
                 return
             for d in 'cur', 'new':
-                if not d in dl:
+                if d not in dl:
                     return
             mbox = Maildir(path, msgFactory)
         else:
@@ -399,7 +399,7 @@ class Kiosk(HTML2Text):
         if self.msgs:
             firstid = None
             for mid in itemscopy:
-                if not mid in self.items:
+                if mid not in self.items:
                     firstid = mid
                     break
             self.openKiosk(firstid)
