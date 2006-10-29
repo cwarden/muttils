@@ -2,14 +2,4 @@
 # $Hg: urlpager,v$
 
 from urlregex import urlpager
-from urlregex.Urlcollector import UrlcollectorError
-from urlregex.Urlparser import UrlparserError
-
-try:
-    up = urlpager.Urlpager()
-    up.argParser()
-    up.urlSearch()
-except (urlpager.UrlpagerError, UrlcollectorError, UrlparserError), e:
-    urlpager.userHelp(e)
-except KeyboardInterrupt:
-    pass
+urlpager.run()

@@ -48,7 +48,7 @@ class Urlparser(object):
         self.proto = proto
         self.url_re = None
         self.items = []
-        self.msg = ''
+        self.msg = None
 
     def protoTest(self):
         if self.proto not in protos:

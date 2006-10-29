@@ -1,7 +1,7 @@
 # $Hg: Urlcollector.py,v$
 
 import re, sys
-from Urlregex import Urlregex
+from Urlregex import Urlregex, UrlregexError
 
 class UrlcollectorError(Exception):
     '''Exception class for this module.'''
@@ -20,16 +20,21 @@ class Urlcollector(Urlregex):
         if not self.files: # read from stdin
             try:
                 data = sys.stdin.read()
+                Urlregex.findUrls(self, data)
             except KeyboardInterrupt:
                 print
                 raise UrlcollectorError('needs stdin or filename(s)')
-            Urlregex.findUrls(self, data)
+            except UrlregexError, e:
+                raise UrlcollectorError(e)
         else:
             import datatype
             for f in self.files:
                 data, kind = datatype.dataType(f)
                 if kind.startswith('text/'):
-                    Urlregex.findUrls(self, data)
+                    try:
+                        Urlregex.findUrls(self, data)
+                    except UrlregexError, e:
+                        raise UrlcollectorError(e)
         if self.pat and self.items:
             try:
                 self.pat = re.compile(r'%s' % self.pat, re.I)

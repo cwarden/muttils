@@ -10,10 +10,10 @@ urlpager_cset = '$Hg: urlpager.py,v$'
 ###
 
 import os, readline, Urlregex
+from Urlcollector import Urlcollector, UrlcollectorError
+from kiosk import Kiosk, KioskError
 from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
-from Urlcollector import Urlcollector
-from kiosk import Kiosk
 from cheutils import getbin, systemcall
 
 optstring = 'bd:D:f:hiIlM:np:k:r:tw:x'
@@ -52,8 +52,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
     def __init__(self):
         Kiosk.__init__(self)        # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
         LastExit.__init__(self)
-        Tpager.__init__(self, name='url') # <- items, name
         Urlcollector.__init__(self) # (Urlregex) <- proto, items, files, pat
+        Tpager.__init__(self, name='url') # <- items, name
         self.ftp = 'ftp'            # ftp client
         self.url = ''               # selected url
         self.getdir = ''            # download in dir via wget
@@ -149,7 +149,10 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
                 systemcall.systemCall(cs)
 
     def urlSearch(self):
-        Urlcollector.urlCollect(self)
+        try:
+            Urlcollector.urlCollect(self)
+        except UrlcollectorError, e:
+            raise UrlpagerError(e)
         if not self.files:
             LastExit.termInit(self)
         self.urlPager()
@@ -158,9 +161,23 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
                 self.urlGo()
             else:
                 self.items = [self.url]
-                Kiosk.kioskStore(self)
+                try:
+                    Kiosk.kioskStore(self)
+                except KioskError, e:
+                    raise UrlpagerError(e)
         if not self.files:
             try:
                 LastExit.reInit(self)
             except IndexError:
                 pass
+
+
+def run():
+    try:
+        up = Urlpager()
+        up.argParser()
+        up.urlSearch()
+    except UrlpagerError, e:
+        userHelp(e)
+    except KeyboardInterrupt:
+        print

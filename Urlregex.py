@@ -1,7 +1,7 @@
 # $Hg: Urlregex.py,v$
 
 import re
-from Urlparser import Urlparser
+from Urlparser import Urlparser, UrlparserError
 
 def orJoin(s):
     return r'(%s)' % '|'.join(s.split())
@@ -143,6 +143,10 @@ filterdict = { 'web':    webCheck,
                'http':   httpCheck,
                'mailto': mailCheck }
 
+
+class UrlregexError(Exception):
+    '''Exception class for this module.'''
+
 class Urlregex(Urlparser):
     '''
     Provides functions to extract urls from text,
@@ -248,7 +252,10 @@ class Urlregex(Urlparser):
 
     def urlObjects(self, search=True):
         '''Creates customized regex objects of url.'''
-        Urlparser.protoTest(self)
+        try:
+            Urlparser.protoTest(self)
+        except UrlparserError, e:
+            raise UrlregexError(e)
         if self.proto == 'mailto':# be pragmatic and list not only declared
             self.url_re = mail_re
             self.proto_re = re.compile(r'^mailto:')

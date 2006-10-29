@@ -9,8 +9,8 @@ urlbatcher_cset = '$Hg: urlbatcher.py,v$'
 # input is checked anew for each file.
 ###
 
-from Urlcollector import Urlcollector
-from kiosk import Kiosk
+from Urlcollector import Urlcollector, UrlcollectorError
+from kiosk import Kiosk, KioskError
 from tpager.LastExit import LastExit
 from cheutils import spl, systemcall
 
@@ -108,7 +108,10 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
             b.urlVisit()
                     
     def urlSearch(self):
-        Urlcollector.urlCollect(self)
+        try:
+            Urlcollector.urlCollect(self)
+        except UrlcollectorError, e:
+            raise UrlbatcherError(e)
         if not self.files:
             LastExit.termInit(self)
         if self.items:
@@ -120,10 +123,24 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
                 if self.proto != 'mid':
                     self.urlGo()
                 else:
-                    Kiosk.kioskStore(self)
+                    try:
+                        Kiosk.kioskStore(self)
+                    except KioskError, e:
+                        raise UrlbatcherError(e)
         else:
             msg = 'No %s found. [Ok] ' \
                     % ('urls', 'message-ids')[self.proto=='mid']
             raw_input(msg)
         if not self.files:
             LastExit.reInit(self)
+
+
+def run():
+    try:
+        ub = Urlbatcher()
+        ub.argParser()
+        ub.urlSearch()
+    except UrlbatcherError, e:
+        userHelp(e)
+    except KeyboardInterrupt:
+        print
