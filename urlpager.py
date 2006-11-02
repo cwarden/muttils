@@ -9,11 +9,12 @@ urlpager_cset = '$Hg: urlpager.py,v$'
 # input is checked anew for each file.
 ###
 
-import os, readline, Urlregex
+import os, readline
 from Urlcollector import Urlcollector, UrlcollectorError
 from kiosk import Kiosk, KioskError
 from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
+from Urlregex import mailCheck, ftpCheck
 from cheutils import getbin, systemcall
 
 optstring = 'bd:D:f:hiIlM:np:k:r:tw:x'
@@ -122,12 +123,12 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
     def urlGo(self):
         cs, conny = [], True
         if (self.proto == 'mailto'
-                or self.proto == 'all' and Urlregex.mailCheck(self.url)):
+                or self.proto == 'all' and mailCheck(self.url)):
             cs = [getbin.getBin(mailers)]
             conny = False
         elif self.getdir:
             cs = [getbin.getBin('wget'), '-P', self.getdir]
-        elif self.proto == 'ftp' or Urlregex.ftpCheck(self.url):
+        elif self.proto == 'ftp' or ftpCheck(self.url):
             if (not os.path.splitext(self.url)[1]
                     and not self.url.endswith('/')):
                 self.url = self.url + '/'
