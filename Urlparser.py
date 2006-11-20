@@ -36,7 +36,7 @@ def unQuote(s):
 
 
 class UrlparserError(Exception):
-    '''Exception class for this module.'''
+    '''Exception class for the Urlparser module.'''
 
 class Urlparser(object):
     '''

@@ -4,7 +4,7 @@ import re, sys
 from Urlregex import Urlregex, UrlregexError
 
 class UrlcollectorError(Exception):
-    '''Exception class for this module.'''
+    '''Exception class for the Urlcollector module.'''
 
 class Urlcollector(Urlregex):
     '''

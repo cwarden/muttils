@@ -145,7 +145,7 @@ filterdict = { 'web':    webCheck,
 
 
 class UrlregexError(Exception):
-    '''Exception class for this module.'''
+    '''Exception class for the Urlregex module.'''
 
 class Urlregex(Urlparser):
     '''
