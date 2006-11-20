@@ -42,7 +42,7 @@ def goOnline():
         pass
 
 class UrlbatcherError(Exception):
-    '''Exception class for this module.'''
+    '''Exception class for the urlbatcher module.'''
 
 class Urlbatcher(Urlcollector, Kiosk, LastExit):
     '''
@@ -103,9 +103,12 @@ class Urlbatcher(Urlcollector, Kiosk, LastExit):
             systemcall.systemCall(
                 [getbin.getBin('wget'), '-P', self.getdir] + self.items)
         else:
-            from cheutils.selbrowser import Browser
+            from cheutils.selbrowser import Browser, BrowserError
             b = Browser(items=self.items, tb=self.tb, xb=self.xb)
-            b.urlVisit()
+            try:
+                b.urlVisit()
+            except BrowserError, e:
+                raise UrlbatcherError(e)
                     
     def urlSearch(self):
         try:

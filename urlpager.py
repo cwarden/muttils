@@ -47,7 +47,7 @@ def goOnline():
         pass
 
 class UrlpagerError(Exception):
-    '''Exception class for this module.'''
+    '''Exception class for the urlpager module.'''
 
 class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
     def __init__(self):
@@ -134,9 +134,12 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
                 self.url = self.url + '/'
             cs = [self.ftp]
         if not cs:
-            from cheutils.selbrowser import Browser
+            from cheutils.selbrowser import Browser, BrowserError
             b = Browser(items=[self.url], tb=self.tb, xb=self.xb)
-            b.urlVisit()
+            try:
+                b.urlVisit()
+            except BrowserError, e:
+                raise UrlpagerError(e)
         else:
             if conny:
                 goOnline()

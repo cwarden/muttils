@@ -87,7 +87,7 @@ def mkUnixfrom(msg):
 
 
 class KioskError(Exception):
-    '''Exception class for kiosk.'''
+    '''Exception class for the kiosk module.'''
 
 class Kiosk(HTML2Text):
     '''
@@ -193,10 +193,13 @@ class Kiosk(HTML2Text):
 
     def gooBrowse(self):
         '''Visits given urls with browser and exits.'''
-        from cheutils.selbrowser import Browser
+        from cheutils.selbrowser import Browser, BrowserError
         b = Browser(items=[self.makeQuery(mid) for mid in self.items],
                 tb=self.tb, xb=self.xb)
-        b.urlVisit()
+        try:
+            b.urlVisit()
+        except BrowserError, e:
+            raise KioskError(e)
         sys.exit()
 
     def gooRetrieve(self, mid, found, opener, header_re):
