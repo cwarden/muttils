@@ -7,7 +7,7 @@ from cheutils import spl, valclamp
 pds = {-1:'Back', 1:'Forward'}
 
 class TpagerError(Exception):
-    '''Exception class for Tpager.'''
+    '''Exception class for Tpager module.'''
 
 class Tpager(Pages):
     '''
