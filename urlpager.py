@@ -162,6 +162,10 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
         self.urlPager()
         if self.url:
             if self.proto != 'mid':
+                readline.add_history(self.url)
+                url = raw_input('\n\npress <UP> or <C-P> to edit url, '
+                        '<C-C> to cancel or <RET> to accept\n%s\n' % self.url)
+                self.url = url or self.url
                 self.urlGo()
             else:
                 self.items = [self.url]
