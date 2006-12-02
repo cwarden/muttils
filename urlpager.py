@@ -162,9 +162,13 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
         self.urlPager()
         if self.url:
             if self.proto != 'mid':
-                readline.add_history(self.url)
-                url = raw_input('\n\npress <UP> or <C-P> to edit url, '
-                        '<C-C> to cancel or <RET> to accept\n%s\n' % self.url)
+                if self.files:
+                    readline.add_history(self.url)
+                    url = raw_input('\n\npress <UP> or <C-P> to edit url, '
+                            '<C-C> to cancel or <RET> to accept\n%s\n' % self.url)
+                else:
+                    url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
+                            'or enter url manually\n%s\n' % self.url)
                 self.url = url or self.url
                 self.urlGo()
             else:
