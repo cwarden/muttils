@@ -12,7 +12,6 @@ urlpager_cset = '$Hg: urlpager.py,v$'
 import os, readline
 from Urlcollector import Urlcollector, UrlcollectorError
 from kiosk import Kiosk, KioskError
-from tpager.LastExit import LastExit
 from tpager.Tpager import Tpager
 from Urlregex import mailCheck, ftpCheck
 from cheutils import getbin, systemcall
@@ -49,10 +48,9 @@ def goOnline():
 class UrlpagerError(Exception):
     '''Exception class for the urlpager module.'''
 
-class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
+class Urlpager(Urlcollector, Kiosk, Tpager):
     def __init__(self):
         Kiosk.__init__(self)        # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
-        LastExit.__init__(self)
         Urlcollector.__init__(self) # (Urlregex) <- proto, items, files, pat
         Tpager.__init__(self, name='url') # <- items, name
         self.ftp = 'ftp'            # ftp client
@@ -157,8 +155,6 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
             Urlcollector.urlCollect(self)
         except UrlcollectorError, e:
             raise UrlpagerError(e)
-        if not self.files:
-            LastExit.termInit(self)
         self.urlPager()
         if self.url:
             if self.proto != 'mid':
@@ -167,9 +163,12 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
                     url = raw_input('\n\npress <UP> or <C-P> to edit url, '
                             '<C-C> to cancel or <RET> to accept\n%s\n' % self.url)
                 else:
+                    Tpager.termInit(self)
                     url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
                             'or enter url manually\n%s\n' % self.url)
-                self.url = url or self.url
+                    Tpager.reInit(self)
+                if url:
+                    self.url = url
                 self.urlGo()
             else:
                 self.items = [self.url]
@@ -177,11 +176,6 @@ class Urlpager(Urlcollector, Kiosk, Tpager, LastExit):
                     Kiosk.kioskStore(self)
                 except KioskError, e:
                     raise UrlpagerError(e)
-        if not self.files:
-            try:
-                LastExit.reInit(self)
-            except IndexError:
-                pass
 
 
 def run():
