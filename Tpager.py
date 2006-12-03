@@ -74,7 +74,7 @@ class Tpager(LastExit, Pages):
                 elif self.ckey and reply.startswith(self.ckey):
                     retval = reply
                 else:
-                    self.interAct(newdict=False) # display same page
+                    retval = self.interAct(newdict=False) # display same page
         else: # more than 1 page
             pn = 1 # start at first page
             pdir = -1 # initial paging direction reversed
