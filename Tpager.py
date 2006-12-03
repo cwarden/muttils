@@ -1,5 +1,7 @@
 # $Hg: Tpager.py,v$
 
+import os
+from LastExit import LastExit
 from Pages import Pages
 from cheutils import spl, valclamp
 
@@ -9,12 +11,13 @@ pds = {-1:'Back', 1:'Forward'}
 class TpagerError(Exception):
     '''Exception class for Tpager module.'''
 
-class Tpager(Pages):
+class Tpager(LastExit, Pages):
     '''
     Customizes interactive choice to current terminal.
     '''
     def __init__(self, name='item', format='sf',
             qfunc='Quit', ckey='', crit='pattern'):
+        LastExit.__init__(self)
         Pages.__init__(self)        # <- items, ilen, pages, itemsdict, cols
         self.name = name            # general name of an item
         if format in ('sf', 'bf'):  # available formats
@@ -29,6 +32,7 @@ class Tpager(Pages):
         self.crit = crit            # criterion for customizing
         self.mcols = self.cols - 3  # available columms for menu
         self.header = ''
+        self.notty = not os.isatty(0) or not os.isatty(1) # not connected to term
 
     def colTrunc(self, s, cols=0):
         '''Truncates string at beginning by inserting '>'
@@ -51,6 +55,8 @@ class Tpager(Pages):
         retval = 0
         if newdict:
             Pages.pagesDict(self)
+            if self.notty:
+                LastExit.termInit(self)
         self.header = '*%s*' % spl.sPl(self.ilen, self.name)
         self.header = '%s\n\n' % self.colTrunc(self.header, self.cols-2)
         plen = len(self.pages)
@@ -99,4 +105,6 @@ class Tpager(Pages):
                     #else: same page displayed on invalid response
                 else:
                     pn = valclamp.valClamp(pn+pdir, 1, plen)
+        if self.notty:
+            LastExit.reInit(self)
         return retval

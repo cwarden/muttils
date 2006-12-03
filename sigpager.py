@@ -2,7 +2,6 @@ sigpager_cset = '$Hg: sigpager.py,v$'
 
 import os, random, re, readline
 from cheutils import readwrite
-from LastExit import LastExit
 from Tpager import Tpager
 
 # defaults:
@@ -27,7 +26,7 @@ def userHelp(error=''):
     u.printHelp(err=error)
 
 
-class Signature(Tpager, LastExit):
+class Signature(Tpager):
     '''
     Provides functions to interactively choose a mail signature
     matched against a regular expression of your choice.
@@ -35,7 +34,6 @@ class Signature(Tpager, LastExit):
     def __init__(self):
         Tpager.__init__(self,   # <- item, name, format, qfunc
             name='sig', format='bf', qfunc='default sig', ckey='/')
-        LastExit.__init__(self)
         self.sign = ''          # chosen self.signature
         self.sig = defaultsig   # self.signature file
         self.sdir = sigdir      # directory containing sigfiles
@@ -71,7 +69,7 @@ class Signature(Tpager, LastExit):
 
     def getSig(self):
         siglist = filter(lambda f: f.endswith(self.tail),
-                os.listdir(self.sdir) )
+                os.listdir(self.sdir))
         if siglist:
             random.shuffle(siglist)
             self.items = [self.getString(fn) for fn in siglist]
@@ -113,11 +111,7 @@ class Signature(Tpager, LastExit):
                 break
 
     def underSign(self):
-        if not self.targets:
-            LastExit.termInit(self)
         self.siggiLoop()
-        if not self.targets:
-            LastExit.reInit(self)
         if self.sign is not None:
             if not self.sign:
                 self.sign = readwrite.readFile(self.sig)
