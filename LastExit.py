@@ -34,4 +34,9 @@ class LastExit(Termplus):
 
     def reInit(self):
         '''Switches back to previous term.'''
-        sys.stdin, sys.stdout = self.iostack.pop()
+        try:
+            sys.stdin, sys.stdout = self.iostack.pop()
+        except IndexError:
+            # if stack was empty eg. because of KeyboardInterrupt
+            # do not raise an Error
+            pass
