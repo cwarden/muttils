@@ -12,7 +12,7 @@ urlpager_cset = '$Hg: urlpager.py,v$'
 import os, readline
 from Urlcollector import Urlcollector, UrlcollectorError
 from kiosk import Kiosk, KioskError
-from tpager.Tpager import Tpager
+from tpager.Tpager import Tpager, TpagerError
 from Urlregex import mailCheck, ftpCheck
 from cheutils import getbin, systemcall
 
@@ -54,7 +54,6 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
         Urlcollector.__init__(self) # (Urlregex) <- proto, items, files, pat
         Tpager.__init__(self, name='url') # <- items, name
         self.ftp = 'ftp'            # ftp client
-        self.url = ''               # selected url
         self.getdir = ''            # download in dir via wget
 
     def argParser(self):
@@ -116,24 +115,27 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
         elif self.proto == 'mid':
             self.name = 'message-id'
         self.name = 'unique %s' % self.name
-        self.url = Tpager.interAct(self)
+        try:
+            # as there is no ckey, interAct() returns always 0
+            Tpager.interAct(self)
+        except TpagerError, e:
+            raise UrlpagerError(e)
 
     def urlGo(self):
-        cs, conny = [], True
+        url, cs, conny = self.items[0], [], True
         if (self.proto == 'mailto'
-                or self.proto == 'all' and mailCheck(self.url)):
+                or self.proto == 'all' and mailCheck(url)):
             cs = [getbin.getBin(mailers)]
             conny = False
         elif self.getdir:
             cs = [getbin.getBin('wget'), '-P', self.getdir]
-        elif self.proto == 'ftp' or ftpCheck(self.url):
-            if (not os.path.splitext(self.url)[1]
-                    and not self.url.endswith('/')):
-                self.url = self.url + '/'
+        elif self.proto == 'ftp' or ftpCheck(url):
+            if not os.path.splitext(url)[1] and not url.endswith('/'):
+                self.items = [url + '/']
             cs = [self.ftp]
         if not cs:
             from cheutils.selbrowser import Browser, BrowserError
-            b = Browser(items=[self.url], tb=self.tb, xb=self.xb)
+            b = Browser(items=self.items, tb=self.tb, xb=self.xb)
             try:
                 b.urlVisit()
             except BrowserError, e:
@@ -141,13 +143,13 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
         else:
             if conny:
                 goOnline()
+            cs = cs + self.items
             if not self.getdir and not self.files: # program needs terminal
                 tty = os.ctermid()
-                cs = cs + [self.url, '<', tty, '>', tty]
+                cs = cs + ['<', tty, '>', tty]
                 cs = ' '.join(cs)
                 systemcall.systemCall(cs, sh=True)
             else:
-                cs.append(self.url)
                 systemcall.systemCall(cs)
 
     def urlSearch(self):
@@ -156,26 +158,27 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
         except UrlcollectorError, e:
             raise UrlpagerError(e)
         self.urlPager()
-        if self.url:
-            if self.proto != 'mid':
-                if self.files:
-                    readline.add_history(self.url)
-                    url = raw_input('\n\npress <UP> or <C-P> to edit url, '
-                            '<C-C> to cancel or <RET> to accept\n%s\n' % self.url)
-                else:
-                    Tpager.termInit(self)
-                    url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
-                            'or enter url manually\n%s\n' % self.url)
-                    Tpager.reInit(self)
-                if url:
-                    self.url = url
-                self.urlGo()
+        if not self.items:
+            return
+        if self.proto != 'mid':
+            if self.files:
+                readline.add_history(self.items[0])
+                url = raw_input('\n\npress <UP> or <C-P> to edit url, '
+                        '<C-C> to cancel or <RET> to accept\n%s\n'
+                        % self.items[0])
             else:
-                self.items = [self.url]
-                try:
-                    Kiosk.kioskStore(self)
-                except KioskError, e:
-                    raise UrlpagerError(e)
+                Tpager.termInit(self)
+                url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
+                        'or enter url manually\n%s\n' % self.items[0])
+                Tpager.reInit(self)
+            if url:
+                self.items = [url]
+            self.urlGo()
+        else:
+            try:
+                Kiosk.kioskStore(self)
+            except KioskError, e:
+                raise UrlpagerError(e)
 
 
 def run():
@@ -185,5 +188,3 @@ def run():
         up.urlSearch()
     except UrlpagerError, e:
         userHelp(e)
-    except KeyboardInterrupt:
-        print
