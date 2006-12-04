@@ -1,5 +1,8 @@
 # $Hg: Tformat.py,v$
 
+class TformatError(Exception):
+    '''Exception class for Tformat.'''
+
 class Tformat(object):
     '''
     Subclass to Pages (<- format, itemsdict, keys).
@@ -7,19 +10,10 @@ class Tformat(object):
     for interactive terminal.
     '''
     def __init__(self, format='sf'):
-        self.format = format
-        self.itemsdict = {} # dictionary of items to choose
-        self.keys = []      # itemsdict's keys
-        self.maxl = 0       # length of last key
-        # dictionary of format functions
-        self.formdict = {'sf': self.simpleFormat, 'bf': self.bracketFormat}
-
-    def formatItems(self):
-        if not self.keys: return []
-        if self.format == 'sf':
-            self.maxl = len(self.keys[-1])
-        formatfunc = self.formdict[self.format]
-        return [formatfunc(key) for key in self.keys]
+        self.format = format # sf: simple format, bf: bracket format
+        self.itemsdict = {}  # dictionary of items to choose
+        self.keys = []       # itemsdict's keys
+        self.maxl = 0        # length of last key
 
     def simpleFormat(self, key):
         '''Simple format of choice menu,
@@ -30,3 +24,16 @@ class Tformat(object):
         '''Format of choice menu with items
         that are longer than 1 line.'''
         return '[%s]\n%s\n' % (key, self.itemsdict[key])
+
+    def formatItems(self):
+        formdict = {'sf': self.simpleFormat, 'bf': self.bracketFormat}
+        if self.format not in formdict:
+            raise TformatError("`%s': invalid format, use one of `sf', `bf'"
+                    % self.format)
+        if not self.keys:
+            return []
+        # dictionary of format functions
+        if self.format == 'sf':
+            self.maxl = len(self.keys[-1])
+        formatfunc = formdict[self.format]
+        return [formatfunc(key) for key in self.keys]

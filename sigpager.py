@@ -2,7 +2,7 @@ sigpager_cset = '$Hg: sigpager.py,v$'
 
 import os, random, re, readline
 from cheutils import readwrite
-from Tpager import Tpager
+from Tpager import Tpager, TpagerError
 
 # defaults:
 sigdir = os.path.expanduser('~/.Sig')
@@ -26,22 +26,25 @@ def userHelp(error=''):
     u.printHelp(err=error)
 
 
+class SignatureError(TpagerError):
+    '''Exception class for Signature.'''
+
 class Signature(Tpager):
     '''
     Provides functions to interactively choose a mail signature
     matched against a regular expression of your choice.
     '''
     def __init__(self):
-        Tpager.__init__(self,   # <- item, name, format, qfunc
+        Tpager.__init__(self,
             name='sig', format='bf', qfunc='default sig', ckey='/')
-        self.sign = ''          # chosen self.signature
-        self.sig = defaultsig   # self.signature file
+        self.sig = defaultsig   # signature file
         self.sdir = sigdir      # directory containing sigfiles
+        self.sigs = []          # complete list of signature strings
         self.tail = '.sig'      # tail for sigfiles
-        self.full = False       # sig including separator
+        self.sigsep = ''        # sig including separator
         self.inp = ''           # append sig at input
-        self.targets = []       # target files to self.sign
-        self.w = 'wa'           # if 'w': overwrite target file(s)
+        self.targets = []       # target files to sig
+        self.w = 'a'            # if 'w': overwrite target file(s)
                                 # sig appended otherwise
         self.pat = None         # match sigs against pattern
 
@@ -50,10 +53,10 @@ class Signature(Tpager):
         try:
             opts, args = getopt.getopt(sys.argv[1:], optstring)
         except getopt.GetoptError, e:
-            userHelp(e)
+            raise SignatureError(e)
         for o, a in opts:
             if o == '-d': self.sdir = a
-            if o == '-f': self.full = True
+            if o == '-f': self.sigsep = '-- \n'
             if o == '-h': userHelp()
             if o == '-s': self.sig = a
             if o == '-t': self.tail = a
@@ -68,17 +71,15 @@ class Signature(Tpager):
         return readwrite.readFile(sigfile)
 
     def getSig(self):
-        siglist = filter(lambda f: f.endswith(self.tail),
-                os.listdir(self.sdir))
-        if siglist:
-            random.shuffle(siglist)
-            self.items = [self.getString(fn) for fn in siglist]
-            if self.pat and self.items:
-                self.items = filter(lambda i: self.pat.search(i), self.items)
-            try:
-                self.sign = Tpager.interAct(self)
-            except KeyboardInterrupt:
-                self.sign = None
+        if self.pat:
+            self.items = filter(lambda i: self.pat.search(i), self.sigs)
+        else:
+            self.items = self.sigs
+        random.shuffle(self.items)
+        try:
+            return Tpager.interAct(self)
+        except TpagerError, e:
+            raise SignatureError(e)
 
     def checkPattern(self):
         try:
@@ -98,34 +99,30 @@ class Signature(Tpager):
         if self.pat:
             self.checkPattern()
 
-    def siggiLoop(self):
+    def underSign(self):
+        sl = filter(lambda f: f.endswith(self.tail), os.listdir(self.sdir))
+        self.sigs = [self.getString(fn) for fn in sl]
         while True:
-            self.getSig()
-            if self.sign and self.sign.startswith(self.ckey):
-                self.pat = self.sign[1:]
-                self.sign = ''
+            reply = self.getSig()
+            if reply and reply.startswith(self.ckey):
+                self.pat = reply[1:]
                 self.checkPattern()
-                Tpager.__init__(self,
-                    self.name, self.format, self.qfunc, self.ckey)
             else:
                 break
-
-    def underSign(self):
-        self.siggiLoop()
-        if self.sign is not None:
-            if not self.sign:
-                self.sign = readwrite.readFile(self.sig)
-            if self.full:
-                self.sign = '-- \n%s' % self.sign
-            self.sign = self.sign.rstrip() # get rid of EOFnewline
+        if self.items is not None:
+            if self.items:
+                sig = self.sigsep + self.items[0]
+            else:
+                sig = self.sigsep + readwrite.readFile(self.sig)
             if not self.targets:
+                sig = sig.rstrip() # get rid of EOFnewline
                 if not self.inp:
-                    print self.sign
+                    print sig
                 else:
-                    print '%s%s' % (self.inp, self.sign)
+                    print self.inp + sig
             else:
                 for targetfile in self.targets:
-                    readwrite.writeFile(targetfile, self.sign, self.w)
+                    readwrite.writeFile(targetfile, sig, self.w)
         elif self.inp:
             print self.inp
         elif self.targets:
@@ -133,6 +130,9 @@ class Signature(Tpager):
 
 
 def run():
-    siggi = Signature()
-    siggi.argParser()
-    siggi.underSign()
+    try:
+        siggi = Signature()
+        siggi.argParser()
+        siggi.underSign()
+    except SignatureError, e:
+        userHelp(e)
