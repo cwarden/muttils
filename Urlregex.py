@@ -6,41 +6,41 @@ from Urlparser import Urlparser, UrlparserError
 def orJoin(s):
     return r'(%s)' % '|'.join(s.split())
 
-def mkDomPat(top, any, delim):
+def mkDomPat(top, valid, delim):
     '''Creates the raw domain parts of the url patterns.
     2 patterns, the second of which contains spaces.'''
     dom = r'''
         %(top)s             # top level preceded by dot
         (                   # { ungreedy 0 or more
             (/|:\d+)        #   slash or port
-            [%(any)s] *?    #   0 or more valid  
+            [%(valid)s] *?  #   0 or more valid  
         ) ?                 # } 0 or one
         (?=                 # look-ahead non-consumptive assertion
             [%(delim)s] *?  #  either 0 or more punctuation
-            [^%(any)s]      #  followed by a non-url char
+            [^%(valid)s]    #  followed by a non-url char
         |                   # or else
             $               #  then end of the string
         )
         ''' % vars()
     spdom = r'''
-        %(top)s             # top level dom preceded by dot
-        (                   # { 0 or more
-            \s*?/           #   opt space and slash
-            [%(any)s\s] *?  #   any or space (space to be removed)
-        ) ?                 # } 0 or one
-        (?=>)               # lookahead for '>'
+        %(top)s              # top level dom preceded by dot
+        (                    # { 0 or more
+            \s*?/            #   opt space and slash
+            [%(valid)s\s] *? #   valid or space (space to be removed)
+        ) ?                  # } 0 or one
+        (?=>)                # lookahead for '>'
         ''' % vars()
     return dom, spdom
 
 # and now to the url parts
-any = r'-._a-z0-9/#~:,;?+=&%!()@' # valid url-chars+comma+semicolon+parenthesises+@
-                                  # @: filtered with webCheck, false positives with
-                                  # che@*blacktrash.org* otherwise
-                                  # Message-ID: <10rb6mngqccs018@corp.supernews.com>
-                                  # Message-id: <20050702131039.GA10840@oreka.com>
-                                  # Message-ID: <e2jctg$kgp$1@news1.nefonline.de>
-idy = r'-._a-z0-9#~?+=&%!$\]['    # valid message-id-chars ### w/o ':/'?
-delim = r'-.,:?!)('               # punctuation (how 'bout '!'?)
+valid = r'-._a-z0-9/#~:,;?+=&%!()@' # valid url-chars+comma+semicolon+parenthesises+@
+                                    # @: filtered with webCheck, false positives with
+                                    # che@*blacktrash.org* otherwise
+                                    # Message-ID: <10rb6mngqccs018@corp.supernews.com>
+                                    # Message-id: <20050702131039.GA10840@oreka.com>
+                                    # Message-ID: <e2jctg$kgp$1@news1.nefonline.de>
+idy = r'-._a-z0-9#~?+=&%!$\]['      # valid message-id-chars ### w/o ':/'?
+delim = r'-.,:?!)('                 # punctuation (how 'bout '!'?)
 
 # international domains
 intls = 'arpa com edu gov int mil net org aero biz coop info name pro'
@@ -61,8 +61,8 @@ tops = '%s ' \
 top = r'\.%s' % orJoin(tops)
 intl = r'\.%s' % orJoin(intls)
 
-proto_dom, proto_spdom = mkDomPat(top, any, delim)
-any_dom, any_spdom = mkDomPat(intl, any, delim)
+proto_dom, proto_spdom = mkDomPat(top, valid, delim)
+any_dom, any_spdom = mkDomPat(intl, valid, delim)
 
 #CPAN = 'ftp://ftp.cpan.org/pub/CPAN/'
 CPAN = r'ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1'
@@ -193,18 +193,18 @@ class Urlregex(Urlparser):
 
     def getRaw(self):
 
-        proto_url = r'''    ## long url ##
-            (?<=<)          # look behind for '<'
-            %(intro)s       # intro
-            [%(any)s\s] +?  # any or space (space to be removed)
-            %(spdom)s       # dom w/ spaces
-            |               ## or url in 1 line ##
-            \b              # start at word boundary
-            %(intro)s       # intro
-            [%(any)s] +?    # followed by 1 or more valid url char
-            %(dom)s         # dom
+        proto_url = r'''     ## long url ##
+            (?<=<)           # look behind for '<'
+            %(intro)s        # intro
+            [%(valid)s\s] +? # valid or space (space to be removed)
+            %(spdom)s        # dom w/ spaces
+            |                ## or url in 1 line ##
+            \b               # start at word boundary
+            %(intro)s        # intro
+            [%(valid)s] +?   # followed by 1 or more valid url char
+            %(dom)s          # dom
             ''' % { 'intro': self.intro,
-                    'any':   any,
+                    'valid': valid,
                     'spdom': proto_spdom,
                     'dom':   proto_dom }
 
@@ -213,15 +213,15 @@ class Urlregex(Urlparser):
 
         ## follows an attempt to comprise as much urls as possible
         ## some bad formatted stuff too
-        any_url = r'''      ## long url ##
-            (?<=<)          # look behind for '<'
-            [%(any)s\s] +?  # any or space (space to be removed)
-            %(spdom)s       # dom w/ spaces
-            |               ## or url in 1 line ##
-            \b              # start at word boundary
-            [%(any)s] +?    # one or more valid characters
-            %(dom)s         # dom
-            ''' % { 'any':     any,
+        any_url = r'''       ## long url ##
+            (?<=<)           # look behind for '<'
+            [%(valid)s\s] +? # valid or space (space to be removed)
+            %(spdom)s        # dom w/ spaces
+            |                ## or url in 1 line ##
+            \b               # start at word boundary
+            [%(valid)s] +?   # one or more valid characters
+            %(dom)s          # dom
+            ''' % { 'valid': valid,
                     'spdom': any_spdom,
                     'dom':   any_dom }
         
