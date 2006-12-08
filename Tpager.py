@@ -102,11 +102,10 @@ class Tpager(LastExit, Pages):
         notty = not os.isatty(0) or not os.isatty(1) # not connected to term
         if notty:
             LastExit.termInit(self)
-        retval = ''
         try:
             retval = self.pageMenu()
         except KeyboardInterrupt:
-            self.items = None
+            retval, self.items = '', None
         if notty:
             LastExit.reInit(self)
         return retval
