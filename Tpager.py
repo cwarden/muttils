@@ -109,4 +109,3 @@ class Tpager(LastExit, Pages):
         if notty:
             LastExit.reInit(self)
         return retval
-
