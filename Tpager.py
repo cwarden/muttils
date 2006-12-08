@@ -3,10 +3,13 @@
 import os
 from tpager.LastExit import LastExit
 from tpager.Pages import Pages, PagesError
-from cheutils import spl, valclamp
 
 # format default paging command
 pds = {-1:'Back', 1:'Forward'}
+
+def valClamp(x, low, high):
+    '''Clamps x between low and high.'''
+    return max(low, min(x, high))
 
 
 class TpagerError(PagesError):
@@ -46,8 +49,8 @@ class Tpager(LastExit, Pages):
 
     def pageMenu(self):
         '''Lets user page through a list of items and make a choice.'''
-        self.header = '*%s*' % spl.sPl(self.ilen, self.name)
-        self.header = '%s\n\n' % self.colTrunc(self.header, self.cols-2)
+        self.header = self.colTrunc('*%d %s*\n\n'
+                % (self.ilen, self.name+'s'[self.ilen==1:]), self.cols - 2)
         plen = len(self.pages)
         if plen == 1: # no paging
             cs = ', ^C:Cancel'
@@ -79,10 +82,10 @@ class Tpager(LastExit, Pages):
                 menu = '%s, Number ' % menu
                 reply = self.pageDisplay(menu, pn)
                 if not reply:
-                    pn = valclamp.valClamp(pn+pdir, 1, plen)
+                    pn = valClamp(pn+pdir, 1, plen)
                 elif bs and reply == '-':
                     pdir *= -1
-                    pn = valclamp.valClamp(pn+pdir, 1, plen)
+                    pn = valClamp(pn+pdir, 1, plen)
                 elif reply in self.itemsdict:
                     self.items = [self.itemsdict[reply]]
                     break
