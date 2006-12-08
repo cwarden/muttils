@@ -1,7 +1,7 @@
 # $Hg: Pages.py,v$
 
-import terminfo
-from Tformat import Tformat, TformatError
+from tpager import terminfo
+from tpager.Tformat import Tformat, TformatError
 
 class PagesError(TformatError):
     '''Exception class for Pages.'''

@@ -2,7 +2,7 @@ sigpager_cset = '$Hg: sigpager.py,v$'
 
 import os, random, re, readline
 from cheutils import readwrite
-from Tpager import Tpager, TpagerError
+from tpager.Tpager import Tpager, TpagerError
 
 # defaults:
 sigdir = os.path.expanduser('~/.Sig')

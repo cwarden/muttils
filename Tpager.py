@@ -1,8 +1,8 @@
 # $Hg: Tpager.py,v$
 
 import os
-from LastExit import LastExit
-from Pages import Pages, PagesError
+from tpager.LastExit import LastExit
+from tpager.Pages import Pages, PagesError
 from cheutils import spl, valclamp
 
 # format default paging command
