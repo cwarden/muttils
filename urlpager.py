@@ -12,6 +12,7 @@ urlpager_cset = '$Id$'
 import os, readline
 from Urlcollector import Urlcollector, UrlcollectorError
 from kiosk import Kiosk, KioskError
+from cheutils.selbrowser import Browser, BrowserError
 from tpager.Tpager import Tpager, TpagerError
 from Urlregex import mailCheck, ftpCheck
 from cheutils import getbin, systemcall
@@ -48,8 +49,9 @@ def goOnline():
 class UrlpagerError(Exception):
     '''Exception class for the urlpager module.'''
 
-class Urlpager(Urlcollector, Kiosk, Tpager):
+class Urlpager(Browser, Urlcollector, Kiosk, Tpager):
     def __init__(self):
+        Browser.__init__(self)
         Kiosk.__init__(self)        # <- browse, google, kiosk, mhiers, mspool, local, xb, tb
         Urlcollector.__init__(self) # (Urlregex) <- proto, items, files, pat
         Tpager.__init__(self, name='url') # <- items, name
@@ -134,10 +136,8 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
                 self.items = [url + '/']
             cs = [self.ftp]
         if not cs:
-            from cheutils.selbrowser import Browser, BrowserError
-            b = Browser(items=self.items, tb=self.tb, xb=self.xb)
             try:
-                b.urlVisit()
+                Browser.urlVisit(self)
             except BrowserError, e:
                 raise UrlpagerError(e)
         else:
@@ -161,18 +161,21 @@ class Urlpager(Urlcollector, Kiosk, Tpager):
         if not self.items:
             return
         if self.proto != 'mid':
-            if self.files:
-                readline.add_history(self.items[0])
-                url = raw_input('\n\npress <UP> or <C-P> to edit url, '
-                        '<C-C> to cancel or <RET> to accept\n%s\n'
-                        % self.items[0])
-            else:
-                Tpager.termInit(self)
-                url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
-                        'or enter url manually\n%s\n' % self.items[0])
-                Tpager.reInit(self)
-            if url:
-                self.items = [url]
+            try:
+                if self.files:
+                    readline.add_history(self.items[0])
+                    url = raw_input('\n\npress <UP> or <C-P> to edit url, '
+                            '<C-C> to cancel or <RET> to accept\n%s\n'
+                            % self.items[0])
+                else:
+                    Tpager.termInit(self)
+                    url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
+                            'or enter url manually\n%s\n' % self.items[0])
+                    Tpager.reInit(self)
+                if url:
+                    self.items = [url]
+            except KeyboardInterrupt:
+                return
             self.urlGo()
         else:
             try:

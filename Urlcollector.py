@@ -21,9 +21,6 @@ class Urlcollector(Urlregex):
             try:
                 data = sys.stdin.read()
                 Urlregex.findUrls(self, data)
-            except KeyboardInterrupt:
-                print
-                raise UrlcollectorError('needs stdin or filename(s)')
             except UrlregexError, e:
                 raise UrlcollectorError(e)
         else:
