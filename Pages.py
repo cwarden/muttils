@@ -1,4 +1,4 @@
-# $Hg: Pages.py,v$
+# $Id$
 
 from tpager import terminfo
 from tpager.Tformat import Tformat, TformatError

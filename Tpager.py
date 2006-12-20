@@ -1,4 +1,4 @@
-# $Hg: Tpager.py,v$
+# $Id$
 
 import os
 from tpager.LastExit import LastExit

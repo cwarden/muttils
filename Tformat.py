@@ -1,4 +1,4 @@
-# $Hg: Tformat.py,v$
+# $Id$
 
 class TformatError(Exception):
     '''Exception class for Tformat.'''

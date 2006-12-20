@@ -1,4 +1,4 @@
-sigpager_cset = '$Hg: sigpager.py,v$'
+sigpager_cset = '$Id$'
 
 import os, random, re, readline
 from cheutils import readwrite

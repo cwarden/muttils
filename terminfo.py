@@ -1,4 +1,4 @@
-# $Hg: terminfo.py,v$
+# $Id$
 
 import os, subprocess
 

@@ -1,4 +1,4 @@
-# $Hg: LastExit.py,v$
+# $Id$
 
 import os, sys
 from cheutils import readwrite
