@@ -1,4 +1,4 @@
-# $Hg: datatype.py,v$
+# $Id$
 
 import urllib2
 from cheutils import filecheck

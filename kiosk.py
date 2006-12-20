@@ -1,4 +1,4 @@
-kiosk_cset = '$Hg: kiosk.py,v$'
+kiosk_cset = '$Id$'
 
 ###
 # needs python version 2.3 #

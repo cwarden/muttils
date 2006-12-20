@@ -1,4 +1,4 @@
-# $Hg: Urlregex.py,v$
+# $Id$
 
 import re
 from Urlparser import Urlparser, UrlparserError

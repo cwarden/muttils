@@ -1,4 +1,4 @@
-# $Hg: Urlparser.py,v$
+# $Id$
 
 import email, email.Utils, re
 from email.Errors import MessageParseError

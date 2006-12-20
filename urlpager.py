@@ -1,4 +1,4 @@
-urlpager_cset = '$Hg: urlpager.py,v$'
+urlpager_cset = '$Id$'
 
 ###
 # Caveat:

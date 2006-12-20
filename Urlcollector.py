@@ -1,4 +1,4 @@
-# $Hg: Urlcollector.py,v$
+# $Id$
 
 import re, sys
 from Urlregex import Urlregex, UrlregexError

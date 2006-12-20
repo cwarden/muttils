@@ -1,4 +1,4 @@
-urlbatcher_cset = '$Hg: urlbatcher.py,v$'
+urlbatcher_cset = '$Id$'
 
 ###
 # Caveat:
