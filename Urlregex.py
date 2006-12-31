@@ -253,7 +253,7 @@ class Urlregex(Urlparser):
     def urlObjects(self, search=True):
         '''Creates customized regex objects of url.'''
         try:
-            Urlparser.protoTest(self)
+            self.protoTest()
         except UrlparserError, e:
             raise UrlregexError(e)
         if self.proto == 'mailto':# be pragmatic and list not only declared
@@ -280,7 +280,7 @@ class Urlregex(Urlparser):
         Data is supposed to be text but tested whether
         it's a message/Mailbox (then passed to Urlparser).'''
         self.urlObjects() # compile url_re
-        s = Urlparser.mailDeconstructor(self, data)
+        s = self.mailDeconstructor(data)
         if self.proto != 'mid':
             wipe_resub = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE), ''
             cpan_resub = re.compile(r'CPAN:\s*/?([A-Za-z]+?)'), CPAN 

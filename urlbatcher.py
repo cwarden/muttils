@@ -106,17 +106,17 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
                 [getbin.getBin('wget'), '-P', self.getdir] + self.items)
         else:
             try:
-                Browser.urlVisit(self)
+                self.urlVisit()
             except BrowserError, e:
                 raise UrlbatcherError(e)
                     
     def urlSearch(self):
         try:
-            Urlcollector.urlCollect(self)
+            self.urlCollect()
         except UrlcollectorError, e:
             raise UrlbatcherError(e)
         if not self.files:
-            LastExit.termInit(self)
+            self.termInit()
         if self.items:
             yorn = '%s\nRetrieve the above %s? yes, [No] ' \
                     % ('\n'.join(self.items),
@@ -127,7 +127,7 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
                     self.urlGo()
                 else:
                     try:
-                        Kiosk.kioskStore(self)
+                        self.kioskStore()
                     except KioskError, e:
                         raise UrlbatcherError(e)
         else:
@@ -135,7 +135,7 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
                     % ('urls', 'message-ids')[self.proto=='mid']
             raw_input(msg)
         if not self.files:
-            LastExit.reInit(self)
+            self.reInit()
 
 
 def run():

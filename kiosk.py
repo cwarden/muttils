@@ -205,9 +205,9 @@ class Kiosk(HTML2Text):
     def gooRetrieve(self, mid, found, opener, header_re):
         try:
             fp = opener.open(self.makeQuery(mid))
-            HTML2Text.htpWrite(self, html=fp.read(), append=False)
+            self.htpWrite(html=fp.read(), append=False)
             fp.close()
-            liniter = iter(HTML2Text.htpReadlines(self, nl=False))
+            liniter = iter(self.htpReadlines(nl=False))
         except urllib2.URLError, e:
             if hasattr(e, 'reason'):
                 raise KioskError(urlfailmsg + e)
@@ -245,12 +245,12 @@ class Kiosk(HTML2Text):
         header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
         goOnline()
         found = []
-        HTML2Text.open(self)
+        self.open()
         try:
             for mid in self.items:
                 self.gooRetrieve(mid, found, opener, header_re)
         finally:
-            HTML2Text.close(self)
+            self.close()
         self.items = [mid for mid in self.items if mid not in found]
 
     def leafSearch(self):

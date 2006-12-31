@@ -119,7 +119,7 @@ class Urlpager(Browser, Urlcollector, Kiosk, Tpager):
         self.name = 'unique %s' % self.name
         try:
             # as there is no ckey, interAct() returns always 0
-            Tpager.interAct(self)
+            self.interAct()
         except TpagerError, e:
             raise UrlpagerError(e)
 
@@ -137,7 +137,7 @@ class Urlpager(Browser, Urlcollector, Kiosk, Tpager):
             cs = [self.ftp]
         if not cs:
             try:
-                Browser.urlVisit(self)
+                self.urlVisit()
             except BrowserError, e:
                 raise UrlpagerError(e)
         else:
@@ -154,7 +154,7 @@ class Urlpager(Browser, Urlcollector, Kiosk, Tpager):
 
     def urlSearch(self):
         try:
-            Urlcollector.urlCollect(self)
+            self.urlCollect()
         except UrlcollectorError, e:
             raise UrlpagerError(e)
         self.urlPager()
@@ -168,10 +168,10 @@ class Urlpager(Browser, Urlcollector, Kiosk, Tpager):
                             '<C-C> to cancel or <RET> to accept\n%s\n'
                             % self.items[0])
                 else:
-                    Tpager.termInit(self)
+                    self.termInit()
                     url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
                             'or enter url manually\n%s\n' % self.items[0])
-                    Tpager.reInit(self)
+                    self.reInit()
                 if url:
                     self.items = [url]
             except KeyboardInterrupt:
@@ -179,7 +179,7 @@ class Urlpager(Browser, Urlcollector, Kiosk, Tpager):
             self.urlGo()
         else:
             try:
-                Kiosk.kioskStore(self)
+                self.kioskStore()
             except KioskError, e:
                 raise UrlpagerError(e)
 
