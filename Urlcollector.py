@@ -17,21 +17,21 @@ class Urlcollector(Urlregex):
         self.pat = None         # pattern to match urls against
 
     def urlCollect(self):
-        if not self.files: # read from stdin
+        '''Harvests urls from stdin or files.'''
+        def urlFind(data):
             try:
-                data = sys.stdin.read()
-                Urlregex.findUrls(self, data)
+                self.findUrls(data)
             except UrlregexError, e:
                 raise UrlcollectorError(e)
+
+        if not self.files: # read from stdin
+            urlFind(sys.stdin.read())
         else:
             import datatype
             for f in self.files:
                 data, kind = datatype.dataType(f)
                 if kind.startswith('text/'):
-                    try:
-                        Urlregex.findUrls(self, data)
-                    except UrlregexError, e:
-                        raise UrlcollectorError(e)
+                    urlFind(data)
         if self.pat and self.items:
             try:
                 self.pat = re.compile(r'%s' % self.pat, re.I)
