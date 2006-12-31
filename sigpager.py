@@ -77,7 +77,7 @@ class Signature(Tpager):
             self.items = self.sigs
         random.shuffle(self.items)
         try:
-            return Tpager.interAct(self)
+            return self.interAct()
         except TpagerError, e:
             raise SignatureError(e)
 

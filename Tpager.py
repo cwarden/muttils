@@ -99,16 +99,16 @@ class Tpager(LastExit, Pages):
 
     def interAct(self):
         try:
-            Pages.pagesDict(self)
+            self.pagesDict()
         except PagesError, e:
             raise TpagerError(e)
         notty = not os.isatty(0) or not os.isatty(1) # not connected to term
         if notty:
-            LastExit.termInit(self)
+            self.termInit()
         try:
             retval = self.pageMenu()
         except KeyboardInterrupt:
             retval, self.items = '', None
         if notty:
-            LastExit.reInit(self)
+            self.reInit()
         return retval

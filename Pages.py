@@ -43,7 +43,7 @@ class Pages(Tformat):
         self.keys = map(str, numkeys)
         map(self.itemsdict.__setitem__, self.keys, self.items)
         try:
-            items = Tformat.formatItems(self)
+            items = self.formatItems()
         except TformatError, e:
             raise PagesError(e)
         # all this still supposes that no wrapped text item
