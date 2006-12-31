@@ -26,11 +26,12 @@ class LastExit(Termplus):
     Provides interactive terminal devices.
     '''
     def __init__(self):
+        Termplus.__init__(self)
         self.iostack = []
 
     def termInit(self):
         self.iostack.append((sys.stdin, sys.stdout))
-        sys.stdin, sys.stdout = Termplus(), Termplus()
+        sys.stdin, sys.stdout = self, self
 
     def reInit(self):
         '''Switches back to previous term.'''
