@@ -96,19 +96,17 @@ class Kiosk(HTML2Text):
     '''
     def __init__(self, items=None):
         HTML2Text.__init__(self, strict=False)
-        if items is None:
-            items = []
-        self.items = items  # message-ids to look for
-        self.kiosk = ''     # path to kiosk mbox
-        self.mask = None    # file mask for mdir (applied to directories too)
-        self.browse = False # limit to browse googlegroups
-        self.mhiers = []    # mailbox hierarchies
-        self.local = False  # limit to local search
-        self.msgs = []      # list of retrieved message objects
-        self.muttone = True # configure mutt for display of 1 msg only
-        self.xb = False     # force x-browser
-        self.tb = False     # use text browser
-        self.mspool = True  # look for MID in default mailspool
+        self.items = items or [] # message-ids to look for
+        self.kiosk = ''          # path to kiosk mbox
+        self.mask = None         # file mask for mdir (applied to directories too)
+        self.browse = False      # limit to browse googlegroups
+        self.mhiers = []         # mailbox hierarchies
+        self.local = False       # limit to local search
+        self.msgs = []           # list of retrieved message objects
+        self.muttone = True      # configure mutt for display of 1 msg only
+        self.xb = False          # force x-browser
+        self.tb = False          # use text browser
+        self.mspool = True       # look for MID in default mailspool
         self.mdmask = '^(cur|new|tmp)$'
 
     def argParser(self):
