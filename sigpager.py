@@ -1,30 +1,8 @@
-sigpager_cset = '$Id$'
+# $Id$
 
 import os, random, re, readline, sys
 from cheutils import readwrite
 from tpager.Tpager import Tpager, TpagerError
-
-# defaults:
-sigdir = os.path.expanduser('~/.Sig')
-defaultsig = os.getenv('SIGNATURE')
-if not defaultsig:
-    defaultsig = os.path.expanduser('~/.signature')
-optstring = 'd:fhs:t:'
-# d: sigdir, f [include separator], h [help],
-# s: defaultsig, t: sigtail
-
-sigpager_help = '''
-[-d <sigdir>][-f][-s <defaultsig>] \\
-         [-t <sigtail>][-]
-[-d <sigdir>][-f][-s <defaultsig>] \\
-         [-t <sigtail>] <file> [<file> ...]
--h (display this help)'''
-
-def userHelp(error=''):
-    from cheutils.usage import Usage
-    u = Usage(help=sigpager_help, rcsid=sigpager_cset)
-    u.printHelp(err=error)
-
 
 class SignatureError(TpagerError):
     '''Exception class for Signature.'''
@@ -34,34 +12,25 @@ class Signature(Tpager):
     Provides functions to interactively choose a mail signature
     matched against a regular expression of your choice.
     '''
-    def __init__(self):
+    def __init__(self,
+            sig='', sdir='', sep='', tail='', inp='', targets=None):
         Tpager.__init__(self,
             name='sig', format='bf', qfunc='default sig', ckey='/')
-        self.sig = defaultsig   # signature file
-        self.sdir = sigdir      # directory containing sigfiles
-        self.sigs = []          # complete list of signature strings
-        self.tail = '.sig'      # tail for sigfiles
-        self.sep = ''           # sig including separator
-        self.inp = ''           # append sig at input
-        self.targets = []       # target files to sig
-        self.pat = None         # match sigs against pattern
 
-    def argParser(self):
-        import getopt
-        try:
-            opts, args = getopt.getopt(sys.argv[1:], optstring)
-        except getopt.GetoptError, e:
-            raise SignatureError(e)
-        for o, a in opts:
-            if o == '-d': self.sdir = a
-            if o == '-f': self.sep = '-- \n'
-            if o == '-h': userHelp()
-            if o == '-s': self.sig = a
-            if o == '-t': self.tail = a
-        if args == ['-']:
-            self.inp = sys.stdin.read()
-        else:
-            self.targets = args
+        self.sig = sig or os.getenv('SIGNATURE') or '~/.signature'
+        self.sig = os.path.expanduser(self.sig)
+        if not self.sig or not os.path.isfile(self.sig):
+            raise SignatureError('no default signature file found')
+        self.sdir = os.path.expanduser(sdir)
+        if not self.sdir or not os.path.isdir(self.sdir):
+            raise SignatureError('no signature directory detected')
+
+        self.tail = tail        # tail for sigfiles
+        self.sep = sep          # sig including separator
+        self.inp = inp          # append sig at input
+        self.targets = []       # target files to sig
+        self.sigs = []          # complete list of signature strings
+        self.pat = None         # match sigs against pattern
 
     def getString(self, fn):
         sigfile = os.path.join(self.sdir, fn)
@@ -123,12 +92,3 @@ class Signature(Tpager):
             sys.stdout.write(self.inp)
         elif self.targets:
             sys.stdout.write('\n')
-
-
-def run():
-    try:
-        siggi = Signature()
-        siggi.argParser()
-        siggi.underSign()
-    except SignatureError, e:
-        userHelp(e)

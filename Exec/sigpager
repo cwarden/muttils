@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 # $Id$
 
-from tpager import sigpager
-sigpager.run()
+from tpager import sigpagercommand
+sigpagercommand.run()
