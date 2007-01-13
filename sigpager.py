@@ -72,7 +72,7 @@ class Signature(Tpager):
 
     def getSig(self):
         if self.pat:
-            self.items = filter(lambda i: self.pat.search(i), self.sigs)
+            self.items = filter(self.pat.search, self.sigs)
         else:
             self.items = self.sigs
         random.shuffle(self.items)
