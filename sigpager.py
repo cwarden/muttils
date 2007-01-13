@@ -9,15 +9,15 @@ sigdir = os.path.expanduser('~/.Sig')
 defaultsig = os.getenv('SIGNATURE')
 if not defaultsig:
     defaultsig = os.path.expanduser('~/.signature')
-optstring = 'd:fhs:t:w'
+optstring = 'd:fhs:t:'
 # d: sigdir, f [include separator], h [help],
-# s: defaultsig, t: sigtail, w [(over)write target file(s)]
+# s: defaultsig, t: sigtail
 
 sigpager_help = '''
 [-d <sigdir>][-f][-s <defaultsig>] \\
          [-t <sigtail>][-]
 [-d <sigdir>][-f][-s <defaultsig>] \\
-         [-t <sigtail>][-w] <file> [<file> ...]
+         [-t <sigtail>] <file> [<file> ...]
 -h (display this help)'''
 
 def userHelp(error=''):
@@ -41,11 +41,9 @@ class Signature(Tpager):
         self.sdir = sigdir      # directory containing sigfiles
         self.sigs = []          # complete list of signature strings
         self.tail = '.sig'      # tail for sigfiles
-        self.sigsep = ''        # sig including separator
+        self.sep = ''           # sig including separator
         self.inp = ''           # append sig at input
         self.targets = []       # target files to sig
-        self.w = 'a'            # if 'w': overwrite target file(s)
-                                # sig appended otherwise
         self.pat = None         # match sigs against pattern
 
     def argParser(self):
@@ -56,11 +54,10 @@ class Signature(Tpager):
             raise SignatureError(e)
         for o, a in opts:
             if o == '-d': self.sdir = a
-            if o == '-f': self.sigsep = '-- \n'
+            if o == '-f': self.sep = '-- \n'
             if o == '-h': userHelp()
             if o == '-s': self.sig = a
             if o == '-t': self.tail = a
-            if o == '-w': self.w = 'w'
         if args == ['-']:
             self.inp = sys.stdin.read()
         else:
@@ -111,9 +108,9 @@ class Signature(Tpager):
                 break
         if self.items is not None:
             if self.items:
-                sig = self.sigsep + self.items[0]
+                sig = self.sep + self.items[0]
             else:
-                sig = self.sigsep + readwrite.readFile(self.sig)
+                sig = self.sep + readwrite.readFile(self.sig)
             if not self.targets:
                 if not self.inp:
                     sys.stdout.write(sig)
@@ -121,7 +118,7 @@ class Signature(Tpager):
                     sys.stdout.write(self.inp + sig)
             else:
                 for targetfile in self.targets:
-                    readwrite.writeFile(targetfile, sig, self.w)
+                    readwrite.writeFile(targetfile, sig, mode='a')
         elif self.inp:
             sys.stdout.write(self.inp)
         elif self.targets:
