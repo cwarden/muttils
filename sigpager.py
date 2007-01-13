@@ -112,10 +112,7 @@ class Signature(Tpager):
             else:
                 sig = self.sep + readwrite.readFile(self.sig)
             if not self.targets:
-                if not self.inp:
-                    sys.stdout.write(sig)
-                else:
-                    sys.stdout.write(self.inp + sig)
+                sys.stdout.write(self.inp + sig)
             else:
                 for targetfile in self.targets:
                     readwrite.writeFile(targetfile, sig, mode='a')
