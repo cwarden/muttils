@@ -1,6 +1,6 @@
 sigpager_cset = '$Id$'
 
-import os, random, re, readline
+import os, random, re, readline, sys
 from cheutils import readwrite
 from tpager.Tpager import Tpager, TpagerError
 
@@ -49,7 +49,7 @@ class Signature(Tpager):
         self.pat = None         # match sigs against pattern
 
     def argParser(self):
-        import getopt, sys
+        import getopt
         try:
             opts, args = getopt.getopt(sys.argv[1:], optstring)
         except getopt.GetoptError, e:
@@ -85,7 +85,7 @@ class Signature(Tpager):
         try:
             self.pat = re.compile(r'%s' % self.pat, re.I)
         except re.error, e:
-            print '%s in pattern %s' % (e, self.pat)
+            sys.stdout.write('%s in pattern %s\n' % (e, self.pat))
             self.pat = None
             self.getPattern()
 
@@ -115,18 +115,17 @@ class Signature(Tpager):
             else:
                 sig = self.sigsep + readwrite.readFile(self.sig)
             if not self.targets:
-                sig = sig.rstrip() # get rid of EOFnewline
                 if not self.inp:
-                    print sig
+                    sys.stdout.write(sig)
                 else:
-                    print self.inp + sig
+                    sys.stdout.write(self.inp + sig)
             else:
                 for targetfile in self.targets:
                     readwrite.writeFile(targetfile, sig, self.w)
         elif self.inp:
-            print self.inp
+            sys.stdout.write(self.inp)
         elif self.targets:
-            print
+            sys.stdout.write('\n')
 
 
 def run():
