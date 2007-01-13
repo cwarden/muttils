@@ -33,8 +33,11 @@ class Signature(Tpager):
         self.pat = None         # match sigs against pattern
 
     def getString(self, fn):
-        sigfile = os.path.join(self.sdir, fn)
-        return readwrite.readFile(sigfile)
+        fn = os.path.join(self.sdir, fn)
+        try:
+            return readwrite.readFile(fn)
+        except IOError, e:
+            raise SignatureError('could not read %s; %s' % (fn, e))
 
     def getSig(self):
         if self.pat:
@@ -79,7 +82,10 @@ class Signature(Tpager):
             if self.items:
                 sig = self.sep + self.items[0]
             else:
-                sig = self.sep + readwrite.readFile(self.sig)
+                try:
+                    sig = self.sep + readwrite.readFile(self.sig)
+                except IOError, e:
+                    raise SignatureError('could not read %s; %s' % (fn, e))
             if not self.targets:
                 sys.stdout.write(self.inp + sig)
             else:
@@ -87,7 +93,7 @@ class Signature(Tpager):
                     for f in self.targets:
                         readwrite.writeFile(f, sig, mode='a')
                 except IOError, e:
-                    raise SignatureError(e)
+                    raise SignatureError('could not write to %s; %s' % (fn, e))
         elif self.inp:
             sys.stdout.write(self.inp)
         elif self.targets:
