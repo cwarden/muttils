@@ -143,10 +143,10 @@ class Urlpager(Browser, Urlcollector, Kiosk, Tpager):
         else:
             if conny:
                 goOnline()
-            cs = cs + self.items
+            cs += self.items
             if not self.getdir and not self.files: # program needs terminal
                 tty = os.ctermid()
-                cs = cs + ['<', tty, '>', tty]
+                cs += ['<', tty, '>', tty]
                 cs = ' '.join(cs)
                 systemcall.systemCall(cs, sh=True)
             else:
