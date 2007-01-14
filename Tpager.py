@@ -55,9 +55,9 @@ class Tpager(LastExit, Pages):
         if plen == 1: # no paging
             cs = ', ^C:Cancel'
             if self.ckey:
-                cs = '%s, %s<%s>' % (cs, self.ckey, self.crit)
+                cs += ', %s<%s>' % (self.ckey, self.crit)
             if self.itemsdict:
-                cs = '%s, Number' % cs
+                cs += ', Number'
             menu = 'Page 1 of 1 [%s]%s ' % (self.qfunc, cs)
             reply = self.pageDisplay(menu)
             if reply in self.itemsdict:
@@ -75,11 +75,11 @@ class Tpager(LastExit, Pages):
                     bs = '-:%s, ' % pds[pdir*-1]
                 else:
                     pdir *= -1
-                menu = 'Page %d of %d [%s], ^C:Cancel, %sq:%s' \
-                    % (pn, plen, pds[pdir], bs, self.qfunc)
+                menu = 'Page %d of %d [%s], ^C:Cancel, %sq:%s' % (pn, plen,
+                        pds[pdir], bs, self.qfunc)
                 if self.ckey:
-                    menu = '%s, %s<%s>' % (menu, self.ckey, self.crit)
-                menu = '%s, Number ' % menu
+                    menu += ', %s<%s>' % (self.ckey, self.crit)
+                menu += ', Number '
                 reply = self.pageDisplay(menu, pn)
                 if not reply:
                     pn = valClamp(pn+pdir, 1, plen)
