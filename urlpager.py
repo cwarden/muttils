@@ -34,10 +34,10 @@ urlpager_help = '''
 -b [-r <pattern][-I][<file> ...]
 -h (display this help)'''
 
-def userHelp(error=''):
+def userHelp(error='', i=False):
     from cheutils.usage import Usage
     u = Usage(help=urlpager_help, rcsid=urlpager_cset)
-    u.printHelp(err=error)
+    u.printHelp(err=error, interrupt=i)
 
 def goOnline():
     try:
@@ -161,21 +161,18 @@ class Urlpager(Browser, Urlcollector, Kiosk, Tpager):
         if not self.items:
             return
         if self.proto != 'mid':
-            try:
-                if self.files:
-                    readline.add_history(self.items[0])
-                    url = raw_input('\n\npress <UP> or <C-P> to edit url, '
-                            '<C-C> to cancel or <RET> to accept\n%s\n'
-                            % self.items[0])
-                else:
-                    self.termInit()
-                    url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
-                            'or enter url manually\n%s\n' % self.items[0])
-                    self.reInit()
-                if url:
-                    self.items = [url]
-            except KeyboardInterrupt:
-                return
+            if self.files:
+                readline.add_history(self.items[0])
+                url = raw_input('\n\npress <UP> or <C-P> to edit url, '
+                        '<C-C> to cancel or <RET> to accept\n%s\n'
+                        % self.items[0])
+            else:
+                self.termInit()
+                url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
+                        'or enter url manually\n%s\n' % self.items[0])
+                self.reInit()
+            if url:
+                self.items = [url]
             self.urlGo()
         else:
             try:
@@ -191,3 +188,5 @@ def run():
         up.urlSearch()
     except UrlpagerError, e:
         userHelp(e)
+    except KeyboardInterrupt:
+        userHelp('needs filename(s) or stdin', i=True)
