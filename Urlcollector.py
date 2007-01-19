@@ -11,10 +11,10 @@ class Urlcollector(Urlregex):
     Provides function to retrieve urls
     from files or input stream.
     '''
-    def __init__(self, proto='all'):
-        Urlregex.__init__(self, proto=proto) # <- proto, decl, items
-        self.files = []         # files to search
-        self.pat = None         # pattern to match urls against
+    def __init__(self, proto='all', decl=False, files=None, pat=None):
+        Urlregex.__init__(self, proto=proto, decl=decl) # <- items
+        self.files = files or [] # files to search
+        self.pat = pat           # pattern to match urls against
 
     def urlCollect(self):
         '''Harvests urls from stdin or files.'''

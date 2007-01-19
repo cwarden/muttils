@@ -94,19 +94,22 @@ class Kiosk(HTML2Text):
     Provides methods to search for and retrieve
     messages via their Message-ID.
     '''
-    def __init__(self, items=None):
+    def __init__(self, items=None, kiosk='',
+            browse=False, local=False, mhiers=None, mspool=True, mask=None,
+            xb=False, tb=False):
         HTML2Text.__init__(self, strict=False)
         self.items = items or [] # message-ids to look for
-        self.kiosk = ''          # path to kiosk mbox
-        self.mask = None         # file mask for mdir (applied to directories too)
-        self.browse = False      # limit to browse googlegroups
-        self.mhiers = []         # mailbox hierarchies
-        self.local = False       # limit to local search
+        self.kiosk = kiosk       # path to kiosk mbox
+        self.browse = browse     # limit to browse googlegroups
+        self.mhiers = mhiers or [] #  mailbox hierarchies
+        self.local = local       # limit to local search
+        self.xb = xb             # force x-browser
+        self.tb = tb             # use text browser
+        self.mspool = mspool     # look for MID in default mailspool
+        self.mask = mask         # file mask for mdir (applied to directories too)
+
         self.msgs = []           # list of retrieved message objects
         self.muttone = True      # configure mutt for display of 1 msg only
-        self.xb = False          # force x-browser
-        self.tb = False          # use text browser
-        self.mspool = True       # look for MID in default mailspool
         self.mdmask = '^(cur|new|tmp)$'
 
     def argParser(self):

@@ -155,11 +155,10 @@ class Urlregex(Urlparser):
     and urls spanning more than 1 line
     if they are enclosed in '<>'.
     '''
-    def __init__(self, proto='all', uniq=True):
-        Urlparser.__init__(self, proto=proto) # <- id, proto, items, url_re
-        self.proto = proto
+    def __init__(self, proto='all', decl=False, uniq=True):
+        Urlparser.__init__(self, proto=proto) # <- items, url_re
+        self.decl = decl        # list only declared urls
         self.uniq = uniq        # list only unique urls
-        self.decl = False       # list only declared urls
         self.kill_re = None     # customized pattern to find non url chars
         self.intro = ''
         self.protocol = ''      # pragmatic proto (may include www., ftp.)
