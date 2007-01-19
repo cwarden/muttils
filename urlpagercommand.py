@@ -10,9 +10,9 @@ urlpager_cset = '$Id$'
 ###
 
 from urlpager import Urlpager, UrlpagerError
-import getopt, sys
+import getopt, os.path, sys
 
-### configure manually (defaults to "mail" if empty)
+### configure manually (mail_client defaults to "mail" if empty)
 mail_client = 'mutt'
 xbrowser = 'firefox'
 textbrowser = 'w3m'
@@ -37,6 +37,8 @@ def userHelp(error='', i=False):
     u = Usage(help=urlpager_help, rcsid=urlpager_cset)
     u.printHelp(err=error, interrupt=i)
 
+def savePath(path):
+    return os.path.normpath(os.path.abspath(os.path.expanduser(path)))
 
 def run():
     '''Command interface to Urlpager.'''
@@ -47,6 +49,7 @@ def run():
 
     try:
         sysopts, opts['files'] = getopt.getopt(sys.argv[1:], shortopts)
+
         for o, a in sysopts:
             if o == '-b': # don't look up msgs locally
                 opts['proto'] = 'mid'
@@ -88,10 +91,10 @@ def run():
             if o == '-t': # text browser command
                 opts['tb'] = textbrowser
             if o == '-w': # download dir for wget
-                from cheutils import filecheck
+                if not os.path.isdir(savePath(a)):
+                    userHelp('%s: not a directory' % a)
                 opts['proto'] = 'web'
-                opts['getdir'] = filecheck.fileCheck(a,
-                        spec='isdir', absolute=True)
+                opts['getdir'] = a
 
         u = Urlpager(opts=opts)
         u.urlSearch()
