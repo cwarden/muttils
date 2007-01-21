@@ -96,19 +96,22 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
         if not self.items:
             return
         if self.proto != 'mid':
-            if self.files:
-                readline.add_history(self.items[0])
-                url = raw_input('\n\npress <UP> or <C-P> to edit url, '
-                        '<C-C> to cancel or <RET> to accept\n%s\n'
-                        % self.items[0])
-            else:
-                self.termInit()
-                url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
-                        'or enter url manually\n%s\n' % self.items[0])
-                self.reInit()
-            if url:
-                self.items = [url]
-            self.urlGo()
+            try:
+                if self.files:
+                    readline.add_history(self.items[0])
+                    url = raw_input('\n\npress <UP> or <C-P> to edit url, '
+                            '<C-C> to cancel or <RET> to accept\n%s\n'
+                            % self.items[0])
+                else:
+                    self.termInit()
+                    url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
+                            'or enter url manually\n%s\n' % self.items[0])
+                    self.reInit()
+                if url:
+                    self.items = [url]
+                self.urlGo()
+            except KeyboardInterrupt:
+                pass
         else:
             try:
                 self.kioskStore()
