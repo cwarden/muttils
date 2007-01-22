@@ -42,7 +42,7 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
         Browser.__init__(self)
         Kiosk.__init__(self)
 
-        for k in self.defaults:
+        for k in self.defaults.keys():
             setattr(self, k, opts.get(k, self.defaults[k]))
 
     def urlPager(self):
