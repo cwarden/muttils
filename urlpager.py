@@ -1,12 +1,11 @@
 # $Id$
 
-import os, readline
 from Urlcollector import Urlcollector, UrlcollectorError
 from tpager.Tpager import Tpager, TpagerError
 from cheutils.selbrowser import Browser, BrowserError
 from kiosk import Kiosk, KioskError
 from Urlregex import mailCheck, ftpCheck
-from cheutils import systemcall
+import os, readline
 
 def goOnline():
     try:
@@ -78,14 +77,11 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
         else:
             if conny:
                 goOnline()
-            cs += self.items
+            cs += [url]
             if not self.getdir and not self.files: # program needs terminal
                 tty = os.ctermid()
                 cs += ['<', tty, '>', tty]
-                cs = ' '.join(cs)
-                systemcall.systemCall(cs, sh=True)
-            else:
-                systemcall.systemCall(cs)
+            os.system(' '.join(cs))
 
     def urlSearch(self):
         try:
