@@ -1,4 +1,4 @@
-urlbatcher_cset = '$Id$'
+# $Id$
 
 ###
 # Caveat:
@@ -13,7 +13,8 @@ from Urlcollector import Urlcollector, UrlcollectorError
 from kiosk import Kiosk, KioskError
 from tpager.LastExit import LastExit
 from cheutils.selbrowser import Browser, BrowserError
-from cheutils import spl, systemcall
+import subprocess
+from cheutils import spl
 
 optstring = 'd:D:hiIk:lnr:w:x'
 
@@ -51,59 +52,33 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
     Browses all urls or creates a message tree in mutt.
     You can specify urls/ids by a regex pattern.
     '''
-    def __init__(self):
-        Browser.__init__(self)
-        Kiosk.__init__(self)        # <- kiosk, mhiers, mspool, local, google, xb, tb
-        LastExit.__init__(self)
-        Urlcollector.__init__(self, proto='web') # <- (Urlregex) proto, decl, items, files, pat
-        self.getdir = ''            # download in dir via wget
+    defaults = {
+            'proto': 'web',
+            'files': [],
+            'pat': None,
+            'kiosk': '',
+            'browse': False,
+            'local': False,
+            'mhiers': [],
+            'mspool': True,
+            'mask': None,
+            'xb': '',
+            'ftp': 'ftp',
+            'getdir': '',
+            'mailer': 'mail',
+            }
 
-    def argParser(self):
-        import getopt, sys
-        try:
-            opts, self.files = getopt.getopt(sys.argv[1:], optstring)
-        except getopt.GetoptError, e:
-            raise UrlbatcherError(e)
-        for o, a in opts:
-            if o == '-d': # specific mail hierarchies
-                self.proto = 'mid'
-                self.mhiers = a.split(':')
-            if o == '-D': # specific mail hierarchies, exclude mspool
-                self.proto = 'mid'
-                self.mspool = False
-                self.mhiers = a.split(':')
-            if o == '-h':
-                userHelp()
-            if o == '-i': # look for message-ids
-                self.proto = 'mid'
-            if o == '-I': # look for declared message-ids
-                self.proto = 'mid'
-                self.decl = True
-            if o == '-k': # mailbox to store retrieved messages
-                self.proto = 'mid'
-                self.kiosk = a
-            if o == '-l': # only local search for message-ids
-                self.proto = 'mid'
-                self.local = True
-            if o == '-n': # don't search local mailboxes
-                self.proto = 'mid'
-                self.mhiers = None
-            if o == '-r':
-                self.pat = a
-            if o == '-w': # download dir for wget
-                from cheutils import filecheck
-                getdir = a
-                self.getdir = filecheck.fileCheck(getdir,
-                        spec='isdir', absolute=True)
-            if o == '-x': # xbrowser
-                self.xb = True
+    def __init__(self, opts={}):
+        Urlcollector.__init__(self)
+        Browser.__init__(self)
+        Kiosk.__init__(self)
+        LastExit.__init__(self)
+        for k in self.defaults.keys():
+            setattr(self, k, opts.get(k, self.defaults[k]))
 
     def urlGo(self):
         if self.getdir:
-            from cheutils import getbin
-            goOnline()
-            systemcall.systemCall(
-                [getbin.getBin('wget'), '-P', self.getdir] + self.items)
+            os.system('wget -P %s %s' % (self.getdir, ' '.join.self.items))
         else:
             try:
                 self.urlVisit()
@@ -131,19 +106,8 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
                     except KioskError, e:
                         raise UrlbatcherError(e)
         else:
-            msg = 'No %s found. [Ok] ' \
-                    % ('urls', 'message-ids')[self.proto=='mid']
+            msg = 'No %s found. [Ok] ' % ('urls',
+                    'message-ids')[self.proto=='mid']
             raw_input(msg)
         if not self.files:
             self.reInit()
-
-
-def run():
-    try:
-        ub = Urlbatcher()
-        ub.argParser()
-        ub.urlSearch()
-    except UrlbatcherError, e:
-        userHelp(e)
-    except KeyboardInterrupt:
-        print

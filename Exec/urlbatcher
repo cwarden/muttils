@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 # $Id$
 
-from urlregex import urlbatcher
-urlbatcher.run()
+from urlregex import urlbatchercommand
+urlbatchercommand.run()
