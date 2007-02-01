@@ -17,7 +17,7 @@ urlfailmsg = 'reason of url retrieval failure: '
 urlerrmsg = 'url retrieval error code: '
 changedsrcview = 'source view format changed at Google'
 muttone = ["-e", "'set pager_index_lines=0'",
-          "-e", "set quit=yes", "-e", "'bind pager q quit'",
+          "-e", "'set quit=yes'", "-e", "'bind pager q quit'",
           "-e", "'push <return>'", "-f"]
 mutti = ["-e", "'set uncollapse_jump'",
         "-e" "'push <search>~i\ \'%s\'<return>'", "-f"]
@@ -100,13 +100,14 @@ class Kiosk(HTML2Text):
     '''
     def __init__(self, items=None, kiosk='',
             browse=False, local=False, mhiers=None, mspool=True, mask=None,
-            xb='', tb=''):
+            mailer='mail', xb='', tb=''):
         HTML2Text.__init__(self, strict=False)
         self.items = items or [] # message-ids to look for
         self.kiosk = kiosk       # path to kiosk mbox
         self.browse = browse     # limit to browse googlegroups
         self.mhiers = mhiers or [] #  mailbox hierarchies
         self.local = local       # limit to local search
+        self.mailer = mailer     # mail client
         self.xb = xb             # force x-browser
         self.tb = tb             # use text browser
         self.mspool = mspool     # look for MID in default mailspool
@@ -359,8 +360,6 @@ class Kiosk(HTML2Text):
 
     def openKiosk(self, firstid):
         '''Opens mutt on kiosk mailbox.'''
-        from cheutils import getbin
-        client = getbin.getBin('mutt', 'muttng', 'mail')
         fp = open(self.kiosk, 'ab')
         try:
             g = Generator(fp, maxheaderlen=0)
@@ -374,11 +373,11 @@ class Kiosk(HTML2Text):
         finally:
             fp.close()
         self.kiosk = "'%s'" % self.kiosk
-        cs = [client]
-        if client[0] == 'mail':
-            cs += ['-f', self.kiosk]
+        cs = [str(self.mailer)]
+        if  self.mailer[:4] != 'mutt':
+            cs = [self.mailer, '-f', self.kiosk]
         elif len(self.msgs) == 1 and self.muttone:
-            cs += [muttone, self.kiosk]
+            cs += muttone + [self.kiosk]
         else:
             mutti[-2] = mutti[-2] % firstid
             cs += mutti + [self.kiosk] 
