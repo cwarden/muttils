@@ -100,7 +100,7 @@ class Kiosk(HTML2Text):
     '''
     def __init__(self, items=None, kiosk='',
             browse=False, local=False, mhiers=None, mspool=True, mask=None,
-            xb=False, tb=False):
+            xb='', tb=''):
         HTML2Text.__init__(self, strict=False)
         self.items = items or [] # message-ids to look for
         self.kiosk = kiosk       # path to kiosk mbox
