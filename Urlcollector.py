@@ -1,7 +1,8 @@
 # $Id$
 
-import re, sys
+import util
 from Urlregex import Urlregex, UrlregexError
+import re, sys, urllib2
 
 class UrlcollectorError(Exception):
     '''Exception class for the Urlcollector module.'''
@@ -27,11 +28,14 @@ class Urlcollector(Urlregex):
         if not self.files: # read from stdin
             urlFind(sys.stdin.read())
         else:
-            import datatype
             for f in self.files:
-                data, kind = datatype.dataType(f)
-                if kind.startswith('text/'):
-                    urlFind(data)
+                f = util.absolutepath(f)
+                fp = urllib2.urlopen('file://%s' % f)
+                try:
+                    if fp.info().gettype().startswith('text/'):
+                        urlFind(fp.read())
+                finally:
+                    fp.close()
         if self.pat and self.items:
             try:
                 self.pat = re.compile(r'%s' % self.pat, re.I)

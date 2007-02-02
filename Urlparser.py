@@ -1,7 +1,9 @@
 # $Id$
 
 import email, email.Utils, re
+from cStringIO import StringIO
 from email.Errors import MessageParseError
+from mailbox import PortableUnixMailbox
 
 protos = ('all', 'web',
         'http', 'ftp', 'gopher',
@@ -86,8 +88,6 @@ class Urlparser(object):
         if not self.msg.get_unixfrom():
             sl = self.msgDeconstructor()
         else: # treat s like a mailbox because it might be one
-            from cStringIO import StringIO
-            from mailbox import PortableUnixMailbox
             sl = [] # list of strings to search
             fp = StringIO()
             fp.write(s)

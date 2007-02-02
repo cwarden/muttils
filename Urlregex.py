@@ -1,7 +1,7 @@
 # $Id$
 
-import re
 from Urlparser import Urlparser, UrlparserError
+import re
 
 def orJoin(s):
     return r'(%s)' % '|'.join(s.split())

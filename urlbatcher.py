@@ -9,39 +9,11 @@
 # input is checked anew for each file.
 ###
 
+import util
 from Urlcollector import Urlcollector, UrlcollectorError
 from kiosk import Kiosk, KioskError
 from tpager.LastExit import LastExit
 from cheutils.selbrowser import Browser, BrowserError
-import subprocess
-from cheutils import spl
-
-optstring = 'd:D:hiIk:lnr:w:x'
-
-urlbatcher_help = '''
-[-x][-r <pattern>][file ...]
--w <download dir> [-r <pattern]
--i [-r <pattern>][-k <mbox>][<file> ...]
--I [-r <pattern>][-k <mbox>][<file> ...]
--l [-I][-r <pattern>][-k <mbox>][<file> ...]
--d <mail hierarchy>[:<mail hierarchy>[:...]] \\
-        [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
--D <mail hierarchy>[:<mail hierarchy>[:...]] \\
-        [-l][-I][-r <pattern>][-k <mbox>][<file> ...]
--n [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
--h (display this help)'''
-
-def userHelp(error=''):
-    from cheutils.usage import Usage
-    u = Usage(help=urlbatcher_help, rcsid=urlbatcher_cset)
-    u.printHelp(err=error)
-
-def goOnline():
-    try:
-        from cheutils import conny
-        conny.appleConnect()
-    except ImportError:
-        pass
 
 class UrlbatcherError(Exception):
     '''Exception class for the urlbatcher module.'''
@@ -95,7 +67,7 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
         if self.items:
             yorn = '%s\nRetrieve the above %s? yes, [No] ' \
                     % ('\n'.join(self.items),
-                       spl.sPl(len(self.items),
+                       util.plural(len(self.items),
                            ('url', 'message-id')[self.proto=='mid']))
             if raw_input(yorn).lower() in ('y', 'yes'):
                 if self.proto != 'mid':
@@ -106,8 +78,8 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
                     except KioskError, e:
                         raise UrlbatcherError(e)
         else:
-            msg = 'No %s found. [Ok] ' % ('urls',
-                    'message-ids')[self.proto=='mid']
+            msg = 'No %s found. [Ok] ' % ('url',
+                    'message-id')[self.proto=='mid']
             raw_input(msg)
         if not self.files:
             self.reInit()

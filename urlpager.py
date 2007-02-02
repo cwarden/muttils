@@ -1,18 +1,12 @@
 # $Id$
 
+import util
 from Urlcollector import Urlcollector, UrlcollectorError
 from tpager.Tpager import Tpager, TpagerError
 from cheutils.selbrowser import Browser, BrowserError
 from kiosk import Kiosk, KioskError
 from Urlregex import mailCheck, ftpCheck
 import os, readline
-
-def goOnline():
-    try:
-        from cheutils import conny
-        conny.appleConnect()
-    except ImportError:
-        pass
 
 class UrlpagerError(Exception):
     '''Exception class for the urlpager module.'''
@@ -76,7 +70,7 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
                 raise UrlpagerError(e)
         else:
             if conny:
-                goOnline()
+                util.goonline()
             cs += [url]
             if not self.getdir and not self.files: # program needs terminal
                 tty = os.ctermid()

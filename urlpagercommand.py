@@ -9,6 +9,7 @@ urlpager_cset = '$Id$'
 # input is checked anew for each file.
 ###
 
+import util
 from urlpager import Urlpager, UrlpagerError
 import getopt, os.path, sys
 
@@ -17,6 +18,8 @@ mail_client = 'mutt'
 xbrowser = 'firefox'
 textbrowser = 'w3m'
 ###
+
+optstring = 'bd:D:f:hiIlM:np:k:r:tw:x'
 
 urlpager_help = '''
 [-p <protocol>][-r <pattern>][-t][-x][-f <ftp client>][<file> ...]
@@ -37,18 +40,14 @@ def userHelp(error='', i=False):
     u = Usage(help=urlpager_help, rcsid=urlpager_cset)
     u.printHelp(err=error, interrupt=i)
 
-def savePath(path):
-    return os.path.normpath(os.path.abspath(os.path.expanduser(path)))
 
 def run():
     '''Command interface to Urlpager.'''
 
-    shortopts = 'bd:D:f:hiIlM:np:k:r:tw:x'
-
     opts = {'mailer': mail_client}
 
     try:
-        sysopts, opts['files'] = getopt.getopt(sys.argv[1:], shortopts)
+        sysopts, opts['files'] = getopt.getopt(sys.argv[1:], optstring)
 
         for o, a in sysopts:
             if o == '-b': # don't look up msgs locally
@@ -91,7 +90,7 @@ def run():
             if o == '-t': # text browser command
                 opts['tb'] = textbrowser
             if o == '-w': # download dir for wget
-                if not os.path.isdir(savePath(a)):
+                if not os.path.isdir(util.absolutepath(a)):
                     userHelp('%s: not a directory' % a)
                 opts['proto'] = 'web'
                 opts['getdir'] = a

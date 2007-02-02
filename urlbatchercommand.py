@@ -9,6 +9,7 @@ urlbatcher_cset = '$Id$'
 # input is checked anew for each file.
 ###
 
+import util
 from urlbatcher import Urlbatcher, UrlbatcherError
 import getopt, os.path, sys
 
@@ -18,6 +19,8 @@ import getopt, os.path, sys
 mail_client = 'mutt'
 xbrowser = 'firefox'
 ###
+
+optstring = 'd:D:hiIk:lnr:w:x'
 
 urlbatcher_help = '''
 [-x][-r <pattern>][file ...]
@@ -37,19 +40,14 @@ def userHelp(error='', i=False):
     u = Usage(help=urlbatcher_help, rcsid=urlbatcher_cset)
     u.printHelp(err=error, interrupt=i)
 
-def savePath(path):
-    return os.path.normpath(os.path.abspath(os.path.expanduser(path)))
-
 
 def run():
     '''Command interface to Urlbatcher.'''
 
-    shortopts = 'd:D:hiIk:lnr:w:x'
-
     opts = {'mailer': mail_client}
 
     try:
-        sysopts, opts['files'] = getopt.getopt(sys.argv[1:], shortopts)
+        sysopts, opts['files'] = getopt.getopt(sys.argv[1:], optstring)
 
         for o, a in sysopts:
             if o == '-d': # specific mail hierarchies
@@ -78,7 +76,7 @@ def run():
             if o == '-r':
                 opts['pat'] = a
             if o == '-w': # download dir for wget
-                if not os.path.isdir(savePath(a)):
+                if not os.path.isdir(util.absolutepath(a)):
                     userHelp('%s: not a directory' % a)
                 opts['proto'] = 'web'
             if o == '-x':

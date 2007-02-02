@@ -10,6 +10,8 @@ xbrowser = 'firefox'
 textbrowser = 'w3m'
 ###
 
+optstring = 'bd:D:hk:lM:ntx'
+
 kiosk_help = '''
 [-l][-d <mail hierarchy>[:<mail hierarchy> ...]] \\
         [-k <mbox>][-M <filemask>][-t] <ID> [<ID> ...]
@@ -28,12 +30,10 @@ def userHelp(error=''):
 def run():
     '''Command interface to Kiosk.'''
 
-    optstr = 'bd:D:hk:lM:ntx'
-
     opts = {'mailer': mail_client}
 
     try:
-        sysopts, args = getopt.getopt(sys.argv[1:], optstr)
+        sysopts, args = getopt.getopt(sys.argv[1:], optstring)
 
         for o, a in sysopts:
             if o == '-b':

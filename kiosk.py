@@ -1,10 +1,11 @@
 # $Id$'
 
+import util
+from cheutils.html2text import HTML2Text
+from cheutils.selbrowser import Browser, BrowserError
 from email.Generator import Generator
 from email.Parser import Parser
 from email.Errors import MessageParseError, HeaderParseError
-from cheutils.html2text import HTML2Text
-from cheutils.selbrowser import Browser, BrowserError
 import email, mailbox, os, re, tempfile, time, urllib, urllib2, sys
 
 gmsgterminator = 'Create a group[8] - Google Groups[9]'
@@ -49,13 +50,6 @@ def msgFactory(fp):
     except HeaderParseError:
         return ''
 
-def goOnline():
-    try:
-        from cheutils import conny
-        conny.appleConnect()
-    except ImportError:
-        pass
-
 def mkUnixfrom(msg):
     '''Tries to create an improved unixfrom.'''
     if msg['return-path']:
@@ -64,12 +58,6 @@ def mkUnixfrom(msg):
         ufrom = email.Utils.parseaddr(msg.get('from', 'nobody'))[1]
     msg.set_unixfrom('From %s  %s' % (ufrom, time.asctime()))
     return msg
-
-def savePath(path):
-    return os.path.normpath(os.path.abspath(os.path.expanduser(path)))
-
-def plural(n, word):
-    return '%d %s%s' % (n, word, 's'[n==1:])
 
 
 class KioskError(Exception):
@@ -108,7 +96,7 @@ class Kiosk(HTML2Text):
         if not self.kiosk:
             self.kiosk = tempfile.mkstemp('.kiosk')[1]
             return
-        self.kiosk = savePath(self.kiosk)
+        self.kiosk = util.absolutepath(self.kiosk)
         if not os.path.exists(self.kiosk) or not os.path.getsize(self.kiosk):
             # non existant or empty is fine
             return
@@ -138,7 +126,7 @@ class Kiosk(HTML2Text):
         mhiers = set(self.mhiers)
         self.mhiers = set([])
         for hier in mhiers:
-            abshier = savePath(hier)
+            abshier = util.absolutepath(hier)
             if os.path.isdir(abshier):
                 self.mhiers.add(abshier)
             else:
@@ -201,7 +189,7 @@ class Kiosk(HTML2Text):
         opener = urllib2.build_opener()
         opener.addheaders = [useragent]
         header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
-        goOnline()
+        util.goonline()
         found = []
         self.open()
         try:
@@ -229,7 +217,7 @@ class Kiosk(HTML2Text):
             self.msgs.append(msg)
         if self.items:
             sys.stdout.write('%s not on local server\n'
-                    % plural(len(self.items), 'message'))
+                    % util.plural(len(self.items), 'message'))
 
     def boxParser(self, path, maildir=False, isspool=False):
         if (not isspool and path == self.mspool
@@ -352,7 +340,7 @@ class Kiosk(HTML2Text):
             self.mailSearch()
             if self.items:
                 sys.stdout.write('%s not in specified local mailboxes\n'
-                        % plural(len(self.items), 'message'))
+                        % util.plural(len(self.items), 'message'))
         if self.items and not self.local:
             self.goGoogle()
         elif self.items:
