@@ -1,16 +1,13 @@
-kiosk_cset = '$Id$'
-
-###
-# needs python version 2.3 #
-###
+# $Id$'
 
 from email.Generator import Generator
 from email.Parser import Parser
 from email.Errors import MessageParseError, HeaderParseError
 from cheutils.html2text import HTML2Text
+from cheutils.selbrowser import Browser, BrowserError
 import email, mailbox, os, re, tempfile, time, urllib, urllib2, sys
 
-optstr = 'bd:D:hk:lM:ntx'
+gmsgterminator = 'Create a group[8] - Google Groups[9]'
 ggroups = 'http://groups.google.com/groups'
 useragent = ('User-Agent', 'w3m')
 urlfailmsg = 'reason of url retrieval failure: '
@@ -21,21 +18,6 @@ muttone = ["-e", "'set pager_index_lines=0'",
           "-e", "'push <return>'", "-f"]
 mutti = ["-e", "'set uncollapse_jump'",
         "-e" "'push <search>~i\ \'%s\'<return>'", "-f"]
-
-
-kiosk_help = '''
-[-l][-d <mail hierarchy>[:<mail hierarchy> ...]] \\
-        [-k <mbox>][-M <filemask>][-t] <ID> [<ID> ...]
-[-l][-D <mail hierarchy>[:<mail hierarchy> ...]] \\
-        [-k <mbox>][-M <filemask>][-t] <ID> [<ID> ...]
--n [-l][-k <mbox>][-t] <ID> [<ID> ...]
--b <ID> [<ID> ...]
--h (display this help)'''
-
-def userHelp(error=''):
-    from cheutils.usage import Usage
-    u = Usage(help=kiosk_help, rcsid=kiosk_cset)
-    u.printHelp(err=error)
 
 def mailSpool():
     '''Tries to return a sensible default for user's mail spool.
@@ -98,59 +80,28 @@ class Kiosk(HTML2Text):
     Provides methods to search for and retrieve
     messages via their Message-ID.
     '''
-    def __init__(self, items=None, kiosk='',
-            browse=False, local=False, mhiers=None, mspool=True, mask=None,
-            mailer='mail', xb='', tb=''):
+    defaults = {
+            'kiosk': '',
+            'browse': False,
+            'local': False,
+            'mhiers': [],
+            'mspool': False,
+            'mask': None,
+            'mailer': 'mail',
+            'xb': '',
+            'tb': '',
+            }
+
+    def __init__(self, items=None, opts={}):
         HTML2Text.__init__(self, strict=False)
-        self.items = items or [] # message-ids to look for
-        self.kiosk = kiosk       # path to kiosk mbox
-        self.browse = browse     # limit to browse googlegroups
-        self.mhiers = mhiers or [] #  mailbox hierarchies
-        self.local = local       # limit to local search
-        self.mailer = mailer     # mail client
-        self.xb = xb             # force x-browser
-        self.tb = tb             # use text browser
-        self.mspool = mspool     # look for MID in default mailspool
-        self.mask = mask         # file mask for mdir (applied to directories too)
+        self.items = items or []
+
+        for k in self.defaults.keys():
+            setattr(self, k, opts.get(k, self.defaults[k]))
 
         self.msgs = []           # list of retrieved message objects
         self.muttone = True      # configure mutt for display of 1 msg only
         self.mdmask = '^(cur|new|tmp)$'
-
-    def argParser(self):
-        import getopt
-        from Urlregex import Urlregex
-        try:
-            opts, args = getopt.getopt(sys.argv[1:], optstr)
-        except getopt.GetoptError, e:
-            raise KioskError(e)
-        for o, a in opts:
-            if o == '-b':
-                self.browse, self.mhiers = True, None
-            if o == '-d': # specific mail hierarchies
-                self.mhiers = a.split(':')
-            if o == '-D': # specific mail hierarchies, exclude mspool
-                self.mhiers, self.mspool = a.split(':'), False
-            if o == '-h':
-                userHelp()
-            if o == '-l':
-                self.local = True
-            if o == '-k':
-                self.kiosk = a
-            if o == '-M':
-                self.mask = a
-            if o == '-n':
-                self.mhiers = None # don't search local mailboxes
-            if o == '-t':
-                self.tb = True # use text browser
-            if o == '-x':
-                self.xb = True # use xbrowser
-        ur = Urlregex(proto='mid', uniq=False)
-        ur.findUrls(' '.join(args))
-        if ur.items:
-            self.items = ur.items
-        else:
-            raise KioskError('no valid Message-ID found')
 
     def kioskTest(self):
         '''Provides the path to an mbox file to store retrieved messages.'''
@@ -201,7 +152,6 @@ class Kiosk(HTML2Text):
 
     def gooBrowse(self):
         '''Visits given urls with browser and exits.'''
-        from cheutils.selbrowser import Browser, BrowserError
         b = Browser(items=[self.makeQuery(mid) for mid in self.items],
                 tb=self.tb, xb=self.xb)
         try:
@@ -231,8 +181,9 @@ class Kiosk(HTML2Text):
         else:
             lines = [line]
             try:
-                while not line.startswith('(image) Google Home['):
-                    lines.append(liniter.next())
+                while not line.startswith(gmsgterminator):
+                    line = liniter.next()
+                    lines.append(line)
             except StopIteration:
                 sys.stderr.write('\n'.join(lines) + '\n')
                 raise KioskError(changedsrcview)
@@ -297,7 +248,7 @@ class Kiosk(HTML2Text):
             try:
                 fp = open(path, 'rb')
             except IOError, e:
-                sys.stdout.write(e + '\n')
+                sys.stdout.write('%s\n' % e)
                 return
             mbox = mailbox.PortableUnixMailbox(fp, msgFactory)
         sys.stdout.write('searching %s ' % path)
@@ -307,7 +258,7 @@ class Kiosk(HTML2Text):
                 sys.stdout.write('.')
                 sys.stdout.flush()
             except IOError, e:
-                sys.stdout.write('\n' + e + '\n')
+                sys.stdout.write('\n%s\n' % e)
                 break
             if msg is None:
                 sys.stdout.write('\n')
@@ -389,8 +340,6 @@ class Kiosk(HTML2Text):
     def kioskStore(self):
         '''Collects messages identified by ID either
         by retrieving them locally or from GoogleGroups.'''
-        if not self.items:
-            raise KioskError('needs Message-ID(s) as argument(s)')
         if self.browse:
             self.goGoogle()
         self.kioskTest()

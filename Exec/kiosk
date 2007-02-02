@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 # $Id$
 
-from urlregex import kiosk
-
-try:
-    k = kiosk.Kiosk()
-    k.argParser()
-    k.kioskStore()
-except kiosk.KioskError, e:
-    kiosk.userHelp(e)
+from urlregex import kioskcommand
+kioskcommand.run()
