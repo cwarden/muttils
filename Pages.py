@@ -1,7 +1,32 @@
 # $Id$
 
-from tpager import terminfo
 from tpager.Tformat import Tformat, TformatError
+import os
+
+def screendims():
+    '''Get current term's columns and rows, return customized values.'''
+    if os.uname()[0] == 'Darwin':
+        p = os.popen('stty -a -f %s' % os.ctermid())
+        try:
+            tt = p.readline()
+        finally:
+            p.close()
+        attribs = tt.split()
+        t_rows = int(attribs[3])
+        t_cols = int(attribs[5])
+    else: # Linux
+        p = os.popen('stty -a -F %s' % os.ctermid())
+        try:
+            tt = p.readline()
+        finally:
+            p.close()
+        attribs = tt.split('; ')
+        t_rows = int(attribs[1].split()[1])
+        t_cols = int(attribs[2].split()[1])
+    # rows: retain 2 lines for header + 1 for menu
+    # cols need 1 extra when lines are broken
+    return t_rows-3, t_cols+1
+
 
 class PagesError(TformatError):
     '''Exception class for Pages.'''
@@ -17,8 +42,7 @@ class Pages(Tformat):
         self.ilen = 0                   # length of items' list
         self.pages =  {}                # dictionary of pages
         self.pn = 0                     # current page/key of pages
-        self.cols = terminfo.t_cols+1   # needs 1 extra when lines are broken
-        self.rows = terminfo.t_rows-3   # retain 2 lines for header & 1 for menu
+        self.rows, self.cols = screendims()
 
     def softCount(self, item):
         '''Counts lines of item as displayed in
