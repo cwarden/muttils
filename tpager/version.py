@@ -11,20 +11,6 @@ def getversion():
         version = unknown_version
     return version
 
-def writeversion(version):
-    if version == getversion():
-        return
-    directory = os.path.dirname(__file__)
-    for suff in ['py', 'pyc', 'pyo']:
-        try:
-            os.unlink(os.path.join(directory, '__version__.%s' % suff))
-        except OSError:
-            pass
-    fp = open(os.path.join(directory, '__version__.py'), 'w')
-    fp.write('# this file is auto-generated\n')
-    fp.write('version = %r\n' % version)
-    fp.close()
-
 def rememberversion(version=None):
     if not version and os.path.isdir('.hg'):
         p = os.popen('hg --quiet identify 2> /dev/null') # in Mercurial directory
@@ -35,5 +21,14 @@ def rememberversion(version=None):
             else:
                 version = ident[:-1]
                 version += time.strftime('+%Y%m%d')
-    if version:
-        writeversion(version)
+    if version: # write version
+        directory = os.path.dirname(__file__)
+        for suff in ['py', 'pyc', 'pyo']:
+            try:
+                os.unlink(os.path.join(directory, '__version__.%s' % suff))
+            except OSError:
+                pass
+        fp = open(os.path.join(directory, '__version__.py'), 'w')
+        fp.write('# this file is auto-generated\n')
+        fp.write('version = %r\n' % version)
+        fp.close()
