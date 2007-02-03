@@ -1,6 +1,6 @@
 # $Id$
 
-from Urlparser import Urlparser, UrlparserError
+from urlregex.Urlparser import Urlparser, UrlparserError
 import re
 
 def orJoin(s):

@@ -9,9 +9,9 @@
 # input is checked anew for each file.
 ###
 
-import util
-from usage import Usage
-from urlpager import Urlpager, UrlpagerError
+import urlregex.util
+from urlregex.usage import Usage
+from urlregex.urlpager import Urlpager, UrlpagerError
 import getopt, os.path, sys
 
 ### configure manually (mail_client defaults to "mail" if empty)
@@ -90,7 +90,7 @@ def run():
             if o == '-t': # text browser command
                 opts['tb'] = textbrowser
             if o == '-w': # download dir for wget
-                if not os.path.isdir(util.absolutepath(a)):
+                if not os.path.isdir(urlregex.util.absolutepath(a)):
                     userhelp('%s: not a directory' % a)
                 opts['proto'] = 'web'
                 opts['getdir'] = a

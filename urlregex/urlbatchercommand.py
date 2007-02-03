@@ -9,9 +9,9 @@
 # input is checked anew for each file.
 ###
 
-import util
-from usage import Usage
-from urlbatcher import Urlbatcher, UrlbatcherError
+import urlregex.util
+from urlregex.usage import Usage
+from urlregex.urlbatcher import Urlbatcher, UrlbatcherError
 import getopt, os.path, sys
 
 ### configure manually
@@ -76,7 +76,7 @@ def run():
             if o == '-r':
                 opts['pat'] = a
             if o == '-w': # download dir for wget
-                if not os.path.isdir(util.absolutepath(a)):
+                if not os.path.isdir(urlregex.util.absolutepath(a)):
                     userhelp('%s: not a directory' % a)
                 opts['proto'] = 'web'
             if o == '-x':

@@ -1,8 +1,8 @@
 # $Id$
 
-from usage import Usage
-from kiosk import Kiosk, KioskError
-from Urlregex import Urlregex
+from urlregex.usage import Usage
+from urlregex.kiosk import Kiosk, KioskError
+from urlregex.Urlregex import Urlregex
 import getopt, sys
 
 ### configure manually (mail_client defaults to "mail" if empty)

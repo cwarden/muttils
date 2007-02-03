@@ -1,10 +1,10 @@
 # $Id$
 
-import util
-from Urlcollector import Urlcollector, UrlcollectorError
+import urlregex.util
+from urlregex.Urlcollector import Urlcollector, UrlcollectorError
+from urlregex.kiosk import Kiosk, KioskError
 from tpager.Tpager import Tpager, TpagerError
 from cheutils.selbrowser import Browser, BrowserError
-from kiosk import Kiosk, KioskError
 from Urlregex import mailCheck, ftpCheck
 import os, readline
 
@@ -70,7 +70,7 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
                 raise UrlpagerError(e)
         else:
             if conny:
-                util.goonline()
+                urlregex.util.goonline()
             cs += [url]
             if not self.getdir and not self.files: # program needs terminal
                 tty = os.ctermid()

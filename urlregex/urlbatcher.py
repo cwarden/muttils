@@ -9,9 +9,9 @@
 # input is checked anew for each file.
 ###
 
-import util
-from Urlcollector import Urlcollector, UrlcollectorError
-from kiosk import Kiosk, KioskError
+import urlregex.util
+from urlregex.Urlcollector import Urlcollector, UrlcollectorError
+from urlregex.kiosk import Kiosk, KioskError
 from tpager.LastExit import LastExit
 from cheutils.selbrowser import Browser, BrowserError
 
@@ -67,7 +67,7 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
         if self.items:
             yorn = '%s\nRetrieve the above %s? yes, [No] ' \
                     % ('\n'.join(self.items),
-                       util.plural(len(self.items),
+                       urlregex.util.plural(len(self.items),
                            ('url', 'message-id')[self.proto=='mid']))
             if raw_input(yorn).lower() in ('y', 'yes'):
                 if self.proto != 'mid':

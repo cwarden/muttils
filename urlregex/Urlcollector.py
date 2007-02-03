@@ -1,7 +1,7 @@
 # $Id$
 
-import util
-from Urlregex import Urlregex, UrlregexError
+import urlregex.util
+from urlregex.Urlregex import Urlregex, UrlregexError
 import re, sys, urllib2
 
 class UrlcollectorError(Exception):
@@ -29,7 +29,7 @@ class Urlcollector(Urlregex):
             urlFind(sys.stdin.read())
         else:
             for f in self.files:
-                f = util.absolutepath(f)
+                f = urlregex.util.absolutepath(f)
                 fp = urllib2.urlopen('file://%s' % f)
                 try:
                     if fp.info().gettype().startswith('text/'):
