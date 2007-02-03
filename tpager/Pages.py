@@ -7,22 +7,14 @@ def screendims():
     '''Get current term's columns and rows, return customized values.'''
     if os.uname()[0] == 'Darwin':
         p = os.popen('stty -a -f %s' % os.ctermid())
-        try:
-            tt = p.readline()
-        finally:
-            p.close()
-        attribs = tt.split()
-        t_rows = int(attribs[3])
-        t_cols = int(attribs[5])
+        tt = p.readline().split()
+        t_rows = int(tt[3])
+        t_cols = int(tt[5])
     else: # Linux
         p = os.popen('stty -a -F %s' % os.ctermid())
-        try:
-            tt = p.readline()
-        finally:
-            p.close()
-        attribs = tt.split('; ')
-        t_rows = int(attribs[1].split()[1])
-        t_cols = int(attribs[2].split()[1])
+        tt = p.readline().split('; ')
+        t_rows = int(tt[1].split()[1])
+        t_cols = int(tt[2].split()[1])
     # rows: retain 2 lines for header + 1 for menu
     # cols need 1 extra when lines are broken
     return t_rows-3, t_cols+1
