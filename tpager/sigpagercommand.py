@@ -1,4 +1,4 @@
-sigpager_cset = '$Id$'
+# $Id$
 
 ### configure defaults manually:
 # /path/to/dir/containing/sigfiles
@@ -7,8 +7,9 @@ signaturedir = '~/.Sig'
 suffix = '.sig'
 ###
 
+from usage import Usage
+from sigpager import Signature, SignatureError
 import getopt, sys
-from tpager.sigpager import Signature, SignatureError
 
 # d: sigdir, f [prepend separator], h [help],
 # s: defaultsig, t: sigtail
@@ -20,10 +21,9 @@ sigpager_help = '''
          [-t <sigtail>] <file> [<file> ...]
 -h (display this help)'''
 
-def userHelp(error=''):
-    from cheutils.usage import Usage
-    u = Usage(help=sigpager_help, rcsid=sigpager_cset)
-    u.printHelp(err=error)
+def userhelp(error=''):
+    u = Usage(help=sigpager_help)
+    u.printhelp(err=error)
 
 
 def run():
@@ -40,7 +40,7 @@ def run():
             if o == '-f':
                 sigsep = '-- \n'
             if o == '-h':
-                userHelp()
+                userhelp()
             if o == '-s':
                 defsig = a
             if o == '-t':
@@ -55,4 +55,4 @@ def run():
         s.underSign()
 
     except (getopt.GetoptError, SignatureError), e:
-        userHelp(e)
+        userhelp(e)
