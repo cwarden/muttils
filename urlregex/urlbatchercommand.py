@@ -1,4 +1,4 @@
-urlbatcher_cset = '$Id$'
+# $Id$
 
 ###
 # Caveat:
@@ -10,6 +10,7 @@ urlbatcher_cset = '$Id$'
 ###
 
 import util
+from usage import Usage
 from urlbatcher import Urlbatcher, UrlbatcherError
 import getopt, os.path, sys
 
@@ -35,10 +36,9 @@ urlbatcher_help = '''
 -n [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
 -h (display this help)'''
 
-def userHelp(error='', i=False):
-    from cheutils.usage import Usage
-    u = Usage(help=urlbatcher_help, rcsid=urlbatcher_cset)
-    u.printHelp(err=error, interrupt=i)
+def userhelp(error='', i=False):
+    u = Usage(help=urlbatcher_help)
+    u.printhelp(err=error, interrupt=i)
 
 
 def run():
@@ -58,7 +58,7 @@ def run():
                 opts['mspool'] = False
                 opts['mhiers'] = a.split(':')
             if o == '-h':
-                userHelp()
+                userhelp()
             if o == '-i': # look for message-ids
                 opts['proto'] = 'mid'
             if o == '-I': # look for declared message-ids
@@ -77,7 +77,7 @@ def run():
                 opts['pat'] = a
             if o == '-w': # download dir for wget
                 if not os.path.isdir(util.absolutepath(a)):
-                    userHelp('%s: not a directory' % a)
+                    userhelp('%s: not a directory' % a)
                 opts['proto'] = 'web'
             if o == '-x':
                 opts['xb'] = xbrowser
@@ -86,6 +86,6 @@ def run():
         u.urlSearch()
 
     except (getopt.GetoptError, UrlbatcherError), e:
-        userHelp(e)
+        userhelp(e)
     except KeyboardInterrupt:
-        userHelp('needs filename(s) or stdin', i=True)
+        userhelp('needs filename(s) or stdin', i=True)

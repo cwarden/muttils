@@ -1,4 +1,4 @@
-urlpager_cset = '$Id$'
+# $Id$
 
 ###
 # Caveat:
@@ -10,6 +10,7 @@ urlpager_cset = '$Id$'
 ###
 
 import util
+from usage import Usage
 from urlpager import Urlpager, UrlpagerError
 import getopt, os.path, sys
 
@@ -35,10 +36,9 @@ urlpager_help = '''
 -b [-r <pattern][-I][<file> ...]
 -h (display this help)'''
 
-def userHelp(error='', i=False):
-    from cheutils.usage import Usage
-    u = Usage(help=urlpager_help, rcsid=urlpager_cset)
-    u.printHelp(err=error, interrupt=i)
+def userhelp(error='', i=False):
+    u = Usage(help=urlpager_help)
+    u.printhelp(err=error, interrupt=i)
 
 
 def run():
@@ -63,7 +63,7 @@ def run():
             if o == '-f': # ftp client
                 opts['ftp'] = a
             if o == '-h':
-                userHelp()
+                userhelp()
             if o == '-I': # look for declared message-ids
                 opts['proto'] = 'mid'
                 opts['decl'] = True
@@ -91,7 +91,7 @@ def run():
                 opts['tb'] = textbrowser
             if o == '-w': # download dir for wget
                 if not os.path.isdir(util.absolutepath(a)):
-                    userHelp('%s: not a directory' % a)
+                    userhelp('%s: not a directory' % a)
                 opts['proto'] = 'web'
                 opts['getdir'] = a
 
@@ -99,6 +99,6 @@ def run():
         u.urlSearch()
 
     except (getopt.GetoptError, UrlpagerError), e:
-        userHelp(e)
+        userhelp(e)
     except KeyboardInterrupt:
-        userHelp('needs filename(s) or stdin', i=True)
+        userhelp('needs filename(s) or stdin', i=True)

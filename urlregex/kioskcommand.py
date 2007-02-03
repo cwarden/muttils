@@ -1,5 +1,6 @@
-kiosk_cset = '$Id$'
+# $Id$
 
+from usage import Usage
 from kiosk import Kiosk, KioskError
 from Urlregex import Urlregex
 import getopt, sys
@@ -21,10 +22,9 @@ kiosk_help = '''
 -b <ID> [<ID> ...]
 -h (display this help)'''
 
-def userHelp(error=''):
-    from cheutils.usage import Usage
-    u = Usage(help=kiosk_help, rcsid=kiosk_cset)
-    u.printHelp(err=error)
+def userhelp(error=''):
+    u = Usage(help=kiosk_help)
+    u.printhelp(err=error)
 
 
 def run():
@@ -45,7 +45,7 @@ def run():
                 opts['mhiers'] = a.split(':')
                 opts['mspool'] = False
             if o == '-h':
-                userHelp()
+                userhelp()
             if o == '-l':
                 opts['local'] = True
             if o == '-k':
@@ -61,12 +61,12 @@ def run():
         u = Urlregex(proto='mid', uniq=False)
         u.findUrls(' '.join(args))
         if not u.items:
-            userHelp('no valid Message-ID found')
+            userhelp('no valid Message-ID found')
 
         k = Kiosk(items=u.items, opts=opts)
         k.kioskStore()
 
     except (getopt.GetoptError, KioskError), e:
-        userHelp(e)
+        userhelp(e)
     except KeyboardInterrupt:
         sys.exit('user cancelled')
