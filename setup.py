@@ -2,18 +2,18 @@
 # $Id$
 
 from distutils.core import setup
-import urlregex.version
+import tpager.version
 
 # specify version, Mercurial version otherwise
 version = ''
 
-urlregex.version.rememberversion(version)
+tpager.version.rememberversion(version)
 
-setup(name='urlregex',
-        version=urlregex.version.getversion(),
-        description='Python utilities to detect and retrieve urls',
+setup(name='tpager',
+        version=tpager.version.getversion(),
+        description='Python interactive terminal pager',
         author='Christian Ebert',
         author_email='blacktrash@gmx.net',
-        packages=['urlregex'],
-        scripts=['kiosk', 'urlbatcher', 'urlpager'],
+        packages=['tpager'],
+        scripts=['sigpager'],
         )
