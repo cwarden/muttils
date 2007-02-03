@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id$
+# $Id: urlbatcher,v 1ea78ee13191 2007-01-23 00:15 +0000 blacktrash $
 
 from urlregex import urlbatchercommand
 urlbatchercommand.run()
