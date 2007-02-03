@@ -1,6 +1,6 @@
 # $Id$
 
-import version
+import tpager.version
 import os.path, re, sys
 
 def fbox(s):
@@ -44,7 +44,7 @@ class Usage(object):
             sys.exit(msg)
 
         msg += '\n'
-        rev = fbox('%s (version: %s)' % (exe, version.getversion()))
+        rev = fbox('%s (version: %s)' % (exe, tpager.version.getversion()))
         msg = rev + nlprepend(msg)
         sys.stdout.write(msg)
         sys.exit()

@@ -7,8 +7,8 @@ signaturedir = '~/.Sig'
 suffix = '.sig'
 ###
 
-from usage import Usage
-from sigpager import Signature, SignatureError
+from tpager.usage import Usage
+from tpager.sigpager import Signature, SignatureError
 import getopt, sys
 
 # d: sigdir, f [prepend separator], h [help],
