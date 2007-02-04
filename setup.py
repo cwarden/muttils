@@ -3,17 +3,20 @@
 
 from distutils.core import setup
 import urlregex.version
+import tpager.version
 
 # specify version, Mercurial version otherwise
 version = ''
 
 urlregex.version.rememberversion(version)
+tpager.version.rememberversion(version)
 
-setup(name='urlregex',
+setup(name='muttilities',
         version=urlregex.version.getversion(),
-        description='Python utilities to detect and retrieve urls',
+        description='Python utilities for console mail clients (eg. mutt)',
         author='Christian Ebert',
         author_email='blacktrash@gmx.net',
-        packages=['urlregex'],
-        scripts=['kiosk', 'urlbatcher', 'urlpager'],
+        packages=['urlregex', 'tpager'],
+        scripts=['kiosk', 'urlbatcher', 'urlpager', 'sigpager'],
         )
+

@@ -9,3 +9,4 @@ syntax: glob
 
 build
 urlregex/__version__.py*
+tpager/__version__.py*
