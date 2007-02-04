@@ -80,6 +80,7 @@ def run():
                 if not os.path.isdir(util.absolutepath(a)):
                     userhelp('%s: not a directory' % a)
                 opts['proto'] = 'web'
+                opts['getdir'] = a
             if o == '-x':
                 opts['xb'] = xbrowser
 

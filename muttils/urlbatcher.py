@@ -14,6 +14,7 @@ from pybrowser import Browser, BrowserError
 from urlregex.Urlcollector import Urlcollector, UrlcollectorError
 from urlregex.kiosk import Kiosk, KioskError
 from tpager.LastExit import LastExit
+import os
 
 class UrlbatcherError(Exception):
     '''Exception class for the urlbatcher module.'''
@@ -50,7 +51,8 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
 
     def urlGo(self):
         if self.getdir:
-            os.system('wget -P %s %s' % (self.getdir, ' '.join.self.items))
+            util.goonline()
+            os.execvp('wget', ['wget', '-P', self.getdir] + self.items)
         else:
             try:
                 self.urlVisit()

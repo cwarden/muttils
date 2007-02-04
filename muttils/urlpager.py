@@ -72,10 +72,12 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
             if conny:
                 util.goonline()
             cs += [url]
-            if not self.getdir and not self.files: # program needs terminal
+            if not conny and not self.files: # mail client needs terminal
                 tty = os.ctermid()
                 cs += ['<', tty, '>', tty]
-            os.system(' '.join(cs))
+                os.system(' '.join(cs))
+            else:
+                os.execvp(cs[0], cs)
 
     def urlSearch(self):
         try:

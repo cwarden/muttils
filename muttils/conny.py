@@ -23,12 +23,12 @@ def appleConnect():
     '''Connects Mac to internet using AppleScript.'''
     applescript = ['osascript', '-l', 'AppleScript', '-e']
 
-    def connstat():
+    def cstat():
         '''Returns connection status.'''
         f0, f1 = os.popen2(applescript + [connstat])
         return int(f1.read()[:-1])
 
-    stat = connstat()
+    stat = cstat()
     if stat > 0:
         return
 
@@ -40,12 +40,12 @@ def appleConnect():
             sys.stdout.write('.')
             sys.stdout.flush()
             time.sleep(1)
-            stat = connstat()
+            stat = cstat()
     except KeyboardInterrupt:
         pass
     if stat > 0:
         sys.stdout.write('\nconnected via %s\n' % conname)
-        os.execl('/etc/ppp/ip-up')
+        os.spawnlp(os.P_WAIT, '/etc/ppp/ip-up')
     else:
         os.spawnvp(os.P_WAIT, 'osascript', applescript + [disconnect])
         sys.exit('\nconnection via %s failed' % conname)
