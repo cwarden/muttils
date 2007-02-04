@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: urlpager,v 9f68c7614d0f 2007-01-19 09:40 +0100 blacktrash $
+# $Id$
 
-from urlregex import urlpagercommand
+from muttils import urlpagercommand
 urlpagercommand.run()

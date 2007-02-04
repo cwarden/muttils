@@ -1,9 +1,9 @@
 # $Id$
 
-'''util.py - helper functions for urlregex package
+'''util.py - helper functions for muttils package
 '''
 
-import os.path
+import os
 
 def absolutepath(path):
     '''Guesses an absolute path, eg. given on command line.'''
@@ -14,9 +14,10 @@ def plural(n, word):
     return '%d %s%s' % (n, word, 's'[n==1:])
 
 def goonline():
-    '''Connects Mac to internet, if cheutils.conny is present.'''
-    try:
-        from cheutils import conny
-        conny.appleConnect()
-    except ImportError:
-        pass
+    '''Connects Mac to internet, if conny is present.'''
+    if os.uname()[0] == 'Darwin':
+        try:
+            import conny
+            conny.appleConnect()
+        except ImportError:
+            pass

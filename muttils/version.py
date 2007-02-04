@@ -6,7 +6,7 @@ unknown_version = 'unknown'
 
 def getversion():
     try:
-        from urlregex.__version__ import version
+        from muttils.__version__ import version
     except ImportError:
         version = unknown_version
     return version
@@ -29,7 +29,9 @@ def rememberversion(version=None):
                 os.unlink(os.path.join(directory, '__version__.%s' % suff))
             except OSError:
                 pass
-        fp = open(os.path.join(directory, '__version__.py'), 'w')
-        fp.write('# this file is auto-generated\n')
-        fp.write('version = %r\n' % version)
-        fp.close()
+        f = open(os.path.join(directory, '__version__.py'), 'w')
+        try:
+            f.write('# this file is auto-generated\n')
+            f.write('version = %r\n' % version)
+        finally:
+            f.close()

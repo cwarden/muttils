@@ -8,5 +8,4 @@ syntax: glob
 *.rej
 
 build
-urlregex/__version__.py*
-tpager/__version__.py*
+muttils/__version__.py*

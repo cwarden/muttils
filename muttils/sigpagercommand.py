@@ -7,8 +7,8 @@ signaturedir = '~/.Sig'
 suffix = '.sig'
 ###
 
-from tpager.usage import Usage
-from tpager.sigpager import Signature, SignatureError
+import usage
+from sigpager import Signature, SignatureError
 import getopt, sys
 
 # d: sigdir, f [prepend separator], h [help],
@@ -22,8 +22,7 @@ sigpager_help = '''
 -h (display this help)'''
 
 def userhelp(error=''):
-    u = Usage(help=sigpager_help)
-    u.printhelp(err=error)
+    usage.usage(help=sigpager_help, err=error)
 
 
 def run():

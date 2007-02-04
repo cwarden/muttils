@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 # $Id$
 
-from tpager import sigpagercommand
+from muttils import sigpagercommand
 sigpagercommand.run()
