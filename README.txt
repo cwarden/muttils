@@ -1,5 +1,27 @@
 $Id$
 
+Description:
+------------
+This package provides utilities for use with console mail
+clients, eg. Mutt.
+
+See also: doc/example-muttrc
+
+sigpager:
+Offers an interactive selection of signatures.
+
+urlpager:
+Searches for urls, and retrieves url selected by user.
+Urls include Message-IDs.
+
+urlbatcher:
+Retrieve urls contained in input.
+
+pybrowser:
+Can be used as general browser call; kind of browser,
+platform preference, x11-browser, text browser, may be
+chosen via option.
+
 Installation:
 -------------
 # systemwide
@@ -7,4 +29,5 @@ $ python setup.py install
 
 # at $HOME
 $ python setup.py install --home=~
-
+# adapt $PYTHONPATH if needed, bash example:
+$ export PYTHONPATH=~/lib/python
