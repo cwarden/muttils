@@ -10,8 +10,9 @@ import pybrowser, usage
 import getopt, sys
 
 pybrowser_help = '''
-[-t][<url>||<file> ...]   (%s)
-[-x][<url>||<file> ...]   (%s)
+[<url>||<file> ...]
+-t [<url>||<file> ...]   (%s)
+-x [<url>||<file> ...]   (%s)
 -h (display this help)''' % (tbrowser, xbrowser)
 
 def userHelp(error=''):
