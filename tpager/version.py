@@ -13,7 +13,8 @@ def getversion():
 
 def rememberversion(version=None):
     if not version and os.path.isdir('.hg'):
-        p = os.popen('hg --quiet identify 2> /dev/null') # in Mercurial directory
+        # get version from Mercurial
+        p = os.popen('hg --quiet identify 2> %s' % os.devnull)
         ident = p.read()[:-1]
         if not p.close() and ident:
             if ident[-1] != '+':
