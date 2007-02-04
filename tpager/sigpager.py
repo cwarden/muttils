@@ -1,7 +1,6 @@
 # $Id$
 
 import os, random, re, readline, sys
-from cheutils import readwrite
 from tpager.Tpager import Tpager, TpagerError
 
 class SignatureError(TpagerError):
@@ -34,8 +33,14 @@ class Signature(Tpager):
 
     def getString(self, fn):
         fn = os.path.join(self.sdir, fn)
+        s = ''
         try:
-            return readwrite.readFile(fn)
+            f = open(fn)
+            try:
+                s = f.read()
+            finally:
+                f.close()
+            return s
         except IOError, e:
             raise SignatureError('could not read %s; %s' % (fn, e))
 
@@ -83,15 +88,25 @@ class Signature(Tpager):
                 sig = self.sep + self.items[0]
             else:
                 try:
-                    sig = self.sep + readwrite.readFile(self.sig)
+                    sig = self.sep
+                    f = open(self.sig)
+                    try:
+                        sig += f.read()
+                    finally:
+                        f.close()
                 except IOError, e:
-                    raise SignatureError('could not read %s; %s' % (fn, e))
+                    raise SignatureError('could not read %s; %s'
+                            % (self.sig, e))
             if not self.targets:
                 sys.stdout.write(self.inp + sig)
             else:
                 try:
-                    for f in self.targets:
-                        readwrite.writeFile(f, sig, mode='a')
+                    for fn in self.targets:
+                        f = open(fn, 'a')
+                        try:
+                            f.write(sig)
+                        finally:
+                            f.close()
                 except IOError, e:
                     raise SignatureError('could not write to %s; %s' % (fn, e))
         elif self.inp:

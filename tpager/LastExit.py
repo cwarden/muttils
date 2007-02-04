@@ -1,7 +1,6 @@
 # $Id$
 
 import os, sys
-from cheutils import readwrite
 
 class Termplus(object):
     '''
@@ -12,10 +11,20 @@ class Termplus(object):
         self.dev = os.ctermid()
 
     def write(self, o):
-        readwrite.writeFile(self.dev, o, mode='wb')
+        f = open(self.dev, 'wb')
+        try:
+            f.write(o)
+        finally:
+            f.close()
     
     def readline(self, size=-1):
-        return readwrite.readLine(self.dev, mode='rb', size=size)
+        s = ''
+        f = open(self.dev, 'rb')
+        try:
+            s = f.readline(size)
+        finally:
+            f.close()
+        return s
 
     def flush(self):
         pass
