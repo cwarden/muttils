@@ -14,8 +14,12 @@ from urlregex.usage import Usage
 from urlregex.urlpager import Urlpager, UrlpagerError
 import getopt, os.path, sys
 
-### configure manually (mail_client defaults to "mail" if empty)
+### configure manually
+# mail_client defaults to "mail" if empty
+# maildir defaults to $HOME/Maildir, $HOME/Mail
+# in that order if they are directories
 mail_client = 'mutt'
+maildirs = ['/Volumes/Maildir']
 xbrowser = 'firefox'
 textbrowser = 'w3m'
 ###
@@ -44,7 +48,7 @@ def userhelp(error='', i=False):
 def run():
     '''Command interface to Urlpager.'''
 
-    opts = {'mailer': mail_client}
+    opts = {'mailer': mail_client, 'mhiers': maildirs}
 
     try:
         sysopts, opts['files'] = getopt.getopt(sys.argv[1:], optstring)

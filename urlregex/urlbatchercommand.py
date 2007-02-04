@@ -15,8 +15,11 @@ from urlregex.urlbatcher import Urlbatcher, UrlbatcherError
 import getopt, os.path, sys
 
 ### configure manually
-### mail_client must be one of: mail, mutt, muttng,
-### and defaults to mail if empty
+# mail_client defaults to "mail" if empty
+# maildir defaults to $HOME/Maildir, $HOME/Mail
+# in that order if they are directories
+mail_client = 'mutt'
+maildirs = ['/Volumes/Maildir']
 mail_client = 'mutt'
 xbrowser = 'firefox'
 ###
@@ -44,7 +47,7 @@ def userhelp(error='', i=False):
 def run():
     '''Command interface to Urlbatcher.'''
 
-    opts = {'mailer': mail_client}
+    opts = {'mailer': mail_client, 'mhiers': maildirs}
 
     try:
         sysopts, opts['files'] = getopt.getopt(sys.argv[1:], optstring)

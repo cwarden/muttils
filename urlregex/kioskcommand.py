@@ -5,8 +5,12 @@ from urlregex.kiosk import Kiosk, KioskError
 from urlregex.Urlregex import Urlregex
 import getopt, sys
 
-### configure manually (mail_client defaults to "mail" if empty)
+### configure manually
+# mail_client defaults to "mail" if empty
+# maildir defaults to $HOME/Maildir, $HOME/Mail
+# in that order if they are directories
 mail_client = 'mutt'
+maildirs = ['/Volumes/Maildir']
 xbrowser = 'firefox'
 textbrowser = 'w3m'
 ###
@@ -30,7 +34,7 @@ def userhelp(error=''):
 def run():
     '''Command interface to Kiosk.'''
 
-    opts = {'mailer': mail_client}
+    opts = {'mailer': mail_client, 'mhiers': maildirs}
 
     try:
         sysopts, args = getopt.getopt(sys.argv[1:], optstring)
