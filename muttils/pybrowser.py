@@ -22,7 +22,7 @@ def webUrlRegex():
 
 
 class BrowserError(Exception):
-    '''Exception class for the selbrowser module.'''
+    '''Exception class for the pybrowser module.'''
 
 class Browser(object):
     '''
