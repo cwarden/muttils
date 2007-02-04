@@ -1,5 +1,0 @@
-#!/usr/bin/env python
-# $Id: kiosk,v 62ed5b3319fc 2007-02-02 12:35 +0100 blacktrash $
-
-from urlregex import kioskcommand
-kioskcommand.run()

@@ -17,6 +17,6 @@ setup(name='muttilities',
         author='Christian Ebert',
         author_email='blacktrash@gmx.net',
         packages=['urlregex', 'tpager'],
-        scripts=['kiosk', 'urlbatcher', 'urlpager', 'sigpager'],
+        scripts=['urlbatcher', 'urlpager', 'sigpager'],
         )
 
