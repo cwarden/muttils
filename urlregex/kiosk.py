@@ -200,21 +200,33 @@ class Kiosk(HTML2Text):
         self.items = [mid for mid in self.items if mid not in found]
 
     def leafSearch(self):
-        try:
-            from slrnpy.Leafnode import Leafnode
-        except ImportError:
+        '''Tries searching a local news spool.
+        Works only with leafnode <= 1.5 at the moment.'''
+        p = os.popen('newsq 2> %s' % os.devnull)
+        r = p.readline()
+        # eg.:
+        # 'Contents of queue in directory /var/spool/news/out.going:\n'
+        if not r:
+            sys.stdout.write('no leafnode news spool detected\n')
             return
-        leafnode = Leafnode()
+        newsout = r.split(':')[0].split()[-1]
+        iddir = os.path.join(os.path.dirname(newsout), 'message.id')
+        anglist = ['<%s>' % i for i in self.items]
         sys.stdout.write('Searching local newsserver ...\n')
-        articles, self.items = leafnode.idPath(idlist=self.items, verbose=True)
-        for article in articles:
-            fp = open(article, 'rb')
-            try:
-                msg = email.message_from_file(fp)
-            except MessageParseError, e:
-                raise KioskError(e)
-            fp.close()
-            self.msgs.append(msg)
+        for root, dirs, files in os.walk(iddir):
+            for fn in files:
+                if fn in anglist:
+                    sys.stdout.write('retrieving Message-ID %s\n' % fn)
+                    try:
+                        f = open(os.path.join(root, fn), 'rb')
+                        try:
+                            msg = email.message_from_file(f)
+                        finally:
+                            f.close()
+                    except MessageParseError, e:
+                        raise KioskError(e)
+                    self.msgs.append(msg)
+                    self.items.remove(fn[1:-1])
         if self.items:
             sys.stdout.write('%s not on local server\n'
                     % muttils.util.plural(len(self.items), 'message'))
