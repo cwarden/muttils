@@ -9,7 +9,7 @@ version = ''
 
 muttils.version.rememberversion(version)
 
-setup(name='muttilities',
+setup(name='muttils',
         version=muttils.version.getversion(),
         description='Python utilities for console mail clients (eg. mutt)',
         author='Christian Ebert',
