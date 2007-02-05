@@ -31,4 +31,4 @@ class config(object):
         if (self.rcdata.has_section(section)
                 and self.rcdata.has_option(section, option)):
             return self.rcdata.get(section, option)
-        return rc.data.defaults()[option]
+        return self.rcdata.defaults()[option]
