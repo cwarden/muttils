@@ -69,10 +69,10 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
             except BrowserError, e:
                 raise UrlpagerError(e)
         else:
+            cs += [url]
             if conny:
                 util.goonline()
-            cs += [url]
-            if not conny and not self.files: # mail client needs terminal
+            elif not self.files: # mail client needs terminal
                 tty = os.ctermid()
                 cs += ['<', tty, '>', tty]
                 os.system(' '.join(cs))
