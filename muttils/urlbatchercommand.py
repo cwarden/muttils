@@ -9,19 +9,9 @@
 # input is checked anew for each file.
 ###
 
-import usage, util
+import usage, ui, util
 from urlbatcher import Urlbatcher, UrlbatcherError
 import getopt, os.path, sys
-
-### configure manually
-# mail_client defaults to "mail" if empty
-# maildir defaults to $HOME/Maildir, $HOME/Mail
-# in that order if they are directories
-mail_client = 'mutt'
-maildirs = ['/Volumes/Maildir']
-mail_client = 'mutt'
-xbrowser = 'firefox'
-###
 
 optstring = 'd:D:hiIk:lnr:w:x'
 
@@ -45,9 +35,15 @@ def userhelp(error='', i=False):
 def run():
     '''Command interface to Urlbatcher.'''
 
-    opts = {'mailer': mail_client, 'mhiers': maildirs}
-
     try:
+        config = ui.config()
+
+        opts = {
+                'mailer': config.get('messages', 'mailer'),
+                'mhiers': [i.strip() for i in
+                    config.get('messages', 'maildirs').split(',')],
+                }
+
         sysopts, opts['files'] = getopt.getopt(sys.argv[1:], optstring)
 
         for o, a in sysopts:
@@ -82,12 +78,12 @@ def run():
                 opts['proto'] = 'web'
                 opts['getdir'] = a
             if o == '-x':
-                opts['xb'] = xbrowser
+                opts['xb'] = config.get('browser', 'xbrowser')
 
         u = Urlbatcher(opts=opts)
         u.urlSearch()
 
-    except (getopt.GetoptError, UrlbatcherError), e:
+    except (getopt.GetoptError, ui.ConfigError, UrlbatcherError), e:
         userhelp(e)
     except KeyboardInterrupt:
         userhelp('needs filename(s) or stdin', i=True)

@@ -1,22 +1,19 @@
 # $Id$
 
-### configure manually:
-tbrowser = 'w3m'
-xbrowser = 'firefox'
-homeurl  = 'http://localhost/mercurial'
-###
-
-import pybrowser, usage
+import pybrowser, ui, usage
 import getopt, sys
 
 pybrowser_help = '''
 [<url>||<file> ...]
--t [<url>||<file> ...]   (%s)
--x [<url>||<file> ...]   (%s)
--h (display this help)''' % (tbrowser, xbrowser)
+-t [<url>||<file> ...]   (%r)
+-x [<url>||<file> ...]   (%r)
+-h (display this help)'''
 
-def userHelp(error=''):
-    usage.usage(help=pybrowser_help, err=error)
+def userhelp(config, error=''):
+    tb = config.get('browser', 'textbrowser')
+    xb = config.get('browser', 'xbrowser')
+    help = pybrowser_help % (tb, xb)
+    usage.usage(help=help, err=error)
 
 
 def run():
@@ -25,15 +22,20 @@ def run():
     tb, xb = '', ''
 
     try:
+        config = ui.config()
+
         opts, args = getopt.getopt(sys.argv[1:], 'htx')
         for o, a in opts:
             if o == '-h':
-                userHelp()
+                userhelp(config)
             if o == '-t':
-                tb = tbrowser
+                tb = config.get('browser', 'textbrowser')
             if o == '-x':
-                xb = xbrowser
-        b = pybrowser.Browser(items=args, tb=tb, xb=xb, homeurl=homeurl)
+                xb = config.get('browser', 'xbrowser')
+
+        b = pybrowser.Browser(items=args, tb=tb, xb=xb,
+                homeurl=config.get('browser', 'homepage'))
         b.urlVisit()
-    except (getopt.GetoptError, pybrowser.BrowserError), e:
-        userHelp(e)
+
+    except (getopt.GetoptError, ui.ConfigError, pybrowser.BrowserError), e:
+        userhelp(config, error=e)

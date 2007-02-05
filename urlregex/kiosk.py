@@ -72,7 +72,7 @@ class Kiosk(HTML2Text):
             'kiosk': '',
             'browse': False,
             'local': False,
-            'mhiers': [],
+            'mhiers': None,
             'mspool': False,
             'mask': None,
             'mailer': 'mail',
@@ -121,10 +121,11 @@ class Kiosk(HTML2Text):
     def hierTest(self):
         '''Checks whether given directories exist and
         creates mhiers set (unique elems) with absolute paths.'''
+        self.mhiers = [h for h in self.mhiers if h]
         if not self.mhiers:
             self.mhiers = mailHier()
         mhiers = set(self.mhiers)
-        self.mhiers = set([])
+        self.mhiers = set()
         for hier in mhiers:
             abshier = muttils.util.absolutepath(hier)
             if os.path.isdir(abshier):
@@ -343,12 +344,12 @@ class Kiosk(HTML2Text):
         if self.browse:
             self.goGoogle()
         self.kioskTest()
-        if self.mask:
-            self.masKompile()
         itemscopy = self.items[:]
         self.leafSearch()
-        if self.items and self.mhiers is not None:
+        if self.items:
             self.hierTest()
+            if self.mask:
+                self.masKompile()
             self.mailSearch()
             if self.items:
                 sys.stdout.write('%s not in specified local mailboxes\n'
