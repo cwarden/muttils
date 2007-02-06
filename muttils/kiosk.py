@@ -348,7 +348,7 @@ class Kiosk(HTML2Text):
             self.goGoogle()
         self.kioskTest()
         try:
-            self.updateconfig('messages')
+            self.updateconfig()
         except ui.ConfigError, inst:
             raise KioskError(inst)
         itemscopy = self.items[:]

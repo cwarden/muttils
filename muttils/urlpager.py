@@ -55,7 +55,7 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
         if (self.proto == 'mailto'
                 or self.proto == 'all' and mailCheck(url)):
             try:
-                self.updateconfig('messages')
+                self.updateconfig()
             except ui.ConfigError, inst:
                 raise UrlpagerError(inst)
             cs = [self.cfg.get('messages', 'mailer')]

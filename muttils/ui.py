@@ -21,9 +21,13 @@ class config(object):
                 [('textbrowser', ''), ('xbrowser', ''), ('homepage', '')],
                 }
         self.cfg = ConfigParser.SafeConfigParser(defaults)
+        self.updated = False
 
-    def updateconfig(self, *sections):
-        sections = sections or self.cfg.defaults().keys()
+    def updateconfig(self):
+        if self.updated:
+            return
+        defaults = self.cfg.defaults()
+        sections = defaults.keys()
         try:
             self.cfg.read(self.rcpath)
         except ConfigParser.ParsingError, inst:
@@ -31,6 +35,7 @@ class config(object):
         for section in sections:
             if not self.cfg.has_section(section):
                 self.cfg.add_section(section)
-            for name, value in self.cfg.defaults()[section]:
+            for name, value in defaults[section]:
                 if not self.cfg.has_option(section, name):
                     self.cfg.set(section, name, value)
+        self.updated = True

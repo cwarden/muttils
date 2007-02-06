@@ -59,7 +59,7 @@ class Browser(ui.config):
     def urlVisit(self):
         '''Visit url(s).'''
         try:
-            self.updateconfig('browser')
+            self.updateconfig()
         except ui.ConfigError, inst:
             raise BrowserError(inst)
         xbrowser = self.cfg.get('browser', 'xbrowser')
