@@ -43,7 +43,7 @@ delim = r'-.,:?!)('                 # punctuation (how 'bout '!'?)
 generics = [
         'aero', 'arpa', 'biz', 'cat', 'com', 'coop',
         'edu', 'gov', 'info', 'int', 'jobs', 'mil', 'mobi', 'museum',
-        'name', 'net', 'org', 'pro', 'travel'
+        'name', 'net', 'org', 'pro', 'root', 'travel'
         ]
 
 # top level domains
