@@ -82,17 +82,14 @@ headers = [
 head = '|'.join(headers)
 
 headsoff = r'''
-    (?<=            # look back in negative anger
-        [\n^]       #  for newline or absolute beginning
-    )               # end anger
+    (\n|^)          # newline or very start
     %s:             # header followed by colon &
-    [^\n]+?         # greedy anything
+    .+              # greedy anything (but newline)
     (               # { 0 or more
         \n          #   newline followed by
-        [ \t]+?     #   greedy spacetabs
-        [^\n]+?     #   greedy anything
+        [ \t]+      #   greedy spacetabs
+        .+          #   greedy anything
     ) *?            # } 0 or more
-    (\n|$)          # newline or end of text
     ''' % head
 
 # attributions:
