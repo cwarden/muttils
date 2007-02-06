@@ -1,12 +1,19 @@
 # $Id$
 
+'''version.py - muttils version.
+Code stolen from Mercurial, and simplified for my needs.
+'''
+
 import os, time
 
 unknown_version = 'unknown'
 
-def getversion():
+def getversion(doreload=False):
     try:
-        from muttils.__version__ import version
+        import muttils.__version__
+        if doreload:
+            reload(muttils.__version__)
+        version = muttils.__version__.version
     except ImportError:
         version = unknown_version
     return version
@@ -22,7 +29,7 @@ def rememberversion(version=None):
             else:
                 version = ident[:-1]
                 version += time.strftime('+%Y%m%d')
-    if version: # write version
+    if version and version != getversion(): # write version
         directory = os.path.dirname(__file__)
         for suff in ['py', 'pyc', 'pyo']:
             try:
@@ -35,3 +42,5 @@ def rememberversion(version=None):
             f.write('version = %r\n' % version)
         finally:
             f.close()
+        # reload file
+        getversion(doreload=True)
