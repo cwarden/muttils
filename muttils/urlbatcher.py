@@ -11,8 +11,8 @@
 
 import util
 from pybrowser import Browser, BrowserError
+from kiosk import Kiosk, KioskError
 from urlregex.Urlcollector import Urlcollector, UrlcollectorError
-from urlregex.kiosk import Kiosk, KioskError
 from tpager.LastExit import LastExit
 import os
 

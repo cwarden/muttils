@@ -1,8 +1,8 @@
 # $Id$'
 
-import muttils.ui, muttils.util
-from muttils.html2text import HTML2Text
-from muttils.pybrowser import Browser, BrowserError
+import ui, util
+from html2text import HTML2Text
+from pybrowser import Browser, BrowserError
 from email.Generator import Generator
 from email.Parser import Parser
 from email.Errors import MessageParseError, HeaderParseError
@@ -95,7 +95,7 @@ class Kiosk(HTML2Text):
         if not self.kiosk:
             self.kiosk = tempfile.mkstemp('.kiosk')[1]
             return
-        self.kiosk = muttils.util.absolutepath(self.kiosk)
+        self.kiosk = util.absolutepath(self.kiosk)
         if not os.path.exists(self.kiosk) or not os.path.getsize(self.kiosk):
             # non existant or empty is fine
             return
@@ -129,7 +129,7 @@ class Kiosk(HTML2Text):
         mhiers = set(self.mhiers)
         self.mhiers = set()
         for hier in mhiers:
-            abshier = muttils.util.absolutepath(hier)
+            abshier = util.absolutepath(hier)
             if os.path.isdir(abshier):
                 self.mhiers.add(abshier)
             else:
@@ -192,7 +192,7 @@ class Kiosk(HTML2Text):
         opener = urllib2.build_opener()
         opener.addheaders = [useragent]
         header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
-        muttils.util.goonline()
+        util.goonline()
         found = []
         self.open()
         try:
@@ -232,7 +232,7 @@ class Kiosk(HTML2Text):
                     self.items.remove(fn[1:-1])
         if self.items:
             sys.stdout.write('%s not on local server\n'
-                    % muttils.util.plural(len(self.items), 'message'))
+                    % util.plural(len(self.items), 'message'))
 
     def boxParser(self, path, maildir=False, isspool=False):
         if (not isspool and path == self.mspool
@@ -349,7 +349,7 @@ class Kiosk(HTML2Text):
         self.kioskTest()
         try:
             self.updateconfig('messages')
-        except muttils.ui.ConfigError, inst:
+        except ui.ConfigError, inst:
             raise KioskError(inst)
         itemscopy = self.items[:]
         self.leafSearch()
@@ -360,7 +360,7 @@ class Kiosk(HTML2Text):
             self.mailSearch()
             if self.items:
                 sys.stdout.write('%s not in specified local mailboxes\n'
-                        % muttils.util.plural(len(self.items), 'message'))
+                        % util.plural(len(self.items), 'message'))
         if self.items and not self.local:
             self.goGoogle()
         elif self.items:

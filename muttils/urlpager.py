@@ -2,8 +2,8 @@
 
 import ui, util
 from pybrowser import Browser, BrowserError
+from kiosk import Kiosk, KioskError
 from urlregex.Urlcollector import Urlcollector, UrlcollectorError
-from urlregex.kiosk import Kiosk, KioskError
 from tpager.Tpager import Tpager, TpagerError
 from urlregex.Urlregex import mailCheck, ftpCheck
 import os, readline
