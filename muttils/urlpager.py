@@ -75,7 +75,7 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
             cs += [url]
             if conny:
                 util.goonline()
-            elif not self.files: # mail client needs terminal
+            if not os.isatty(0): # not connected to terminal
                 tty = os.ctermid()
                 cs += ['<', tty, '>', tty]
                 os.system(' '.join(cs))
