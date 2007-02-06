@@ -4,14 +4,18 @@ import ui, util
 from urlregex.Urlregex import Urlregex
 import os.path, re, socket, webbrowser
 
-locals = socket.gethostbyaddr(socket.gethostname())
-localaddresses = ['127.0.0.1']
-for i in locals:
-    if isinstance(i, str):
-        i = [i]
-    localaddresses += i
+def getlocals():
+    '''Returns valid local addresses.'''
+    l = socket.gethostbyaddr(socket.gethostname())
+    localaddresses = ['127.0.0.1']
+    for i in l:
+        if isinstance(i, str):
+            i = [i]
+        localaddresses += i
+    return localaddresses
+
 local_re = re.compile('http://(%s)' %
-        '|'.join(re.escape(a) for a in localaddresses),
+        '|'.join(re.escape(a) for a in getlocals()),
         re.IGNORECASE)
 file_re  = re.compile(r'file:/+', re.IGNORECASE)
 
