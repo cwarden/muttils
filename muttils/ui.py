@@ -15,20 +15,22 @@ class config(object):
                 '/usr/local/etc/muttilsrc',
                 os.path.expanduser('~/.muttilsrc')]
         defaults = {
-                'mailer': 'mail',
-                'maildirs': None,
-                'textbrowser': '',
-                'xbrowser': '',
-                'homepage': '',
+                'messages':
+                [('mailer', 'mail'), ('maildirs', None)],
+                'browser':
+                [('textbrowser', ''), ('xbrowser', ''), ('homepage', '')],
                 }
-        self.rcdata = ConfigParser.SafeConfigParser(defaults)
+        self.cfg = ConfigParser.SafeConfigParser(defaults)
+
+    def updateconfig(self, *sections):
+        sections = sections or self.cfg.defaults().keys()
         try:
-            self.rcdata.read(self.rcpath)
+            self.cfg.read(self.rcpath)
         except ConfigParser.ParsingError, inst:
             raise ConfigError(inst)
-
-    def get(self, section, option):
-        if (self.rcdata.has_section(section)
-                and self.rcdata.has_option(section, option)):
-            return self.rcdata.get(section, option)
-        return self.rcdata.defaults()[option]
+        for section in sections:
+            if not self.cfg.has_section(section):
+                self.cfg.add_section(section)
+            for name, value in self.cfg.defaults()[section]:
+                if not self.cfg.has_option(section, name):
+                    self.cfg.set(section, name, value)

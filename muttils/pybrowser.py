@@ -1,6 +1,6 @@
 # $Id$
 
-import util
+import ui, util
 from urlregex.Urlregex import Urlregex
 import os.path, re, socket, webbrowser
 
@@ -24,12 +24,13 @@ def webUrlRegex():
 class BrowserError(Exception):
     '''Exception class for the pybrowser module.'''
 
-class Browser(object):
+class Browser(ui.config):
     '''
     Visits items with default or given browser.
     '''
-    def __init__(self, items=None, tb='', xb='', homeurl=''):
-        self.items = items or [homeurl]
+    def __init__(self, items=None, tb=False, xb=False):
+        ui.config.__init__(self)
+        self.items = items
         self.tb = tb # text browser
         self.xb = xb # x11 browser
         self.conny = False # try to connect to net
@@ -53,12 +54,20 @@ class Browser(object):
 
     def urlVisit(self):
         '''Visit url(s).'''
+        try:
+            self.updateconfig('browser')
+        except ui.ConfigError, inst:
+            raise BrowserError(inst)
+        xbrowser = self.cfg.get('browser', 'xbrowser')
+        textbrowser = self.cfg.get('browser', 'textbrowser')
+        self.items = self.items or [self.cfg.get('browser', 'homepage')]
+
         self.items = [self.urlComplete(url) for url in self.items]
         try:
-            if self.xb:
-                b = webbrowser.get(self.xb)
-            elif self.tb:
-                b = webbrowser.get(self.tb)
+            if self.xb and xbrowser:
+                b = webbrowser.get(xbrowser)
+            elif self.tb and textbrowser:
+                b = webbrowser.get(textbrowser)
             else:
                 b = webbrowser
             if self.conny:

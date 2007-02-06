@@ -1,6 +1,6 @@
 # $Id$
 
-import util
+import ui, util
 from pybrowser import Browser, BrowserError
 from urlregex.Urlcollector import Urlcollector, UrlcollectorError
 from urlregex.kiosk import Kiosk, KioskError
@@ -15,25 +15,24 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
 
     defaults = {
             'proto': 'all',
-            'files': [],
+            'files': None,
             'pat': None,
             'kiosk': '',
             'browse': False,
             'local': False,
-            'mhiers': [],
+            'mhiers': None,
             'mspool': True,
             'mask': None,
-            'xb': '',
-            'tb': '',
+            'xb': False,
+            'tb': False,
             'ftp': 'ftp',
             'getdir': '',
-            'mailer': 'mail',
             }
 
     def __init__(self, opts={}):
+        Browser.__init__(self)
         Urlcollector.__init__(self)
         Tpager.__init__(self, name='url')
-        Browser.__init__(self)
         Kiosk.__init__(self)
 
         for k in self.defaults.keys():
@@ -55,7 +54,11 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
         url, cs, conny = self.items[0], [], True
         if (self.proto == 'mailto'
                 or self.proto == 'all' and mailCheck(url)):
-            cs = [self.mailer]
+            try:
+                self.updateconfig('messages')
+            except ui.ConfigError, inst:
+                raise UrlpagerError(inst)
+            cs = [self.cfg.get('messages', 'mailer')]
             conny = False
         elif self.getdir:
             cs = ['wget', '-P', self.getdir]

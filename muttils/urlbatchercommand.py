@@ -9,7 +9,7 @@
 # input is checked anew for each file.
 ###
 
-import usage, ui, util
+import usage, util
 from urlbatcher import Urlbatcher, UrlbatcherError
 import getopt, os.path, sys
 
@@ -35,15 +35,8 @@ def userhelp(error='', i=False):
 def run():
     '''Command interface to Urlbatcher.'''
 
+    opts = {}
     try:
-        config = ui.config()
-
-        opts = {
-                'mailer': config.get('messages', 'mailer'),
-                'mhiers': [i.strip() for i in
-                    config.get('messages', 'maildirs').split(',')],
-                }
-
         sysopts, opts['files'] = getopt.getopt(sys.argv[1:], optstring)
 
         for o, a in sysopts:
@@ -78,12 +71,12 @@ def run():
                 opts['proto'] = 'web'
                 opts['getdir'] = a
             if o == '-x':
-                opts['xb'] = config.get('browser', 'xbrowser')
+                opts['xb'] = True
 
         u = Urlbatcher(opts=opts)
         u.urlSearch()
 
-    except (getopt.GetoptError, ui.ConfigError, UrlbatcherError), e:
+    except (getopt.GetoptError, UrlbatcherError), e:
         userhelp(e)
     except KeyboardInterrupt:
         userhelp('needs filename(s) or stdin', i=True)

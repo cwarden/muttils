@@ -1,6 +1,6 @@
 # $Id$'
 
-import muttils.util
+import muttils.ui, muttils.util
 from muttils.html2text import HTML2Text
 from muttils.pybrowser import Browser, BrowserError
 from email.Generator import Generator
@@ -75,9 +75,8 @@ class Kiosk(HTML2Text):
             'mhiers': None,
             'mspool': False,
             'mask': None,
-            'mailer': 'mail',
-            'xb': '',
-            'tb': '',
+            'xb': False,
+            'tb': False,
             }
 
     def __init__(self, items=None, opts={}):
@@ -121,9 +120,12 @@ class Kiosk(HTML2Text):
     def hierTest(self):
         '''Checks whether given directories exist and
         creates mhiers set (unique elems) with absolute paths.'''
-        self.mhiers = [h for h in self.mhiers if h]
         if not self.mhiers:
-            self.mhiers = mailHier()
+            mhiers = self.cfg.get('messages', 'maildirs')
+            if mhiers is None:
+                self.mhiers = mailHier()
+            else:
+                self.mhiers = [i.strip() for i in mhiers.split(',')]
         mhiers = set(self.mhiers)
         self.mhiers = set()
         for hier in mhiers:
@@ -325,9 +327,10 @@ class Kiosk(HTML2Text):
         finally:
             fp.close()
         self.kiosk = "'%s'" % self.kiosk
-        cs = [str(self.mailer)]
-        if  self.mailer[:4] != 'mutt':
-            cs = [self.mailer, '-f', self.kiosk]
+        mailer = self.cfg.get('messages', 'mailer')
+        cs = [str(mailer)]
+        if  mailer[:4] != 'mutt':
+            cs = [mailer, '-f', self.kiosk]
         elif len(self.msgs) == 1 and self.muttone:
             cs += muttone + [self.kiosk]
         else:
@@ -344,6 +347,10 @@ class Kiosk(HTML2Text):
         if self.browse:
             self.goGoogle()
         self.kioskTest()
+        try:
+            self.updateconfig('messages')
+        except muttils.ui.ConfigError, inst:
+            raise KioskError(inst)
         itemscopy = self.items[:]
         self.leafSearch()
         if self.items:

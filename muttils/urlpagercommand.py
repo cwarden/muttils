@@ -9,7 +9,7 @@
 # input is checked anew for each file.
 ###
 
-import usage, ui, util
+import usage, util
 from urlpager import Urlpager, UrlpagerError
 import getopt, os.path, sys
 
@@ -36,15 +36,8 @@ def userhelp(error='', i=False):
 def run():
     '''Command interface to Urlpager.'''
 
+    opts = {}
     try:
-        config = ui.config()
-
-        opts = {
-                'mailer': config.get('messages', 'mailer'),
-                'mhiers': [i.strip() for i in
-                    config.get('messages', 'maildirs').split(',')],
-                }
-
         sysopts, opts['files'] = getopt.getopt(sys.argv[1:], optstring)
 
         for o, a in sysopts:
@@ -84,9 +77,9 @@ def run():
             if o == '-r': # regex pattern to match urls against
                 opts['pat'] = a
             if o == '-x': # xbrowser
-                opts['xb'] = config.get('browser', 'xbrowser')
+                opts['xb'] = True
             if o == '-t': # text browser command
-                opts['tb'] = config.get('browser', 'textbrowser')
+                opts['tb'] = True
             if o == '-w': # download dir for wget
                 if not os.path.isdir(util.absolutepath(a)):
                     userhelp('%s: not a directory' % a)
@@ -96,7 +89,7 @@ def run():
         u = Urlpager(opts=opts)
         u.urlSearch()
 
-    except (getopt.GetoptError, ui.ConfigError, UrlpagerError), e:
+    except (getopt.GetoptError, UrlpagerError), e:
         userhelp(e)
     except KeyboardInterrupt:
         userhelp('needs filename(s) or stdin', i=True)

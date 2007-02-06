@@ -27,23 +27,22 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
     '''
     defaults = {
             'proto': 'web',
-            'files': [],
+            'files': None,
             'pat': None,
             'kiosk': '',
             'browse': False,
             'local': False,
-            'mhiers': [],
+            'mhiers': None,
             'mspool': True,
             'mask': None,
-            'xb': '',
+            'xb': False,
             'ftp': 'ftp',
             'getdir': '',
-            'mailer': 'mail',
             }
 
     def __init__(self, opts={}):
-        Urlcollector.__init__(self)
         Browser.__init__(self)
+        Urlcollector.__init__(self)
         Kiosk.__init__(self)
         LastExit.__init__(self)
         for k in self.defaults.keys():
