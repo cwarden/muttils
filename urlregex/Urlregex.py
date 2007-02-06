@@ -3,9 +3,6 @@
 from urlregex.Urlparser import Urlparser, UrlparserError
 import re
 
-def orJoin(s):
-    return r'(%s)' % '|'.join(s.split())
-
 def mkDomPat(top, valid, delim):
     '''Creates the raw domain parts of the url patterns.
     2 patterns, the second of which contains spaces.'''
@@ -42,27 +39,32 @@ valid = r'-._a-z0-9/#~:,;?+=&%!()@' # valid url-chars+comma+semicolon+parenthesi
 idy = r'-._a-z0-9#~?+=&%!$\]['      # valid message-id-chars ### w/o ':/'?
 delim = r'-.,:?!)('                 # punctuation (how 'bout '!'?)
 
-# international domains
-intls = 'arpa com edu gov int mil net org aero biz coop info name pro'
+# generic domains
+generics = [
+        'aero', 'arpa', 'biz', 'cat', 'com', 'coop',
+        'edu', 'gov', 'info', 'int', 'jobs', 'mil', 'mobi', 'museum',
+        'name', 'net', 'org', 'pro', 'travel'
+        ]
 
 # top level domains
-tops = '%s ' \
-    'a[cdefgilmnoqrstuwz] b[abdefghijmnorstvwyz] ' \
-    'c[acdfghiklmnoruvxyz] d[ejkmoz] e[ceghrstu] ' \
-    'f[ijkmor] g[abdefghilmnpqrstuwy] ' \
-    'h[kmnrtu] i[delnmoqrst] j[emop] ' \
-    'k[eghimnprwyz] l[abcikrstuvy] ' \
-    'm[acdeghklmnopqrstuvwxyz] n[acefgilopruz] om ' \
-    'p[aefghklmnrstwy] qa r[eosuw] ' \
-    's[abcdeghijklmnortuvyz] ' \
-    't[cdfghjkmnoprtvwz] u[agkmsyz] ' \
-    'v[acegivu] w[fs] y[etu] z[amw]' % intls
+tops = generics + [
+        'a[cdefgilmnoqrstuwz]', 'b[abdefghijmnorstvwyz]',
+        'c[acdfghiklmnoruvxyz]', 'd[ejkmoz]', 'e[ceghrstu]',
+        'f[ijkmor]', 'g[abdefghilmnpqrstuwy]',
+        'h[kmnrtu]', 'i[delnmoqrst]', 'j[emop]',
+        'k[eghimnprwyz]', 'l[abcikrstuvy]',
+        'm[acdeghklmnopqrstuvwxyz]', 'n[acefgilopruz]', 'om',
+        'p[aefghklmnrstwy]', 'qa', 'r[eosuw]',
+        's[abcdeghijklmnortuvyz]',
+        't[cdfghjkmnoprtvwz]', 'u[agkmsyz]',
+        'v[acegivu]', 'w[fs]', 'y[etu]', 'z[amw]'
+        ]
 
-top = r'\.%s' % orJoin(tops)
-intl = r'\.%s' % orJoin(intls)
+top = r'\.(%s)' % '|'.join(tops)
+generic = r'\.(%s)' % '|'.join(generics)
 
 proto_dom, proto_spdom = mkDomPat(top, valid, delim)
-any_dom, any_spdom = mkDomPat(intl, valid, delim)
+any_dom, any_spdom = mkDomPat(generic, valid, delim)
 
 #CPAN = 'ftp://ftp.cpan.org/pub/CPAN/'
 CPAN = r'ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1'
@@ -71,11 +73,13 @@ CTAN = r'ftp://ftp.dante.de/tex-archive/\1'
 
 # get rid of *quoted* mail headers of no use
 # (how to do this more elegantly?)
-headers = 'Received References Message-ID In-Reply-To ' \
-    'Delivered-To List-Id Path Return-Path ' \
-    'Newsgroups NNTP-Posting-Host Xref ' \
-    'X-ID X-Abuse-Info X-Trace X-MIME-Autoconverted'
-head = orJoin(headers)
+headers = [
+        'Received', 'References', 'Message-ID', 'In-Reply-To',
+        'Delivered-To', 'List-Id', 'Path', 'Return-Path',
+        'Newsgroups', 'NNTP-Posting-Host',
+        'Xref', 'X-ID', 'X-Abuse-Info', 'X-Trace', 'X-MIME-Autoconverted'
+        ]
+head = '|'.join(headers)
 
 headsoff = r'''
     (?<=            # look back in negative anger
