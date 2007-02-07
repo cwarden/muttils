@@ -19,6 +19,9 @@ class config(object):
                 [('mailer', 'mail'), ('maildirs', None)],
                 'browser':
                 [('textbrowser', ''), ('xbrowser', ''), ('homepage', '')],
+                'can':
+                [('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
+                    ('ctan', 'ftp://ftp.ctan.org/tex-archive')],
                 }
         self.cfg = ConfigParser.SafeConfigParser(defaults)
         self.updated = False

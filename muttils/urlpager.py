@@ -83,6 +83,13 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
                 os.execvp(cs[0], cs)
 
     def urlSearch(self):
+        if self.proto != 'mid':
+            try:
+                self.updateconfig()
+                self.cpan = self.cfg.get('can', 'cpan')
+                self.ctan = self.cfg.get('can', 'ctan')
+            except ui.ConfigError, inst:
+                raise UrlpagerError(inst)
         try:
             self.urlCollect()
         except UrlcollectorError, e:

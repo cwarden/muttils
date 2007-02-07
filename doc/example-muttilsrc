@@ -21,3 +21,10 @@ maildirs = ~/Mail, ~/mail-archive
 # maildirs = ~/Mail
 # or
 # maildirs = ~/Maildir
+
+[can]
+cpan = ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN
+CTAN = ftp://ftp.dante.de/tex-archive
+# defaults:
+# cpan = ftp://ftp.cpan.org/pub/CPAN
+# ctan = ftp://ftp.ctan.org/tex-archive

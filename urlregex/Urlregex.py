@@ -1,6 +1,6 @@
 # $Id$
 
-from urlregex.Urlparser import Urlparser, UrlparserError
+from Urlparser import Urlparser, UrlparserError
 import re
 
 def mkDomPat(top, valid, delim):
@@ -66,11 +66,6 @@ generic = r'\.(%s)' % '|'.join(generics)
 proto_dom, proto_spdom = mkDomPat(top, valid, delim)
 any_dom, any_spdom = mkDomPat(generic, valid, delim)
 
-#CPAN = 'ftp://ftp.cpan.org/pub/CPAN/'
-CPAN = r'ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN/\1'
-#CTAN = 'ftp://ftp.ctan.org/tex-archive/'
-CTAN = r'ftp://ftp.dante.de/tex-archive/\1'
-
 # get rid of *quoted* mail headers of no use
 # (how to do this more elegantly?)
 headers = [
@@ -107,6 +102,9 @@ declid = r'(%(nproto)s%(mid)s)' % vars()
 simplid = r'(\b%(mid)s)' % vars()
 
 rawwipe = r'(%(declid)s)|(%(headsoff)s)' % vars()
+
+# cpan, ctan
+rawcan = r'C%sAN:\s*/?([a-zA-Z]+?)'
 
 ## precompiled regexes ##
 ftp_re = re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
@@ -164,6 +162,8 @@ class Urlregex(Urlparser):
         self.intro = ''
         self.protocol = ''      # pragmatic proto (may include www., ftp.)
         self.proto_re = None
+        self.cpan = ''
+        self.ctan = ''
 
     def setStrings(self):
         ### intro ###
@@ -282,11 +282,12 @@ class Urlregex(Urlparser):
         self.urlObjects() # compile url_re
         s = self.mailDeconstructor(data)
         if self.proto != 'mid':
-            wipe_resub = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE), ''
-            cpan_resub = re.compile(r'CPAN:\s*/?([A-Za-z]+?)'), CPAN 
-            ctan_resub = re.compile(r'CTAN:\s*/?([A-Za-z]+?)'), CTAN
-            for resub in (wipe_resub, cpan_resub, ctan_resub):
-                s = resub[0].sub(resub[1], s)
+            wipe_re = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE)
+            s = wipe_re.sub('', s)
+            for can in [(self.cpan, 'P'), (self.ctan, 'T')]:
+                if can[0]:
+                    cansub = r'%s/\1' % can[0].rstrip('/')
+                    s = re.sub(rawcan % can[1], cansub, s)
         urls = [u[0] for u in self.url_re.findall(s)]
         if self.kill_re:
             urls = [self.kill_re.sub('', u) for u in urls]

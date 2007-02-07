@@ -9,7 +9,7 @@
 # input is checked anew for each file.
 ###
 
-import util
+import ui, util
 from pybrowser import Browser, BrowserError
 from kiosk import Kiosk, KioskError
 from urlregex.Urlcollector import Urlcollector, UrlcollectorError
@@ -59,6 +59,13 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
                 raise UrlbatcherError(e)
                     
     def urlSearch(self):
+        if self.proto != 'mid':
+            try:
+                self.updateconfig()
+                self.cpan = self.cfg.get('can', 'cpan')
+                self.ctan = self.cfg.get('can', 'ctan')
+            except ui.ConfigError, inst:
+                raise UrlbatcherError(inst)
         try:
             self.urlCollect()
         except UrlcollectorError, e:
