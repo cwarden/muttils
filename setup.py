@@ -14,6 +14,6 @@ setup(name='muttils',
         description='Python utilities for console mail clients (eg. mutt)',
         author='Christian Ebert',
         author_email='blacktrash@gmx.net',
-        packages=['muttils', 'tpager', 'urlregex'],
+        packages=['muttils'],
         scripts=['sigpager', 'urlbatcher', 'urlpager', 'pybrowser'],
         )

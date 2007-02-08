@@ -1,7 +1,7 @@
 # $Id$
 
 import ui, util
-from urlregex.Urlregex import Urlregex
+from urlregex import Urlregex
 import os.path, re, socket, webbrowser
 
 def getlocals():

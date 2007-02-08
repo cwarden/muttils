@@ -1,6 +1,6 @@
 # $Id$
 
-from Urlparser import Urlparser, UrlparserError
+from urlparser import Urlparser, UrlparserError
 import re
 
 def mkDomPat(top, valid, delim):

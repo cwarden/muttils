@@ -1,7 +1,7 @@
 # $Id$
 
-import muttils.util
-from urlregex.Urlregex import Urlregex, UrlregexError
+import util
+from urlregex import Urlregex, UrlregexError
 import re, sys, urllib2
 
 class UrlcollectorError(Exception):

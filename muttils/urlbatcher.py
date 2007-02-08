@@ -12,8 +12,8 @@
 import ui, util
 from pybrowser import Browser, BrowserError
 from kiosk import Kiosk, KioskError
-from urlregex.Urlcollector import Urlcollector, UrlcollectorError
-from tpager.LastExit import LastExit
+from urlcollector import Urlcollector, UrlcollectorError
+from iterm import LastExit
 import os
 
 class UrlbatcherError(Exception):

@@ -1,8 +1,8 @@
 # $Id$
 
+from iterm import LastExit
+from ipages import Pages, PagesError
 import os
-from tpager.LastExit import LastExit
-from tpager.Pages import Pages, PagesError
 
 # format default paging command
 pds = {-1:'Back', 1:'Forward'}

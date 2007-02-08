@@ -1,6 +1,6 @@
 # $Id$
 
-from tpager.Tformat import Tformat, TformatError
+from tformat import Tformat, TformatError
 import os
 
 def screendims():

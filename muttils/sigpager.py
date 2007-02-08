@@ -1,7 +1,7 @@
 # $Id$
 
+from tpager import Tpager, TpagerError
 import os, random, re, readline, sys
-from tpager.Tpager import Tpager, TpagerError
 
 class SignatureError(TpagerError):
     '''Exception class for Signature.'''

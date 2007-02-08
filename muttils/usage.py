@@ -1,6 +1,6 @@
 # $Id$
 
-import muttils.version
+import version
 import os.path, re, sys
 
 def fbox(s):
@@ -36,7 +36,7 @@ def usage(help='', err='', interrupt=False, **kwargs):
         sys.exit(msg)
 
     msg += '\n'
-    rev = fbox('%s (version: %s)' % (exe, muttils.version.getversion()))
+    rev = fbox('%s (version: %s)' % (exe, version.getversion()))
     msg = rev + nlprepend(msg)
     sys.stdout.write(msg)
     sys.exit()

@@ -3,9 +3,9 @@
 import ui, util
 from pybrowser import Browser, BrowserError
 from kiosk import Kiosk, KioskError
-from urlregex.Urlcollector import Urlcollector, UrlcollectorError
-from tpager.Tpager import Tpager, TpagerError
-from urlregex.Urlregex import mailCheck, ftpCheck
+from urlcollector import Urlcollector, UrlcollectorError
+from tpager import Tpager, TpagerError
+from urlregex import mailCheck, ftpCheck
 import os, readline
 
 class UrlpagerError(Exception):
