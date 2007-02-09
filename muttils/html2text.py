@@ -7,7 +7,7 @@ from htmllib import HTMLParser, HTMLParseError
 class HTML2TextError(Exception):
     '''Exception class for the html2text module.'''
 
-class HTML2Text(HTMLParser):
+class html2text(HTMLParser):
     '''
     Provides methods for very simple html to text conversion.
     '''
@@ -34,26 +34,26 @@ class HTML2Text(HTMLParser):
             else:
                 raise HTML2TextError(e)
     
-    def htpWrite(self, html='', append=False):
+    def htpwrite(self, html='', append=False):
         '''Writes converted text to file object.'''
         if not append:
             self.fp.truncate(0)
         self.feed(html)
 
-    def htpWritelines(self, linelist=None, append=False):
+    def htpwritelines(self, linelist=None, append=False):
         '''Writes a list of lines to file object.'''
         if linelist is None:
             linelist = []
         if not append:
             self.fp.truncate(0)
         for line in linelist:
-            self.htpWrite(html=line, append=True)
+            self.htpwrite(html=line, append=True)
 
-    def htpRead(self):
+    def htpread(self):
         '''Returns converted text.'''
         return self.fp.getvalue()
 
-    def htpReadlines(self, nl=True):
+    def htpreadlines(self, nl=True):
         '''Returns converted lines of text.'''
         return self.fp.getvalue().splitlines(nl)
 

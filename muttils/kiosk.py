@@ -1,7 +1,7 @@
 # $Id$'
 
 import ui, util
-from html2text import HTML2Text
+from html2text import html2text
 from pybrowser import Browser, BrowserError
 from email.Generator import Generator
 from email.Parser import Parser
@@ -63,7 +63,7 @@ def mkUnixfrom(msg):
 class KioskError(Exception):
     '''Exception class for the kiosk module.'''
 
-class Kiosk(HTML2Text):
+class Kiosk(html2text):
     '''
     Provides methods to search for and retrieve
     messages via their Message-ID.
@@ -80,7 +80,7 @@ class Kiosk(HTML2Text):
             }
 
     def __init__(self, items=None, opts={}):
-        HTML2Text.__init__(self, strict=False)
+        html2text.__init__(self, strict=False)
         self.items = items or []
 
         for k in self.defaults.keys():
@@ -154,9 +154,9 @@ class Kiosk(HTML2Text):
     def gooRetrieve(self, mid, found, opener, header_re):
         try:
             fp = opener.open(self.makeQuery(mid))
-            self.htpWrite(html=fp.read(), append=False)
+            self.htpwrite(html=fp.read(), append=False)
             fp.close()
-            liniter = iter(self.htpReadlines(nl=False))
+            liniter = iter(self.htpreadlines(nl=False))
         except urllib2.URLError, e:
             if hasattr(e, 'reason'):
                 raise KioskError(urlfailmsg + e)
