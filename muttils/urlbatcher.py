@@ -13,13 +13,13 @@ import ui, util
 from pybrowser import Browser, BrowserError
 from kiosk import Kiosk, KioskError
 from urlcollector import Urlcollector, UrlcollectorError
-from iterm import LastExit
+from iterm import iterm
 import os
 
 class UrlbatcherError(Exception):
     '''Exception class for the urlbatcher module.'''
 
-class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
+class Urlbatcher(Browser, Urlcollector, Kiosk, iterm):
     '''
     Parses input for either web urls or message-ids.
     Browses all urls or creates a message tree in mutt.
@@ -44,7 +44,7 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
         Browser.__init__(self)
         Urlcollector.__init__(self)
         Kiosk.__init__(self)
-        LastExit.__init__(self)
+        iterm.__init__(self)
         for k in self.defaults.keys():
             setattr(self, k, opts.get(k, self.defaults[k]))
 
@@ -71,7 +71,7 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
         except UrlcollectorError, e:
             raise UrlbatcherError(e)
         if not self.files:
-            self.termInit()
+            self.terminit()
         if self.items:
             yorn = '%s\nRetrieve the above %s? yes, [No] ' \
                     % ('\n'.join(self.items),
@@ -90,4 +90,4 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, LastExit):
                     'message-id')[self.proto=='mid']
             raw_input(msg)
         if not self.files:
-            self.reInit()
+            self.reinit()

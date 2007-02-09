@@ -105,10 +105,10 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
                             '<C-C> to cancel or <RET> to accept\n%s\n'
                             % self.items[0])
                 else:
-                    self.termInit()
+                    self.terminit()
                     url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
                             'or enter url manually\n%s\n' % self.items[0])
-                    self.reInit()
+                    self.reinit()
                 if url:
                     self.items = [url]
                 self.urlGo()

@@ -1,6 +1,6 @@
 # $Id$
 
-from iterm import LastExit
+from iterm import iterm
 from ipages import Pages, PagesError
 import os
 
@@ -15,13 +15,13 @@ def valClamp(x, low, high):
 class TpagerError(PagesError):
     '''Exception class for Tpager module.'''
 
-class Tpager(LastExit, Pages):
+class Tpager(iterm, Pages):
     '''
     Customizes interactive choice to current terminal.
     '''
     def __init__(self, name='item', format='sf',
             qfunc='Quit', ckey='', crit='pattern'):
-        LastExit.__init__(self)
+        iterm.__init__(self)
         Pages.__init__(self, format=format)  # <- items, ilen, pages, itemsdict, cols
         self.name = name            # general name of an item
         self.qfunc = qfunc          # name of exit function
@@ -104,11 +104,11 @@ class Tpager(LastExit, Pages):
             raise TpagerError(e)
         notty = not os.isatty(0) or not os.isatty(1) # not connected to term
         if notty:
-            self.termInit()
+            self.terminit()
         try:
             retval = self.pageMenu()
         except KeyboardInterrupt:
             retval, self.items = '', None
         if notty:
-            self.reInit()
+            self.reinit()
         return retval

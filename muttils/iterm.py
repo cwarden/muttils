@@ -2,7 +2,7 @@
 
 import os, sys
 
-class Termplus(object):
+class termplus(object):
     '''
     Provides readline and write methods
     for an interactive terminal device.
@@ -30,19 +30,19 @@ class Termplus(object):
         pass
 
 
-class LastExit(Termplus):
+class iterm(termplus):
     '''
     Provides interactive terminal devices.
     '''
     def __init__(self):
-        Termplus.__init__(self)
+        termplus.__init__(self)
         self.iostack = []
 
-    def termInit(self):
+    def terminit(self):
         self.iostack.append((sys.stdin, sys.stdout))
         sys.stdin, sys.stdout = self, self
 
-    def reInit(self):
+    def reinit(self):
         '''Switches back to previous term.'''
         try:
             sys.stdin, sys.stdout = self.iostack.pop()
