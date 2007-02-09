@@ -18,6 +18,6 @@ def goonline():
     if os.uname()[0] == 'Darwin':
         try:
             import conny
-            conny.appleConnect()
+            conny.appleconnect()
         except ImportError:
             pass

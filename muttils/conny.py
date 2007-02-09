@@ -19,7 +19,7 @@ disconnect = '''tell application "Internet Connect"
 end tell'''
 
 
-def appleConnect():
+def appleconnect():
     '''Connects Mac to internet using AppleScript.'''
     applescript = ['osascript', '-l', 'AppleScript', '-e']
 
