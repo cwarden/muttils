@@ -5,7 +5,7 @@ class TformatError(Exception):
 
 class Tformat(object):
     '''
-    Subclass to Pages (<- format, itemsdict, keys).
+    Subclass to ipages (<- format, itemsdict, keys).
     Provides formatting methods
     for interactive terminal.
     '''

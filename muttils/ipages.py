@@ -20,10 +20,10 @@ def screendims():
     return t_rows-3, t_cols+1
 
 
-class PagesError(TformatError):
-    '''Exception class for Pages.'''
+class IpagesError(TformatError):
+    '''Exception class for ipages.'''
 
-class Pages(Tformat):
+class ipages(Tformat):
     '''
     Subclass for Tpager.
     Provides items, ilen, pages, itemsdict, cols.
@@ -36,21 +36,21 @@ class Pages(Tformat):
         self.pn = 0                     # current page/key of pages
         self.rows, self.cols = screendims()
 
-    def softCount(self, item):
+    def softcount(self, item):
         '''Counts lines of item as displayed in
         a terminal with cols columns.'''
         lines = item.splitlines()
         return reduce(lambda a, b: a+b,
             [len(line)/self.cols + 1 for line in lines])
 
-    def addPage(self, buff, lines):
+    def addpage(self, buff, lines):
         '''Adds a page to pages.'''
         self.pn += 1
         # fill page with newlines
         buff += '\n' * (self.rows-lines-1)
         self.pages[self.pn] = buff
 
-    def pagesDict(self):
+    def pagesdict(self):
         '''Creates dictionary of pages to display in terminal window.
         Keys (page numbers) are integers starting from 1.'''
         self.itemsdict, self.pages, self.pn = {}, {}, 0
@@ -66,12 +66,12 @@ class Pages(Tformat):
         # has more lines than the terminal rows
         buff, lines = '', 0
         for item in items:
-            ilines = self.softCount(item)
+            ilines = self.softcount(item)
             linecheck = lines + ilines
             if linecheck < self.rows:
                 buff += item
                 lines = linecheck
             else:
-                self.addPage(buff, lines)
+                self.addpage(buff, lines)
                 buff, lines = item, ilines
-        self.addPage(buff, lines)
+        self.addpage(buff, lines)
