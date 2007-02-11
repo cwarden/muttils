@@ -1,57 +1,36 @@
 # $Id$
 
-### configure defaults manually:
-# /path/to/dir/containing/sigfiles
-signaturedir = '~/.Sig'
-# common suffix of signature files
-suffix = '.sig'
-###
+import sigpager
+import version
+import optparse
+import sys
 
-import usage
-from sigpager import Signature, SignatureError
-import getopt, sys
+versioninfo = '''Sigpager - email signature selection (version %s)
 
-# d: sigdir, f [prepend separator], h [help],
-# s: defaultsig, t: sigtail
-
-sigpager_help = '''
-[-d <sigdir>][-f][-s <defaultsig>] \\
-         [-t <sigtail>][-]
-[-d <sigdir>][-f][-s <defaultsig>] \\
-         [-t <sigtail>] <file> [<file> ...]
--h (display this help)'''
-
-def userhelp(error=''):
-    usage.usage(help=sigpager_help, err=error)
-
+Copyright (C) 2007 Christian Ebert <blacktrash@gmx.net>'''
 
 def run():
-    sigdir = signaturedir
-    tail = suffix
-    defsig = sigsep = inp = ''
+    parser = optparse.OptionParser(usage='%prog [options] [files to sign]',
+            version=versioninfo % version.getversion())
+    parser.set_defaults(defsig='', sigdir='~/.Sig', defsig='',
+            tail='.sig', sigsep='-- \n')
+
+    parser.add_option('-d', '--sigdir',
+            help='choose from signatures in directory SIGDIR')
+    parser.add_option('-s', '--defsig',
+            help='default signature from file DEFSIG')
+    parser.add_option('-t', '--tail',
+            help='signatures are read from files with suffix TAIL')
+    parser.add_option('-S', '--nosep',
+            dest='sigsep', action='store_const', const= '',
+            help='suppress prepending of signature separator')
+
+    options, args = parser.parse_args()
 
     try:
-
-        opts, args = getopt.getopt(sys.argv[1:], 'd:fhs:t:')
-        for o, a in opts:
-            if o == '-d':
-                sigdir = a
-            if o == '-f':
-                sigsep = '-- \n'
-            if o == '-h':
-                userhelp()
-            if o == '-s':
-                defsig = a
-            if o == '-t':
-                tail = a
-        if args == ['-']:
-            inp = sys.stdin.read()
-        else:
-            targets = args
-
-        s = Signature(sig=defsig, sdir=sigdir, sep=sigsep, tail=tail,
-                inp=inp, targets=targets)
+        s = sigpager.Signature(dest=args,
+                sig=options.defsig, sdir=options.sigdir,
+                tail=options.tail, sep=options.sigsep)
         s.underSign()
-
-    except (getopt.GetoptError, SignatureError), e:
-        userhelp(e)
+    except sigpager.SignatureError, inst:
+        sys.exit(inst)
