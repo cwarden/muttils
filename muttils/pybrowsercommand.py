@@ -1,35 +1,27 @@
 # $Id$
 
-import pybrowser, usage
-import getopt, sys
+import pybrowser
+import version
+import optparse
+import sys
 
-pybrowser_help = '''
-[<url>||<file> ...]
--t [<url>||<file> ...]
--x [<url>||<file> ...]
--h (display this help)'''
-
-def userhelp(error=''):
-    usage.usage(help=pybrowser_help, err=error)
-
+proginfo = 'Pybrowser - python interface to system browsers'
 
 def run():
-    '''Command interface to the Browser class.'''
+    parser = optparse.OptionParser(usage='%prog [option] [urls]',
+            version=version.version_(proginfo))
+    parser.set_defaults(xbrowser=False, textbrowser=False)
 
-    tb, xb = False, False
+    parser.add_option('-x', '--xbrowser', action='store_true',
+            help='prefer x11-browser')
+    parser.add_option('-t', '--textbrowser', action='store_true',
+            help='prefer textbrowser')
 
+    options, args = parser.parse_args()
+    
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'htx')
-        for o, a in opts:
-            if o == '-h':
-                userhelp()
-            if o == '-t':
-                tb = True
-            if o == '-x':
-                xb = True
-
-        b = pybrowser.Browser(items=args, tb=tb, xb=xb)
+        b = pybrowser.Browser(items=args,
+                tb=options.textbrowser, xb=options.xbrowser)
         b.urlVisit()
-
-    except (getopt.GetoptError, pybrowser.BrowserError), e:
-        userhelp(error=e)
+    except pybrowser.BrowserError, inst:
+        sys.exit(inst)
