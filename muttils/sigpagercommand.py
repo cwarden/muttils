@@ -28,9 +28,9 @@ def run():
     options, args = parser.parse_args()
 
     try:
-        s = sigpager.Signature(dest=args,
+        s = sigpager.signature(dest=args,
                 sig=options.defsig, sdir=options.sigdir,
                 tail=options.tail, sep=options.sigsep)
-        s.underSign()
+        s.sign()
     except sigpager.SignatureError, inst:
         sys.exit(inst)

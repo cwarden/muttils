@@ -5,7 +5,7 @@ from tpager import Tpager, TpagerError
 import os, random, re, readline, sys
 
 class SignatureError(Exception):
-    '''Exception class for Signature.'''
+    '''Exception class for signature.'''
     def __init__(self, inst=''):
         self.inst = inst
     def __str__(self):
@@ -13,7 +13,7 @@ class SignatureError(Exception):
             return self.inst
         return str(self.inst)
 
-class Signature(Tpager):
+class signature(Tpager):
     '''
     Provides functions to interactively choose a mail signature
     matched against a regular expression of your choice.
@@ -29,7 +29,7 @@ class Signature(Tpager):
         self.sigs = []          # complete list of signature strings
         self.pat = None         # match sigs against pattern
 
-    def getString(self, fn):
+    def getstring(self, fn):
         fn = os.path.join(self.sdir, fn)
         s = ''
         try:
@@ -42,7 +42,7 @@ class Signature(Tpager):
         except IOError, inst:
             raise SignatureError(inst)
 
-    def getSig(self):
+    def getsig(self):
         if self.pat:
             self.items = filter(self.pat.search, self.sigs)
         else:
@@ -53,25 +53,21 @@ class Signature(Tpager):
         except TpagerError, inst:
             raise SignatureError(inst)
 
-    def checkPattern(self):
+    def checkpattern(self):
         try:
             self.pat = re.compile(r'%s' % self.pat, re.I)
-        except re.error, e:
-            sys.stdout.write('%s in pattern %s\n' % (e, self.pat))
-            self.pat = None
-            self.getPattern()
+        except re.error, inst:
+            sys.stdout.write('%s in pattern %s\n' % (inst, self.pat))
+            prompt = ('[choose from %d signatures], new pattern: '
+                    % len(self.sigs))
+            try:
+                self.pat = raw_input(prompt) or None
+            except KeyboardInterrupt:
+                self.pat = None
+            if self.pat:
+                self.checkpattern()
 
-    def getPattern(self):
-        prompt = 'C-c to cancel or\n' \
-            'Enter pattern to match signatures against:\n'
-        try:
-            self.pat = raw_input(prompt)
-        except KeyboardInterrupt:
-            self.pat = None
-        if self.pat:
-            self.checkPattern()
-
-    def underSign(self):
+    def sign(self):
         self.sdir = util.absolutepath(self.sdir)
         try:
             sl = filter(lambda f: f.endswith(self.tail), os.listdir(self.sdir))
@@ -79,12 +75,12 @@ class Signature(Tpager):
             raise SignatureError(inst)
         if not sl:
             raise SignatureError('no signature files in %s' % self.sdir)
-        self.sigs = [self.getString(fn) for fn in sl]
+        self.sigs = [self.getstring(fn) for fn in sl]
         while True:
-            reply = self.getSig()
+            reply = self.getsig()
             if reply and reply.startswith(self.ckey):
                 self.pat = reply[1:]
-                self.checkPattern()
+                self.checkpattern()
             else:
                 break
         if self.items is not None:
