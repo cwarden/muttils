@@ -5,13 +5,11 @@ import version
 import optparse
 import sys
 
-versioninfo = '''Sigpager - email signature selection (version %s)
-
-Copyright (C) 2007 Christian Ebert <blacktrash@gmx.net>'''
+proginfo = 'Sigpager - email signature selection'
 
 def run():
     parser = optparse.OptionParser(usage='%prog [options] [files to sign]',
-            version=versioninfo % version.getversion())
+            version=version.version_(proginfo))
     parser.set_defaults(defsig='', sigdir='~/.Sig', defsig='',
             tail='.sig', sigsep='-- \n')
 

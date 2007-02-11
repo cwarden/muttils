@@ -8,6 +8,10 @@ import os, time
 
 unknown_version = 'unknown'
 
+def version_(proginfo):
+    return '\n\n'.join(['%s (version %s)' % (proginfo, getversion()),
+            'Copyright (C) 2007 Christian Ebert <blacktrash@gmx.net>'])
+
 def getversion(doreload=False):
     try:
         import muttils.__version__
