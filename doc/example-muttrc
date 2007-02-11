@@ -1,16 +1,20 @@
 # $Id$
 # vim:ft=muttrc
 # example muttrc for Python muttils package
-#
+
+# sigpager
+# sigpager appends separator by default
+set sig_dashes=no
+set signature="sigpager|"
+
+# urlpager
 # this is for recent Mutt versions that support variables
 # configuration is simpler, but less flexible otherwise
-
 macro index,pager,attach ^B "\
 <enter-command> set my_wait_key=\$wait_key wait_key=no<enter>\
 <pipe-message>urlpager<enter>\
 <enter-command> set wait_key=\$my_wait_key &my_wait_key<enter>\
 " "go to any url"
-
 macro index,pager,attach ,t "\
 <enter-command> set my_wait_key=\$wait_key wait_key=no<enter>\
 <pipe-message>urlpager -t -pweb<enter>\
