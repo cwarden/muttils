@@ -25,7 +25,7 @@ addrkeys = ('from', 'to', 'reply-to', 'cc',
             'x-apparently-to',
             'errors-to', 'x-complaints-to', 'x-beenthere')
 
-quote_re = re.compile(r'^(> ?)+', re.MULTILINE)
+quote_re = re.compile(r'^([>|]\s*)+', re.MULTILINE)
 
 def msgFactory(fp):
     try:
