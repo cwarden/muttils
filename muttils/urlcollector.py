@@ -1,19 +1,19 @@
 # $Id$
 
-import util
-from urlregex import Urlregex, UrlregexError
+import urlregex, util
 import re, sys, urllib2
 
 class UrlcollectorError(Exception):
     '''Exception class for the Urlcollector module.'''
 
-class Urlcollector(Urlregex):
+class Urlcollector(urlregex.urlregex):
     '''
     Provides function to retrieve urls
     from files or input stream.
     '''
     def __init__(self, proto='all', decl=False, files=None, pat=None):
-        Urlregex.__init__(self, proto=proto, decl=decl) # <- items
+        urlregex.urlregex.__init__(self, proto=proto, decl=decl)
+        # ^ items
         self.files = files or [] # files to search
         self.pat = pat           # pattern to match urls against
 
@@ -21,9 +21,9 @@ class Urlcollector(Urlregex):
         '''Harvests urls from stdin or files.'''
         def urlFind(data):
             try:
-                self.findUrls(data)
-            except UrlregexError, e:
-                raise UrlcollectorError(e)
+                self.findurls(data)
+            except urlregex.UrlregexError, inst:
+                raise UrlcollectorError(inst)
 
         if not self.files: # read from stdin
             urlFind(sys.stdin.read())

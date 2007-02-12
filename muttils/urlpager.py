@@ -2,7 +2,7 @@
 
 import iterm, kiosk, pybrowser, tpager, ui, util
 from urlcollector import Urlcollector, UrlcollectorError
-from urlregex import mailCheck, ftpCheck
+from urlregex import mailcheck, ftpcheck
 import os, readline
 
 class UrlpagerError(Exception):
@@ -49,7 +49,7 @@ class Urlpager(Urlcollector, tpager.tpager):
     def urlGo(self):
         url, cs, conny = self.items[0], [], True
         if (self.proto == 'mailto'
-                or self.proto == 'all' and mailCheck(url)):
+                or self.proto == 'all' and mailcheck(url)):
             try:
                 self.ui.updateconfig()
                 cs = [self.ui.configitem('messages', 'mailer')]
@@ -58,7 +58,7 @@ class Urlpager(Urlcollector, tpager.tpager):
             conny = False
         elif self.getdir:
             cs = ['wget', '-P', self.getdir]
-        elif self.proto == 'ftp' or ftpCheck(url):
+        elif self.proto == 'ftp' or ftpcheck(url):
             if not os.path.splitext(url)[1] and not url.endswith('/'):
                 self.items = [url + '/']
             cs = [self.ftp]

@@ -1,7 +1,6 @@
 # $Id$
 
-import ui, util
-from urlregex import Urlregex
+import ui, urlregex, util
 import os.path, re, socket, webbrowser
 
 def getlocals():
@@ -20,8 +19,8 @@ local_re = re.compile('http://(%s)' %
 file_re  = re.compile(r'file:/+', re.IGNORECASE)
 
 def weburlregex():
-    u = Urlregex(proto='web', uniq=False)
-    u.urlObjects(search=False)
+    u = urlregex.urlregex(proto='web', uniq=False)
+    u.urlobject(search=False)
     return u.url_re, u.proto_re
 
 

@@ -8,7 +8,7 @@ valid_protos = ['all', 'web',
         'mailto', 'mid']
 # finger, telnet, whois, wais?
 
-def mkDomPat(top, valid, delim):
+def mkdompat(top, valid, delim):
     '''Creates the raw domain parts of the url patterns.
     2 patterns, the second of which contains spaces.'''
     dom = r'''
@@ -36,7 +36,7 @@ def mkDomPat(top, valid, delim):
 
 # and now to the url parts
 valid = r'-._a-z0-9/#~:,;?+=&%!()@' # valid url-chars+comma+semicolon+parenthesises+@
-                                    # @: filtered with webCheck, false positives with
+                                    # @: filtered with webcheck, false positives with
                                     # che@*blacktrash.org* otherwise
                                     # Message-ID: <10rb6mngqccs018@corp.supernews.com>
                                     # Message-id: <20050702131039.GA10840@oreka.com>
@@ -68,8 +68,8 @@ tops = generics + [
 top = r'\.(%s)' % '|'.join(tops)
 generic = r'\.(%s)' % '|'.join(generics)
 
-proto_dom, proto_spdom = mkDomPat(top, valid, delim)
-any_dom, any_spdom = mkDomPat(generic, valid, delim)
+proto_dom, proto_spdom = mkdompat(top, valid, delim)
+any_dom, any_spdom = mkdompat(generic, valid, delim)
 
 # get rid of *quoted* mail headers of no use
 # (how to do this more elegantly?)
@@ -130,28 +130,28 @@ mail_re = re.compile(mail, re.IGNORECASE|re.VERBOSE)
     
 ## filter functions ##
 
-def webCheck(url):
+def webcheck(url):
     return not mail_re.match(url)
 
-def ftpCheck(url):
+def ftpcheck(url):
     return ftp_re.match(url)
 
-def httpCheck(url):
+def httpcheck(url):
     return not mail_re.match(url) and not ftp_re.match(url)
 
-def mailCheck(url):
+def mailcheck(url):
     return mail_re.match(url)
 
-filterdict = { 'web':    webCheck,
-               'ftp':    ftpCheck,
-               'http':   httpCheck,
-               'mailto': mailCheck }
+filterdict = { 'web':    webcheck,
+               'ftp':    ftpcheck,
+               'http':   httpcheck,
+               'mailto': mailcheck }
 
 
 class UrlregexError(Exception):
     '''Exception class for the Urlregex module.'''
 
-class Urlregex(urlparser.urlparser):
+class urlregex(urlparser.urlparser):
     '''
     Provides functions to extract urls from text,
     customized by attributes.
@@ -172,7 +172,7 @@ class Urlregex(urlparser.urlparser):
         self.cpan = ''
         self.ctan = ''
 
-    def setStrings(self):
+    def setstrings(self):
         ### intro ###
         if self.proto in ('all', 'web'): ## groups
             # list protocols
@@ -198,7 +198,7 @@ class Urlregex(urlparser.urlparser):
                 self.intro = self.protocol
         self.intro = r'(url:)?%s' % self.intro
 
-    def getRaw(self):
+    def getraw(self):
 
         proto_url = r'''     ## long url ##
             (?<=<)           # look behind for '<'
@@ -236,7 +236,7 @@ class Urlregex(urlparser.urlparser):
                 r'(%s|%s)' % (proto_url, any_url))[self.proto!='all']
         return (any_pat, proto_pat)[self.decl]
 
-    def uniDeluxe(self):
+    def unideluxe(self):
         '''remove duplicates deluxe:
         of http://www.blacktrash.org, www.blacktrash.org
         keep only the first, declared version.'''
@@ -249,15 +249,15 @@ class Urlregex(urlparser.urlparser):
                 deluxurls.append(url)
         self.items = deluxurls
 
-    def urlFilter(self):
+    def urlfilter(self):
         if not self.decl and self.proto in filterdict:
             self.items = filter(filterdict[self.proto], self.items)
         if self.uniq:
             self.items = list(set(self.items))
             if self.proto != 'mid' and not self.decl:
-                self.uniDeluxe()
+                self.unideluxe()
 
-    def urlObjects(self, search=True):
+    def urlobject(self, search=True):
         '''Creates customized regex objects of url.'''
         if self.proto not in valid_protos:
             raise UrlregexError(
@@ -267,8 +267,8 @@ class Urlregex(urlparser.urlparser):
             self.url_re = mail_re
             self.proto_re = re.compile(r'^mailto:')
         elif self.proto != 'mid':
-            self.setStrings()
-            rawurl = self.getRaw()
+            self.setstrings()
+            rawurl = self.getraw()
             self.url_re = re.compile(rawurl, re.IGNORECASE|re.VERBOSE)
             if search:
                 self.kill_re = re.compile(r'\s+?|^url:', re.IGNORECASE)
@@ -282,11 +282,11 @@ class Urlregex(urlparser.urlparser):
         else:
             self.url_re = re.compile(simplid, re.IGNORECASE|re.VERBOSE)
 
-    def findUrls(self, data):
+    def findurls(self, data):
         '''Conducts a search for urls in data.
         Data is supposed to be text but tested whether
         it's a message/Mailbox (then passed to urlparser).'''
-        self.urlObjects() # compile url_re
+        self.urlobject() # compile url_re
         s = self.maildeconstructor(data)
         if self.proto != 'mid':
             wipe_re = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE)
@@ -300,4 +300,4 @@ class Urlregex(urlparser.urlparser):
             urls = [self.kill_re.sub('', u) for u in urls]
         if urls:
             self.items += urls
-        self.urlFilter()
+        self.urlfilter()
