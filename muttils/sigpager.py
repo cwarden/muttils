@@ -1,7 +1,6 @@
 # $Id$
 
-import util
-from tpager import Tpager, TpagerError
+import tpager, util
 import os, random, re, readline, sys
 
 class SignatureError(Exception):
@@ -13,13 +12,13 @@ class SignatureError(Exception):
             return self.inst
         return str(self.inst)
 
-class signature(Tpager):
+class signature(tpager.tpager):
     '''
     Provides functions to interactively choose a mail signature
     matched against a regular expression of your choice.
     '''
     def __init__(self, dest=None, sig='', sdir='', sep='-- \n', tail=''):
-        Tpager.__init__(self,
+        tpager.tpager.__init__(self,
             name='sig', format='bf', qfunc='default sig', ckey='/')
         self.dest = dest        # input: list of files or string
         self.sig = sig or os.getenv('SIGNATURE') or '~/.signature'
@@ -49,8 +48,8 @@ class signature(Tpager):
             self.items = self.sigs
         random.shuffle(self.items)
         try:
-            return self.interAct()
-        except TpagerError, inst:
+            return self.interact()
+        except tpager.TpagerError, inst:
             raise SignatureError(inst)
 
     def checkpattern(self):

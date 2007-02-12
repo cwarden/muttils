@@ -1,15 +1,14 @@
 # $Id$
 
-import kiosk, pybrowser, ui, util
+import iterm, kiosk, pybrowser, tpager, ui, util
 from urlcollector import Urlcollector, UrlcollectorError
-from tpager import Tpager, TpagerError
 from urlregex import mailCheck, ftpCheck
 import os, readline
 
 class UrlpagerError(Exception):
     '''Exception class for the urlpager module.'''
 
-class Urlpager(Urlcollector, Tpager):
+class Urlpager(Urlcollector, tpager.tpager):
 
     options = {
             'proto': 'all',
@@ -29,7 +28,7 @@ class Urlpager(Urlcollector, Tpager):
 
     def __init__(self, parentui=None, opts={}):
         Urlcollector.__init__(self)
-        Tpager.__init__(self, name='url')
+        tpager.tpager.__init__(self, name='url')
         self.ui = parentui or ui.config()
         self.options.update(opts.items())
         for k in self.options.keys():
@@ -42,10 +41,10 @@ class Urlpager(Urlcollector, Tpager):
             self.name = 'message-id'
         self.name = 'unique %s' % self.name
         try:
-            # as there is no ckey, interAct() returns always 0
-            self.interAct()
-        except TpagerError, e:
-            raise UrlpagerError(e)
+            # as there is no ckey, interact() returns always 0
+            self.interact()
+        except tpager.TpagerError, inst:
+            raise UrlpagerError(inst)
 
     def urlGo(self):
         url, cs, conny = self.items[0], [], True
@@ -104,10 +103,11 @@ class Urlpager(Urlcollector, Tpager):
                             '<C-C> to cancel or <RET> to accept\n%s\n'
                             % self.items[0])
                 else:
-                    self.terminit()
+                    it = iterm.iterm()
+                    it.terminit()
                     url = raw_input('\n\npress <RET> to accept or <C-C> to cancel, '
                             'or enter url manually\n%s\n' % self.items[0])
-                    self.reinit()
+                    it.reinit()
                 if url:
                     self.items = [url]
                 self.urlGo()
