@@ -1,7 +1,6 @@
 # $Id$
 
-from iterm import iterm
-from ipages import ipages, IpagesError
+import ipages, iterm
 import os
 
 # format default paging command
@@ -12,17 +11,17 @@ def valClamp(x, low, high):
     return max(low, min(x, high))
 
 
-class TpagerError(IpagesError):
+class TpagerError(Exception):
     '''Exception class for Tpager module.'''
 
-class Tpager(iterm, ipages):
+class Tpager(ipages.ipages):
     '''
     Customizes interactive choice to current terminal.
     '''
-    def __init__(self, name='item', format='sf',
-            qfunc='Quit', ckey='', crit='pattern'):
-        iterm.__init__(self)
-        ipages.__init__(self, format=format)  # <- items, ilen, pages, itemsdict, cols
+    def __init__(self, items=None,
+            name='item', format='sf', qfunc='Quit', ckey='', crit='pattern'):
+        ipages.ipages.__init__(self, items=items, format=format)
+        # ^ items, ilen, pages, itemsdict, cols
         self.name = name            # general name of an item
         self.qfunc = qfunc          # name of exit function
         if ckey and ckey in 'qQ-':
@@ -100,15 +99,16 @@ class Tpager(iterm, ipages):
     def interAct(self):
         try:
             self.pagesdict()
-        except IpagesError, e:
+        except ipages.IpagesError, e:
             raise TpagerError(e)
         notty = not os.isatty(0) or not os.isatty(1) # not connected to term
         if notty:
-            self.terminit()
+            it = iterm.iterm()
+            it.terminit()
         try:
             retval = self.pageMenu()
         except KeyboardInterrupt:
             retval, self.items = '', None
         if notty:
-            self.reinit()
+            it.reinit()
         return retval

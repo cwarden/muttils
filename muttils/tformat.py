@@ -9,11 +9,11 @@ class tformat(object):
     Provides formatting methods
     for interactive terminal.
     '''
-    def __init__(self, format='sf'):
-        self.format = format # sf: simple format, bf: bracket format
-        self.items = []      # (text) items to choose from
-        self.itemsdict = {}  # dictionary of items to choose
-        self.ilen = 0        # length of items' list
+    def __init__(self, items=None, format='sf'):
+        self.format = format     # sf: simple format, bf: bracket format
+        self.items = items or [] # (text) items to choose from
+        self.itemsdict = {}      # dictionary of items to choose
+        self.ilen = 0            # length of items' list
 
     def formatitems(self):
         '''Formats items of itemsdict to numbered list.'''

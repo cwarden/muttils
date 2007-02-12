@@ -28,9 +28,9 @@ class ipages(tformat.tformat):
     Subclass for Tpager.
     Provides pages, cols.
     '''
-    def __init__(self, format='sf'):
-        tformat.tformat.__init__(self, format=format)
-        # ^ format, items, ilen, itemsdict
+    def __init__(self, items=None, format='sf'):
+        tformat.tformat.__init__(self, items=items, format=format)
+        # ^ items, format, ilen, itemsdict
         self.pages =  {}  # dictionary of pages
         self.pn = 0       # current page/key of pages
         self.rows, self.cols = screendims()
