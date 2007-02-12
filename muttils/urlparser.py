@@ -4,56 +4,38 @@ import cStringIO, re
 import email, email.iterators, email.Utils, email.Errors
 import mailbox
 
-protos = ('all', 'web',
-        'http', 'ftp', 'gopher',
-        'mailto',
-        'mid')
-# finger, telnet, whois, wais?
-
 # header tuples (to be extended)
-searchkeys = ('subject', 'organization',
+searchheads = ['subject', 'organization',
               'user-agent', 'x-mailer', 'x-newsreader',
               'list-id', 'list-subscribe', 'list-unsubscribe',
               'list-help', 'list-archive', 'list-url',
-              'mailing-list', 'x-habeas-swe-9')
+              'mailing-list', 'x-habeas-swe-9']
 
-refkeys = ('references', 'in-reply-to', 'message-id', 'original-message-id')
+refheads = ['references', 'in-reply-to', 'message-id', 'original-message-id']
 
-addrkeys = ('from', 'to', 'reply-to', 'cc',
+addrheads = ['from', 'to', 'reply-to', 'cc',
             'sender', 'x-sender', 'mail-followup-to',
             'x-apparently-to',
-            'errors-to', 'x-complaints-to', 'x-beenthere')
+            'errors-to', 'x-complaints-to', 'x-beenthere']
 
 quote_re = re.compile(r'^([>|]\s*)+', re.MULTILINE)
 
-def msgFactory(fp):
+def msgfactory(fp):
     try:
         return email.message_from_file(fp)
     except email.Errors.MessageParseError:
         return ''
 
-def unQuote(s):
-    return quote_re.sub('', s)
 
-
-class UrlparserError(Exception):
-    '''Exception class for the Urlparser module.'''
-
-class Urlparser(object):
+class urlparser(object):
     '''
     Subclass of Urlregex.
-    Extracts urls from html text
-    messages or mailboxes.
+    Extracts urls from html, text, messages or mailboxes.
     '''
     def __init__(self, proto='all'):
         self.proto = proto
         self.url_re = None
         self.items = []
-
-    def protoTest(self):
-        if self.proto not in protos:
-            raise UrlparserError("`%s': invalid spec, use one of %s"
-                    % (self.proto, ', '.join(protos)))
 
     def headParser(self, msg, hkeys):
         for hkey in hkeys:
@@ -61,13 +43,6 @@ class Urlparser(object):
             if vals:
                 pairs = email.Utils.getaddresses(vals)
                 urls = [pair[1] for pair in pairs if pair[1]]
-                self.items += urls
-
-    def headSearcher(self, msg):
-        for skey in searchkeys:
-            vals = msg.get_all(skey, [])
-            for val in vals:
-                urls = [u[0] for u in self.url_re.findall(val)]
                 self.items += urls
 
     def mailDeconstructor(self, s):
@@ -89,23 +64,27 @@ class Urlparser(object):
             sl = [] # list of strings to search
             fp = cStringIO.StringIO()
             fp.write(s)
-            mbox = mailbox.PortableUnixMailbox(fp, msgFactory)
+            mbox = mailbox.PortableUnixMailbox(fp, msgfactory)
             while msg is not None:
                 msg = mbox.next()
                 if msg:
                     sl = self.msgDeconstructor(msg, strings=sl)
             fp.close()
         s = '\n'.join(sl)
-        return unQuote(s) # get quoted urls spanning more than 1 line
+        # try getting quoted urls spanning more than 1 line
+        return quote_re.sub('', s)
 
     def msgDeconstructor(self, msg, strings=None):
         sl = strings or []
         if self.proto != 'mid':
             if self.proto in ('all', 'mailto'):
-                self.headParser(msg, addrkeys)
-            self.headSearcher(msg)
+                self.headParser(msg, addrheads)
+            for skey in searchheads:
+                vals = msg.get_all(skey)
+                if vals:
+                    sl += vals
         else:
-            self.headParser(refkeys)
+            self.headParser(refheads)
         for part in email.iterators.typed_subpart_iterator(msg):
             sl.append(part.get_payload())
         return sl

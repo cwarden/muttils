@@ -1,7 +1,12 @@
 # $Id$
 
-from urlparser import Urlparser, UrlparserError
+import urlparser
 import re
+
+valid_protos = ['all', 'web',
+        'http', 'ftp', 'gopher',
+        'mailto', 'mid']
+# finger, telnet, whois, wais?
 
 def mkDomPat(top, valid, delim):
     '''Creates the raw domain parts of the url patterns.
@@ -146,7 +151,7 @@ filterdict = { 'web':    webCheck,
 class UrlregexError(Exception):
     '''Exception class for the Urlregex module.'''
 
-class Urlregex(Urlparser):
+class Urlregex(urlparser.urlparser):
     '''
     Provides functions to extract urls from text,
     customized by attributes.
@@ -155,9 +160,11 @@ class Urlregex(Urlparser):
     if they are enclosed in '<>'.
     '''
     def __init__(self, proto='all', decl=False, uniq=True):
-        Urlparser.__init__(self, proto=proto) # <- items, url_re
+        urlparser.urlparser.__init__(self, proto=proto)
+        # ^ items, proto
         self.decl = decl        # list only declared urls
         self.uniq = uniq        # list only unique urls
+        self.url_re = None      # that's what it's all about
         self.kill_re = None     # customized pattern to find non url chars
         self.intro = ''
         self.protocol = ''      # pragmatic proto (may include www., ftp.)
@@ -252,10 +259,10 @@ class Urlregex(Urlparser):
 
     def urlObjects(self, search=True):
         '''Creates customized regex objects of url.'''
-        try:
-            self.protoTest()
-        except UrlparserError, e:
-            raise UrlregexError(e)
+        if self.proto not in valid_protos:
+            raise UrlregexError(
+                    '%s: invalid protocol parameter, use one of:\n%s'
+                    % (self.proto, ', '.join(valid_protos)))
         if self.proto == 'mailto':# be pragmatic and list not only declared
             self.url_re = mail_re
             self.proto_re = re.compile(r'^mailto:')
@@ -278,7 +285,7 @@ class Urlregex(Urlparser):
     def findUrls(self, data):
         '''Conducts a search for urls in data.
         Data is supposed to be text but tested whether
-        it's a message/Mailbox (then passed to Urlparser).'''
+        it's a message/Mailbox (then passed to urlparser).'''
         self.urlObjects() # compile url_re
         s = self.mailDeconstructor(data)
         if self.proto != 'mid':
