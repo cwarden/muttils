@@ -1,9 +1,8 @@
 # $Id$
 
-import email, email.Utils, re
-from cStringIO import StringIO
-from email.Errors import MessageParseError
-from mailbox import PortableUnixMailbox
+import cStringIO, re
+import email, email.iterators, email.Utils, email.Errors
+import mailbox
 
 protos = ('all', 'web',
         'http', 'ftp', 'gopher',
@@ -30,7 +29,7 @@ quote_re = re.compile(r'^([>|]\s*)+', re.MULTILINE)
 def msgFactory(fp):
     try:
         return email.message_from_file(fp)
-    except MessageParseError:
+    except email.Errors.MessageParseError:
         return ''
 
 def unQuote(s):
@@ -50,24 +49,23 @@ class Urlparser(object):
         self.proto = proto
         self.url_re = None
         self.items = []
-        self.msg = None
 
     def protoTest(self):
         if self.proto not in protos:
             raise UrlparserError("`%s': invalid spec, use one of %s"
                     % (self.proto, ', '.join(protos)))
 
-    def headParser(self, hkeys):
+    def headParser(self, msg, hkeys):
         for hkey in hkeys:
-            vals = self.msg.get_all(hkey)
+            vals = msg.get_all(hkey)
             if vals:
                 pairs = email.Utils.getaddresses(vals)
                 urls = [pair[1] for pair in pairs if pair[1]]
                 self.items += urls
 
-    def headSearcher(self):
+    def headSearcher(self, msg):
         for skey in searchkeys:
-            vals = self.msg.get_all(skey, [])
+            vals = msg.get_all(skey, [])
             for val in vals:
                 urls = [u[0] for u in self.url_re.findall(val)]
                 self.items += urls
@@ -79,38 +77,35 @@ class Urlparser(object):
         adding urls to list of items and returns
         text parts for further searching.'''
         try:
-            self.msg = email.message_from_string(s)
-        except MessageParseError:
+            msg = email.message_from_string(s)
+        except email.Errors.MessageParseError:
             return s
-        if not self.msg or not self.msg['Message-ID']:
+        if not msg or not msg['Message-ID']:
             return s
         # else it's a message or a mailbox
-        if not self.msg.get_unixfrom():
-            sl = self.msgDeconstructor()
+        if not msg.get_unixfrom():
+            sl = self.msgDeconstructor(msg)
         else: # treat s like a mailbox because it might be one
             sl = [] # list of strings to search
-            fp = StringIO()
+            fp = cStringIO.StringIO()
             fp.write(s)
-            mbox = PortableUnixMailbox(fp, msgFactory)
-            while self.msg is not None:
-                self.msg = mbox.next()
-                if self.msg:
-                    sl = self.msgDeconstructor(sl)
+            mbox = mailbox.PortableUnixMailbox(fp, msgFactory)
+            while msg is not None:
+                msg = mbox.next()
+                if msg:
+                    sl = self.msgDeconstructor(msg, strings=sl)
             fp.close()
         s = '\n'.join(sl)
         return unQuote(s) # get quoted urls spanning more than 1 line
 
-    def msgDeconstructor(self, sl=None):
-        if sl is None:
-            sl = []
+    def msgDeconstructor(self, msg, strings=None):
+        sl = strings or []
         if self.proto != 'mid':
             if self.proto in ('all', 'mailto'):
-                self.headParser(addrkeys)
-            self.headSearcher()
+                self.headParser(msg, addrkeys)
+            self.headSearcher(msg)
         else:
             self.headParser(refkeys)
-        for part in self.msg.walk(): # use email.Iterator?
-            if part.get_content_maintype() == 'text':
-                text = part.get_payload(decode=True)
-                sl.append(text)
+        for part in email.iterators.typed_subpart_iterator(msg):
+            sl.append(part.get_payload())
         return sl
