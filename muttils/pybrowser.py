@@ -51,7 +51,10 @@ class browser(object):
         elif not local_re.match(url):
             # strip url to pure pathname
             url = file_re.sub('/', url, 1)
-            if not os.path.exists(util.absolutepath(url)):
+            url = util.absolutepath(url)
+            if not url.startswith('/'):
+                url = os.path.join(os.getcwd, url)
+            if not os.path.exists(url):
                 raise BrowserError('%s: file not found')
             url = 'file://%s' % url
         return url
