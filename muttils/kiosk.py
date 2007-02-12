@@ -16,7 +16,7 @@ muttone = ["-e", "'set pager_index_lines=0'",
 mutti = ["-e", "'set uncollapse_jump'",
         "-e" "'push <search>~i\ \'%s\'<return>'", "-f"]
 
-def mailSpool():
+def getmspool():
     '''Tries to return a sensible default for user's mail spool.
     Returns None otherwise.'''
     mailspool = os.getenv('MAIL')
@@ -28,7 +28,7 @@ def mailSpool():
         return mailspool[:-1] # ~/Maildir/-INBOX[/]
     return mailspool
 
-def mailHier():
+def getmhier():
     '''Returns either ~/Maildir or ~/Mail
     as first item of a list if they are directories,
     an empty list otherwise.'''
@@ -39,14 +39,14 @@ def mailHier():
             return [d]
     return []
 
-def msgFactory(fp):
+def msgfactory(fp):
     try:
         p = email.Parser.HeaderParser()
         return p.parse(fp, headersonly=True)
     except email.Errors.HeaderParseError:
         return ''
 
-def mkUnixfrom(msg):
+def mkunixfrom(msg):
     '''Tries to create an improved unixfrom.'''
     if msg['return-path']:
         ufrom = msg['return-path'][1:-1]
@@ -59,7 +59,7 @@ def mkUnixfrom(msg):
 class KioskError(Exception):
     '''Exception class for the kiosk module.'''
 
-class Kiosk(html2text.html2text):
+class kiosk(html2text.html2text):
     '''
     Provides methods to search for and retrieve
     messages via their Message-ID.
@@ -87,7 +87,7 @@ class Kiosk(html2text.html2text):
         self.muttone = True      # configure mutt for display of 1 msg only
         self.mdmask = '^(cur|new|tmp)$'
 
-    def kioskTest(self):
+    def kiosktest(self):
         '''Provides the path to an mbox file to store retrieved messages.'''
         if not self.kiosk:
             self.kiosk = tempfile.mkstemp('.kiosk')[1]
@@ -107,20 +107,20 @@ class Kiosk(html2text.html2text):
         try:
             p = Parser()
             check = p.parsestr(testline, headersonly=True)
-        except HeaderParseError, e:
-            raise KioskError(e)
+        except HeaderParseError, inst:
+            raise KioskError(inst)
         if check.get_unixfrom():
             self.muttone = False
         else:
             raise KioskError('%s: not a unix mailbox' % self.kiosk)
 
-    def hierTest(self):
+    def mhiertest(self):
         '''Checks whether given directories exist and
         creates mhiers set (unique elems) with absolute paths.'''
         if not self.mhiers:
             mhiers = self.ui.configitem('messages', 'maildirs')
             if mhiers is None:
-                self.mhiers = mailHier()
+                self.mhiers = getmhier()
             else:
                 self.mhiers = [i.strip() for i in mhiers.split(',')]
         mhiers = set(self.mhiers)
@@ -132,34 +132,34 @@ class Kiosk(html2text.html2text):
             else:
                 sys.stdout.write('%s: not a directory, skipping\n' % hier)
 
-    def makeQuery(self, mid):
+    def makequery(self, mid):
         '''Reformats Message-ID to google query.'''
         query = ({'selm': mid, 'dmode': 'source'},
                 {'selm': mid})[self.browse]
         return '%s?%s' % (ggroups,  urllib.urlencode(query))
 
-    def gooBrowse(self):
+    def goobrowse(self):
         '''Visits given urls with browser and exits.'''
-        items = [self.makeQuery(mid) for mid in self.items]
+        items = [self.makequery(mid) for mid in self.items]
         try:
             b = pybrowser.browser(parentui=self.ui,
                     items=items, tb=self.tb, xb=self.xb)
             b.urlvisit()
-        except pybrowser.BrowserError, e:
-            raise KioskError(e)
+        except pybrowser.BrowserError, inst:
+            raise KioskError(inst)
         sys.exit()
 
-    def gooRetrieve(self, mid, found, opener, header_re):
+    def gooretrieve(self, mid, found, opener, header_re):
         try:
-            fp = opener.open(self.makeQuery(mid))
+            fp = opener.open(self.makequery(mid))
             self.htpwrite(html=fp.read(), append=False)
             fp.close()
             liniter = iter(self.htpreadlines(nl=False))
-        except urllib2.URLError, e:
-            if hasattr(e, 'reason'):
-                raise KioskError(urlfailmsg + e)
-            if hasattr(e, 'code'):
-                raise KioskError(urlerrmsg + e)
+        except urllib2.URLError, inst:
+            if hasattr(inst, 'reason'):
+                raise KioskError(urlfailmsg + inst)
+            if hasattr(inst, 'code'):
+                raise KioskError(urlerrmsg + inst)
         line = ''
         try:
             while not header_re.match(line):
@@ -181,11 +181,11 @@ class Kiosk(html2text.html2text):
             found.append(mid)
             self.msgs.append(msg)
 
-    def goGoogle(self):
+    def gogoogle(self):
         '''Gets messages from Google Groups.'''
         sys.stdout.write('Going google ...\n')
         if self.browse:
-            self.gooBrowse()
+            self.goobrowse()
         sys.stdout.write('*Unfortunately Google masks all email addresses*\n')
         opener = urllib2.build_opener()
         opener.addheaders = [useragent]
@@ -195,12 +195,12 @@ class Kiosk(html2text.html2text):
         self.open()
         try:
             for mid in self.items:
-                self.gooRetrieve(mid, found, opener, header_re)
+                self.gooretrieve(mid, found, opener, header_re)
         finally:
             self.close()
         self.items = [mid for mid in self.items if mid not in found]
 
-    def leafSearch(self):
+    def leafsearch(self):
         '''Tries searching a local news spool.
         Works only with leafnode <= 1.5 at the moment.'''
         p = os.popen('newsq 2> %s' % os.devnull)
@@ -224,15 +224,15 @@ class Kiosk(html2text.html2text):
                             msg = email.message_from_file(f)
                         finally:
                             f.close()
-                    except MessageParseError, e:
-                        raise KioskError(e)
+                    except MessageParseError, inst:
+                        raise KioskError(inst)
                     self.msgs.append(msg)
                     self.items.remove(fn[1:-1])
         if self.items:
             sys.stdout.write('%s not on local server\n'
                     % util.plural(len(self.items), 'message'))
 
-    def boxParser(self, path, maildir=False, isspool=False):
+    def boxparser(self, path, maildir=False, isspool=False):
         if (not isspool and path == self.mspool
                 or self.mask and self.mask.search(path) is not None):
             return
@@ -244,22 +244,22 @@ class Kiosk(html2text.html2text):
             for d in 'cur', 'new', 'tmp':
                 if d not in dl:
                     return
-            mbox = mailbox.Maildir(path, msgFactory)
+            mbox = mailbox.Maildir(path, msgfactory)
         else:
             try:
                 fp = open(path, 'rb')
-            except IOError, e:
-                sys.stdout.write('%s\n' % e)
+            except IOError, inst:
+                sys.stdout.write('%s\n' % inst)
                 return
-            mbox = mailbox.PortableUnixMailbox(fp, msgFactory)
+            mbox = mailbox.PortableUnixMailbox(fp, msgfactory)
         sys.stdout.write('searching %s ' % path)
         while True:
             try:
                 msg = mbox.next()
                 sys.stdout.write('.')
                 sys.stdout.flush()
-            except IOError, e:
-                sys.stdout.write('\n%s\n' % e)
+            except IOError, inst:
+                sys.stdout.write('\n%s\n' % inst)
                 break
             if msg is None:
                 sys.stdout.write('\n')
@@ -274,7 +274,7 @@ class Kiosk(html2text.html2text):
         if not maildir:
             fp.close()
 
-    def walkMhier(self, mdir):
+    def walkmhier(self, mdir):
         '''Visits mail hierarchies and parses their mailboxes.
         Detects mbox and Maildir mailboxes.'''
         for root, dirs, files in os.walk(mdir):    
@@ -286,31 +286,31 @@ class Kiosk(html2text.html2text):
             for name in dirs:
                 if self.items:
                     path = os.path.join(root, name)
-                    self.boxParser(path, True)
+                    self.boxparser(path, True)
             for name in files:
                 if self.items:
                     path = os.path.join(root, name)
-                    self.boxParser(path)
+                    self.boxparser(path)
 
-    def mailSearch(self):
+    def mailsearch(self):
         '''Announces search of mailboxes, searches spool,
-        and passes mail hierarchies to walkMhier.'''
+        and passes mail hierarchies to walkmhier.'''
         sys.stdout.write('Searching local mailboxes ...\n')
         if self.mspool:
-            self.mspool = mailSpool()
-            self.boxParser(self.mspool,
+            self.mspool = getmspool()
+            self.boxparser(self.mspool,
                     os.path.isdir(self.mspool), isspool=True)
         self.mdmask = re.compile(r'%s' % self.mdmask)
         for mhier in self.mhiers:
-            self.walkMhier(mhier)
+            self.walkmhier(mhier)
 
-    def masKompile(self):
+    def maskompile(self):
         try:
             self.mask = re.compile(r'%s' % self.mask)
-        except re.error, e:
-            raise KioskError("%s in pattern `%s'" % (e, self.mask))
+        except re.error, inst:
+            raise KioskError("%s in pattern `%s'" % (inst, self.mask))
 
-    def openKiosk(self, firstid):
+    def openkiosk(self, firstid):
         '''Opens mutt on kiosk mailbox.'''
         fp = open(self.kiosk, 'ab')
         try:
@@ -320,7 +320,7 @@ class Kiosk(html2text.html2text):
                 for h in ('Status', 'Xref'):
                     del msg[h]
                 if not msg.get_unixfrom():
-                    msg = mkUnixfrom(msg)
+                    msg = mkunixfrom(msg)
                 g.flatten(msg, unixfrom=True)
         finally:
             fp.close()
@@ -339,28 +339,28 @@ class Kiosk(html2text.html2text):
             cs += ['<', tty, '>', tty]
         os.system(' '.join(cs))
 
-    def kioskStore(self):
+    def kioskstore(self):
         '''Collects messages identified by ID either
         by retrieving them locally or from GoogleGroups.'''
         if self.browse:
-            self.goGoogle()
-        self.kioskTest()
+            self.gogoogle()
+        self.kiosktest()
         try:
             self.ui.updateconfig()
         except self.ui.ConfigError, inst:
             raise KioskError(inst)
         itemscopy = self.items[:]
-        self.leafSearch()
+        self.leafsearch()
         if self.items:
-            self.hierTest()
+            self.mhiertest()
             if self.mask:
-                self.masKompile()
-            self.mailSearch()
+                self.maskompile()
+            self.mailsearch()
             if self.items:
                 sys.stdout.write('%s not in specified local mailboxes\n'
                         % util.plural(len(self.items), 'message'))
         if self.items and not self.local:
-            self.goGoogle()
+            self.gogoogle()
         elif self.items:
             time.sleep(3)
         if self.msgs:
@@ -369,4 +369,4 @@ class Kiosk(html2text.html2text):
                 if mid not in self.items:
                     firstid = mid
                     break
-            self.openKiosk(firstid)
+            self.openkiosk(firstid)

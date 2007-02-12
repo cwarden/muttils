@@ -80,9 +80,9 @@ class Urlbatcher(urlcollector.urlcollector):
                     self.urlGo()
                 else:
                     try:
-                        k = kiosk.Kiosk(self.ui,
+                        k = kiosk.kiosk(self.ui,
                                 items=self.items, opts=self.options)
-                        k.kioskStore()
+                        k.kioskstore()
                     except kiosk.KioskError, inst:
                         raise UrlbatcherError(inst)
         else:

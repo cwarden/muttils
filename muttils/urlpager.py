@@ -114,7 +114,7 @@ class Urlpager(urlcollector.urlcollector, tpager.tpager):
                 pass
         else:
             try:
-                k = kiosk.Kiosk(self.ui, items=self.items, opts=self.options)
-                k.kioskStore()
+                k = kiosk.kiosk(self.ui, items=self.items, opts=self.options)
+                k.kioskstore()
             except kiosk.KioskError, inst:
                 raise UrlpagerError(inst)
