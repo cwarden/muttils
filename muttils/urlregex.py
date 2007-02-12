@@ -287,7 +287,7 @@ class Urlregex(urlparser.urlparser):
         Data is supposed to be text but tested whether
         it's a message/Mailbox (then passed to urlparser).'''
         self.urlObjects() # compile url_re
-        s = self.mailDeconstructor(data)
+        s = self.maildeconstructor(data)
         if self.proto != 'mid':
             wipe_re = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE)
             s = wipe_re.sub('', s)

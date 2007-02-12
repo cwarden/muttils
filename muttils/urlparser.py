@@ -37,7 +37,7 @@ class urlparser(object):
         self.url_re = None
         self.items = []
 
-    def headParser(self, msg, hkeys):
+    def headparser(self, msg, hkeys):
         for hkey in hkeys:
             vals = msg.get_all(hkey)
             if vals:
@@ -45,7 +45,7 @@ class urlparser(object):
                 urls = [pair[1] for pair in pairs if pair[1]]
                 self.items += urls
 
-    def mailDeconstructor(self, s):
+    def maildeconstructor(self, s):
         '''Checks if given string is message or mailbox.
         If no, returns string.
         Parses message/mailbox for relevant headers
@@ -59,7 +59,7 @@ class urlparser(object):
             return s
         # else it's a message or a mailbox
         if not msg.get_unixfrom():
-            sl = self.msgDeconstructor(msg)
+            sl = self.msgdeconstructor(msg)
         else: # treat s like a mailbox because it might be one
             sl = [] # list of strings to search
             fp = cStringIO.StringIO()
@@ -68,23 +68,23 @@ class urlparser(object):
             while msg is not None:
                 msg = mbox.next()
                 if msg:
-                    sl = self.msgDeconstructor(msg, strings=sl)
+                    sl = self.msgdeconstructor(msg, strings=sl)
             fp.close()
         s = '\n'.join(sl)
         # try getting quoted urls spanning more than 1 line
         return quote_re.sub('', s)
 
-    def msgDeconstructor(self, msg, strings=None):
+    def msgdeconstructor(self, msg, strings=None):
         sl = strings or []
         if self.proto != 'mid':
             if self.proto in ('all', 'mailto'):
-                self.headParser(msg, addrheads)
+                self.headparser(msg, addrheads)
             for skey in searchheads:
                 vals = msg.get_all(skey)
                 if vals:
                     sl += vals
         else:
-            self.headParser(refheads)
+            self.headparser(msg, refheads)
         for part in email.iterators.typed_subpart_iterator(msg):
             sl.append(part.get_payload())
         return sl
