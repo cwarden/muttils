@@ -1,7 +1,7 @@
 # $Id$
 
 import cStringIO, re
-import email, email.iterators, email.Utils, email.Errors
+import email, email.Iterators, email.Utils, email.Errors
 import mailbox
 
 # header tuples (to be extended)
@@ -85,6 +85,6 @@ class urlparser(object):
                     sl += vals
         else:
             self.headparser(msg, refheads)
-        for part in email.iterators.typed_subpart_iterator(msg):
+        for part in email.Iterators.typed_subpart_iterator(msg):
             sl.append(part.get_payload())
         return sl

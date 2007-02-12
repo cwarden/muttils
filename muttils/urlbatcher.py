@@ -9,14 +9,13 @@
 # input is checked anew for each file.
 ###
 
-import iterm, kiosk, pybrowser, ui, util
-from urlcollector import Urlcollector, UrlcollectorError
+import iterm, kiosk, pybrowser, ui, urlcollector, util
 import os
 
 class UrlbatcherError(Exception):
     '''Exception class for the urlbatcher module.'''
 
-class Urlbatcher(Urlcollector):
+class Urlbatcher(urlcollector.urlcollector):
     '''
     Parses input for either web urls or message-ids.
     Browses all urls or creates a message tree in mutt.
@@ -38,7 +37,7 @@ class Urlbatcher(Urlcollector):
             }
 
     def __init__(self, parentui=None, opts={}):
-        Urlcollector.__init__(self)
+        urlcollector.urlcollector.__init__(self)
         self.ui = parentui or ui.config()
         self.options.update(opts.items())
         for k in self.options.keys():
@@ -65,8 +64,8 @@ class Urlbatcher(Urlcollector):
             except ui.ConfigError, inst:
                 raise UrlbatcherError(inst)
         try:
-            self.urlCollect()
-        except UrlcollectorError, e:
+            self.urlcollect()
+        except urlcollector.UrlcollectorError, e:
             raise UrlbatcherError(e)
         if not self.files:
             it = iterm.iterm()

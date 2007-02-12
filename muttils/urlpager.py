@@ -1,14 +1,13 @@
 # $Id$
 
-import iterm, kiosk, pybrowser, tpager, ui, util
-from urlcollector import Urlcollector, UrlcollectorError
+import iterm, kiosk, pybrowser, tpager, ui, urlcollector, util
 from urlregex import mailcheck, ftpcheck
 import os, readline
 
 class UrlpagerError(Exception):
     '''Exception class for the urlpager module.'''
 
-class Urlpager(Urlcollector, tpager.tpager):
+class Urlpager(urlcollector.urlcollector, tpager.tpager):
 
     options = {
             'proto': 'all',
@@ -27,7 +26,7 @@ class Urlpager(Urlcollector, tpager.tpager):
             }
 
     def __init__(self, parentui=None, opts={}):
-        Urlcollector.__init__(self)
+        urlcollector.urlcollector.__init__(self)
         tpager.tpager.__init__(self, name='url')
         self.ui = parentui or ui.config()
         self.options.update(opts.items())
@@ -89,8 +88,8 @@ class Urlpager(Urlcollector, tpager.tpager):
             except self.ui.ConfigError, inst:
                 raise UrlpagerError(inst)
         try:
-            self.urlCollect()
-        except UrlcollectorError, e:
+            self.urlcollect()
+        except urlcollector.UrlcollectorError, e:
             raise UrlpagerError(e)
         self.urlPager()
         if not self.items:

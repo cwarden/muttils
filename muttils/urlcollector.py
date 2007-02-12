@@ -4,9 +4,9 @@ import urlregex, util
 import re, sys, urllib2
 
 class UrlcollectorError(Exception):
-    '''Exception class for the Urlcollector module.'''
+    '''Exception class for the urlcollector module.'''
 
-class Urlcollector(urlregex.urlregex):
+class urlcollector(urlregex.urlregex):
     '''
     Provides function to retrieve urls
     from files or input stream.
@@ -17,23 +17,23 @@ class Urlcollector(urlregex.urlregex):
         self.files = files or [] # files to search
         self.pat = pat           # pattern to match urls against
 
-    def urlCollect(self):
+    def urlcollect(self):
         '''Harvests urls from stdin or files.'''
-        def urlFind(data):
+        def urlfind(data):
             try:
                 self.findurls(data)
             except urlregex.UrlregexError, inst:
                 raise UrlcollectorError(inst)
 
         if not self.files: # read from stdin
-            urlFind(sys.stdin.read())
+            urlfind(sys.stdin.read())
         else:
             for f in self.files:
                 f = util.absolutepath(f)
                 fp = urllib2.urlopen('file://%s' % f)
                 try:
                     if fp.info().gettype().startswith('text/'):
-                        urlFind(fp.read())
+                        urlfind(fp.read())
                 finally:
                     fp.close()
         if self.pat and self.items:

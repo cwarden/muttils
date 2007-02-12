@@ -1,11 +1,8 @@
 # $Id$'
 
-import pybrowser, util
-from html2text import html2text
-from email.Generator import Generator
-from email.Parser import Parser
-from email.Errors import MessageParseError, HeaderParseError
-import email, mailbox, os, re, tempfile, time, urllib, urllib2, sys
+import html2text, pybrowser, util
+import email, email.Generator, email.Parser, email.Errors
+import mailbox, os, re, tempfile, time, urllib, urllib2, sys
 
 gmsgterminator = 'Create a group[8] - Google Groups[9]'
 ggroups = 'http://groups.google.com/groups'
@@ -44,9 +41,9 @@ def mailHier():
 
 def msgFactory(fp):
     try:
-        p = Parser()
+        p = email.Parser.HeaderParser()
         return p.parse(fp, headersonly=True)
-    except HeaderParseError:
+    except email.Errors.HeaderParseError:
         return ''
 
 def mkUnixfrom(msg):
@@ -62,7 +59,7 @@ def mkUnixfrom(msg):
 class KioskError(Exception):
     '''Exception class for the kiosk module.'''
 
-class Kiosk(html2text):
+class Kiosk(html2text.html2text):
     '''
     Provides methods to search for and retrieve
     messages via their Message-ID.
@@ -79,7 +76,7 @@ class Kiosk(html2text):
             }
 
     def __init__(self, ui, items=None, opts={}):
-        html2text.__init__(self, strict=False)
+        html2text.html2text.__init__(self, strict=False)
         self.ui = ui
         self.items = items or []
 
@@ -317,7 +314,7 @@ class Kiosk(html2text):
         '''Opens mutt on kiosk mailbox.'''
         fp = open(self.kiosk, 'ab')
         try:
-            g = Generator(fp, maxheaderlen=0)
+            g = email.Generator.Generator(fp, maxheaderlen=0)
             for msg in self.msgs:
                 # delete read status and local server info
                 for h in ('Status', 'Xref'):
