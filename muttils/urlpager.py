@@ -7,7 +7,7 @@ import os, readline
 class UrlpagerError(Exception):
     '''Exception class for the urlpager module.'''
 
-class Urlpager(urlcollector.urlcollector, tpager.tpager):
+class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     options = {
             'proto': 'all',
@@ -33,7 +33,7 @@ class Urlpager(urlcollector.urlcollector, tpager.tpager):
         for k in self.options.keys():
             setattr(self, k, self.options[k])
 
-    def urlPager(self):
+    def urlchoice(self):
         if self.proto not in ('all', 'mid'):
             self.name = '%s %s' % (self.proto, self.name)
         elif self.proto == 'mid':
@@ -45,7 +45,7 @@ class Urlpager(urlcollector.urlcollector, tpager.tpager):
         except tpager.TpagerError, inst:
             raise UrlpagerError(inst)
 
-    def urlGo(self):
+    def urlgo(self):
         url, cs, conny = self.items[0], [], True
         if (self.proto == 'mailto'
                 or self.proto == 'all' and mailcheck(url)):
@@ -79,7 +79,7 @@ class Urlpager(urlcollector.urlcollector, tpager.tpager):
             else:
                 os.execvp(cs[0], cs)
 
-    def urlSearch(self):
+    def urlsearch(self):
         if self.proto != 'mid':
             try:
                 self.ui.updateconfig()
@@ -91,7 +91,7 @@ class Urlpager(urlcollector.urlcollector, tpager.tpager):
             self.urlcollect()
         except urlcollector.UrlcollectorError, e:
             raise UrlpagerError(e)
-        self.urlPager()
+        self.urlchoice()
         if not self.items:
             return
         if self.proto != 'mid':
@@ -109,7 +109,7 @@ class Urlpager(urlcollector.urlcollector, tpager.tpager):
                     it.reinit()
                 if url:
                     self.items = [url]
-                self.urlGo()
+                self.urlgo()
             except KeyboardInterrupt:
                 pass
         else:

@@ -9,8 +9,7 @@
 # input is checked anew for each file.
 ###
 
-import usage, util
-from urlpager import Urlpager, UrlpagerError
+import usage, urlpager, util
 import getopt, os.path, sys
 
 optstring = 'bd:D:f:hiIlM:np:k:r:tw:x'
@@ -34,7 +33,7 @@ def userhelp(error='', i=False):
 
 
 def run():
-    '''Command interface to Urlpager.'''
+    '''Command interface to urlpager.'''
 
     opts = {}
     try:
@@ -86,10 +85,10 @@ def run():
                 opts['proto'] = 'web'
                 opts['getdir'] = a
 
-        u = Urlpager(opts=opts)
-        u.urlSearch()
+        u = urlpager.urlpager(opts=opts)
+        u.urlsearch()
 
-    except (getopt.GetoptError, UrlpagerError), e:
+    except (getopt.GetoptError, urlpager.UrlpagerError), e:
         userhelp(e)
     except KeyboardInterrupt:
         userhelp('needs filename(s) or stdin', i=True)
