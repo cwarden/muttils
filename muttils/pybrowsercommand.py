@@ -20,8 +20,8 @@ def run():
     options, args = parser.parse_args()
     
     try:
-        b = pybrowser.Browser(items=args,
+        b = pybrowser.browser(items=args,
                 tb=options.textbrowser, xb=options.xbrowser)
-        b.urlVisit()
+        b.urlvisit()
     except pybrowser.BrowserError, inst:
         sys.exit(inst)

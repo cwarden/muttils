@@ -6,7 +6,7 @@
 import ConfigParser, os.path
 
 class ConfigError(Exception):
-    '''Exception class for configuration.'''
+    '''Exception class for ui configuration.'''
 
 class config(object):
     def __init__(self, rcpath=None):
@@ -23,22 +23,26 @@ class config(object):
                 [('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
                     ('ctan', 'ftp://ftp.ctan.org/tex-archive')],
                 }
-        self.cfg = ConfigParser.SafeConfigParser(defaults)
+        self.config = ConfigParser.SafeConfigParser(defaults)
         self.updated = False
 
     def updateconfig(self):
         if self.updated:
             return
-        defaults = self.cfg.defaults()
+        defaults = self.config.defaults()
         sections = defaults.keys()
         try:
-            self.cfg.read(self.rcpath)
+            self.config.read(self.rcpath)
         except ConfigParser.ParsingError, inst:
             raise ConfigError(inst)
         for section in sections:
-            if not self.cfg.has_section(section):
-                self.cfg.add_section(section)
+            if not self.config.has_section(section):
+                self.config.add_section(section)
             for name, value in defaults[section]:
-                if not self.cfg.has_option(section, name):
-                    self.cfg.set(section, name, value)
+                if not self.config.has_option(section, name):
+                    self.config.set(section, name, value)
         self.updated = True
+
+    def configitem(self, section, name):
+        '''Returns value of name of section of config.'''
+        return self.config.get(section, name)

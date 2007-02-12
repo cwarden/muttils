@@ -9,23 +9,20 @@
 # input is checked anew for each file.
 ###
 
-import ui, util
-from pybrowser import Browser, BrowserError
-from kiosk import Kiosk, KioskError
+import iterm, kiosk, pybrowser, ui, util
 from urlcollector import Urlcollector, UrlcollectorError
-from iterm import iterm
 import os
 
 class UrlbatcherError(Exception):
     '''Exception class for the urlbatcher module.'''
 
-class Urlbatcher(Browser, Urlcollector, Kiosk, iterm):
+class Urlbatcher(Urlcollector):
     '''
     Parses input for either web urls or message-ids.
     Browses all urls or creates a message tree in mutt.
     You can specify urls/ids by a regex pattern.
     '''
-    defaults = {
+    options = {
             'proto': 'web',
             'files': None,
             'pat': None,
@@ -40,13 +37,12 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, iterm):
             'getdir': '',
             }
 
-    def __init__(self, opts={}):
-        Browser.__init__(self)
+    def __init__(self, parentui=None, opts={}):
         Urlcollector.__init__(self)
-        Kiosk.__init__(self)
-        iterm.__init__(self)
-        for k in self.defaults.keys():
-            setattr(self, k, opts.get(k, self.defaults[k]))
+        self.ui = parentui or ui.config()
+        self.options.update(opts.items())
+        for k in self.options.keys():
+            setattr(self, k, self.options[k])
 
     def urlGo(self):
         if self.getdir:
@@ -54,16 +50,18 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, iterm):
             os.execvp('wget', ['wget', '-P', self.getdir] + self.items)
         else:
             try:
-                self.urlVisit()
-            except BrowserError, e:
+                b = pybrowser.browser(parentui=self.ui,
+                        items=self.items, tb=self.tb, xb=self.xb)
+                b.urlvisit()
+            except pybrowser.BrowserError, e:
                 raise UrlbatcherError(e)
                     
     def urlSearch(self):
         if self.proto != 'mid':
             try:
-                self.updateconfig()
-                self.cpan = self.cfg.get('can', 'cpan')
-                self.ctan = self.cfg.get('can', 'ctan')
+                self.ui.updateconfig()
+                self.cpan = self.ui.configitem('can', 'cpan')
+                self.ctan = self.ui.configitem('can', 'ctan')
             except ui.ConfigError, inst:
                 raise UrlbatcherError(inst)
         try:
@@ -71,7 +69,8 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, iterm):
         except UrlcollectorError, e:
             raise UrlbatcherError(e)
         if not self.files:
-            self.terminit()
+            it = iterm.iterm()
+            it.terminit()
         if self.items:
             yorn = '%s\nRetrieve the above %s? yes, [No] ' \
                     % ('\n'.join(self.items),
@@ -82,12 +81,14 @@ class Urlbatcher(Browser, Urlcollector, Kiosk, iterm):
                     self.urlGo()
                 else:
                     try:
-                        self.kioskStore()
-                    except KioskError, e:
-                        raise UrlbatcherError(e)
+                        k = kiosk.Kiosk(self.ui,
+                                items=self.items, opts=self.options)
+                        k.kioskStore()
+                    except kiosk.KioskError, inst:
+                        raise UrlbatcherError(inst)
         else:
             msg = 'No %s found. [Ok] ' % ('url',
                     'message-id')[self.proto=='mid']
             raw_input(msg)
         if not self.files:
-            self.reinit()
+            it.reinit()

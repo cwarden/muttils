@@ -61,7 +61,7 @@ class ipages(Tformat):
         try:
             items = self.formatItems()
         except TformatError, e:
-            raise PagesError(e)
+            raise IpagesError(e)
         # all this still supposes that no wrapped text item
         # has more lines than the terminal rows
         buff, lines = '', 0

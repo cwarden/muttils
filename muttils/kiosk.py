@@ -1,8 +1,7 @@
 # $Id$'
 
-import ui, util
+import pybrowser, util
 from html2text import html2text
-from pybrowser import Browser, BrowserError
 from email.Generator import Generator
 from email.Parser import Parser
 from email.Errors import MessageParseError, HeaderParseError
@@ -79,8 +78,9 @@ class Kiosk(html2text):
             'tb': False,
             }
 
-    def __init__(self, items=None, opts={}):
+    def __init__(self, ui, items=None, opts={}):
         html2text.__init__(self, strict=False)
+        self.ui = ui
         self.items = items or []
 
         for k in self.defaults.keys():
@@ -121,7 +121,7 @@ class Kiosk(html2text):
         '''Checks whether given directories exist and
         creates mhiers set (unique elems) with absolute paths.'''
         if not self.mhiers:
-            mhiers = self.cfg.get('messages', 'maildirs')
+            mhiers = self.ui.configitem('messages', 'maildirs')
             if mhiers is None:
                 self.mhiers = mailHier()
             else:
@@ -143,11 +143,12 @@ class Kiosk(html2text):
 
     def gooBrowse(self):
         '''Visits given urls with browser and exits.'''
-        b = Browser(items=[self.makeQuery(mid) for mid in self.items],
-                tb=self.tb, xb=self.xb)
+        items = [self.makeQuery(mid) for mid in self.items]
         try:
-            b.urlVisit()
-        except BrowserError, e:
+            b = pybrowser.browser(parentui=self.ui,
+                    items=items, tb=self.tb, xb=self.xb)
+            b.urlvisit()
+        except pybrowser.BrowserError, e:
             raise KioskError(e)
         sys.exit()
 
@@ -327,7 +328,7 @@ class Kiosk(html2text):
         finally:
             fp.close()
         self.kiosk = "'%s'" % self.kiosk
-        mailer = self.cfg.get('messages', 'mailer')
+        mailer = self.ui.configitem('messages', 'mailer')
         cs = [str(mailer)]
         if  mailer[:4] != 'mutt':
             cs = [mailer, '-f', self.kiosk]
@@ -348,8 +349,8 @@ class Kiosk(html2text):
             self.goGoogle()
         self.kioskTest()
         try:
-            self.updateconfig()
-        except ui.ConfigError, inst:
+            self.ui.updateconfig()
+        except self.ui.ConfigError, inst:
             raise KioskError(inst)
         itemscopy = self.items[:]
         self.leafSearch()

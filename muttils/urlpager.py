@@ -1,8 +1,6 @@
 # $Id$
 
-import ui, util
-from pybrowser import Browser, BrowserError
-from kiosk import Kiosk, KioskError
+import kiosk, pybrowser, ui, util
 from urlcollector import Urlcollector, UrlcollectorError
 from tpager import Tpager, TpagerError
 from urlregex import mailCheck, ftpCheck
@@ -11,9 +9,9 @@ import os, readline
 class UrlpagerError(Exception):
     '''Exception class for the urlpager module.'''
 
-class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
+class Urlpager(Urlcollector, Tpager):
 
-    defaults = {
+    options = {
             'proto': 'all',
             'files': None,
             'pat': None,
@@ -29,14 +27,13 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
             'getdir': '',
             }
 
-    def __init__(self, opts={}):
-        Browser.__init__(self)
+    def __init__(self, parentui=None, opts={}):
         Urlcollector.__init__(self)
         Tpager.__init__(self, name='url')
-        Kiosk.__init__(self)
-
-        for k in self.defaults.keys():
-            setattr(self, k, opts.get(k, self.defaults[k]))
+        self.ui = parentui or ui.config()
+        self.options.update(opts.items())
+        for k in self.options.keys():
+            setattr(self, k, self.options[k])
 
     def urlPager(self):
         if self.proto not in ('all', 'mid'):
@@ -55,10 +52,10 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
         if (self.proto == 'mailto'
                 or self.proto == 'all' and mailCheck(url)):
             try:
-                self.updateconfig()
-            except ui.ConfigError, inst:
+                self.ui.updateconfig()
+                cs = [self.ui.configitem('messages', 'mailer')]
+            except self.ui.ConfigError, inst:
                 raise UrlpagerError(inst)
-            cs = [self.cfg.get('messages', 'mailer')]
             conny = False
         elif self.getdir:
             cs = ['wget', '-P', self.getdir]
@@ -68,8 +65,10 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
             cs = [self.ftp]
         if not cs:
             try:
-                self.urlVisit()
-            except BrowserError, e:
+                b = pybrowser.browser(parentui=self.ui,
+                        items=self.items, tb=self.tb, xb=self.xb)
+                b.urlvisit()
+            except pybrowser.BrowserError, e:
                 raise UrlpagerError(e)
         else:
             cs += [url]
@@ -85,10 +84,10 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
     def urlSearch(self):
         if self.proto != 'mid':
             try:
-                self.updateconfig()
-                self.cpan = self.cfg.get('can', 'cpan')
-                self.ctan = self.cfg.get('can', 'ctan')
-            except ui.ConfigError, inst:
+                self.ui.updateconfig()
+                self.cpan = self.ui.configitem('can', 'cpan')
+                self.ctan = self.ui.configitem('can', 'ctan')
+            except self.ui.ConfigError, inst:
                 raise UrlpagerError(inst)
         try:
             self.urlCollect()
@@ -116,6 +115,7 @@ class Urlpager(Urlcollector, Tpager, Browser, Kiosk):
                 pass
         else:
             try:
-                self.kioskStore()
-            except KioskError, e:
-                raise UrlpagerError(e)
+                k = kiosk.Kiosk(self.ui, items=self.items, opts=self.options)
+                k.kioskStore()
+            except kiosk.KioskError, inst:
+                raise UrlpagerError(inst)

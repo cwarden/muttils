@@ -19,7 +19,7 @@ local_re = re.compile('http://(%s)' %
         re.IGNORECASE)
 file_re  = re.compile(r'file:/+', re.IGNORECASE)
 
-def webUrlRegex():
+def weburlregex():
     u = Urlregex(proto='web', uniq=False)
     u.urlObjects(search=False)
     return u.url_re, u.proto_re
@@ -28,19 +28,19 @@ def webUrlRegex():
 class BrowserError(Exception):
     '''Exception class for the pybrowser module.'''
 
-class Browser(ui.config):
+class browser(object):
     '''
     Visits items with default or given browser.
     '''
-    def __init__(self, items=None, tb=False, xb=False):
-        ui.config.__init__(self)
+    def __init__(self, parentui=None, items=None, tb=False, xb=False):
+        self.ui = parentui or ui.config()
         self.items = items
         self.tb = tb # text browser
         self.xb = xb # x11 browser
         self.conny = False # try to connect to net
-        self.weburl_re, self.webproto_re = webUrlRegex()
+        self.weburl_re, self.webproto_re = weburlregex()
 
-    def urlComplete(self, url):
+    def urlcomplete(self, url):
         '''Adapts possibly short url to pass as browser argument.'''
         if self.weburl_re.match(url):
             # not local
@@ -56,17 +56,17 @@ class Browser(ui.config):
             url = 'file://%s' % url
         return url
 
-    def urlVisit(self):
+    def urlvisit(self):
         '''Visit url(s).'''
         try:
-            self.updateconfig()
-        except ui.ConfigError, inst:
+            self.ui.updateconfig()
+            xbrowser = self.ui.configitem('browser', 'xbrowser')
+            textbrowser = self.ui.configitem('browser', 'textbrowser')
+            self.items = (self.items
+                    or [self.ui.configitem('browser', 'homepage')])
+        except self.ui.ConfigError, inst:
             raise BrowserError(inst)
-        xbrowser = self.cfg.get('browser', 'xbrowser')
-        textbrowser = self.cfg.get('browser', 'textbrowser')
-        self.items = self.items or [self.cfg.get('browser', 'homepage')]
-
-        self.items = [self.urlComplete(url) for url in self.items]
+        self.items = [self.urlcomplete(url) for url in self.items]
         try:
             if self.xb and xbrowser:
                 b = webbrowser.get(xbrowser)
