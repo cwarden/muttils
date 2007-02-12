@@ -29,7 +29,7 @@ class Urlcollector(Urlregex):
             urlFind(sys.stdin.read())
         else:
             for f in self.files:
-                f = muttils.util.absolutepath(f)
+                f = util.absolutepath(f)
                 fp = urllib2.urlopen('file://%s' % f)
                 try:
                     if fp.info().gettype().startswith('text/'):
