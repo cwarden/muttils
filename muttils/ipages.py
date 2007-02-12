@@ -1,6 +1,6 @@
 # $Id$
 
-from tformat import Tformat, TformatError
+import tformat
 import os
 
 def screendims():
@@ -20,20 +20,19 @@ def screendims():
     return t_rows-3, t_cols+1
 
 
-class IpagesError(TformatError):
+class IpagesError(Exception):
     '''Exception class for ipages.'''
 
-class ipages(Tformat):
+class ipages(tformat.tformat):
     '''
     Subclass for Tpager.
-    Provides items, ilen, pages, itemsdict, cols.
+    Provides pages, cols.
     '''
     def __init__(self, format='sf'):
-        Tformat.__init__(self, format=format)  # <- format, itemsdict, keys
-        self.items = []                 # (text) items to choose from
-        self.ilen = 0                   # length of items' list
-        self.pages =  {}                # dictionary of pages
-        self.pn = 0                     # current page/key of pages
+        tformat.tformat.__init__(self, format=format)
+        # ^ format, items, ilen, itemsdict
+        self.pages =  {}  # dictionary of pages
+        self.pn = 0       # current page/key of pages
         self.rows, self.cols = screendims()
 
     def softcount(self, item):
@@ -52,15 +51,11 @@ class ipages(Tformat):
 
     def pagesdict(self):
         '''Creates dictionary of pages to display in terminal window.
-        Keys (page numbers) are integers starting from 1.'''
+        Keys are integers as string starting from "1".'''
         self.itemsdict, self.pages, self.pn = {}, {}, 0
-        self.ilen = len(self.items)
-        numkeys = xrange(1, self.ilen+1)
-        self.keys = map(str, numkeys)
-        map(self.itemsdict.__setitem__, self.keys, self.items)
         try:
-            items = self.formatItems()
-        except TformatError, e:
+            items = self.formatitems()
+        except tformat.TformatError, e:
             raise IpagesError(e)
         # all this still supposes that no wrapped text item
         # has more lines than the terminal rows

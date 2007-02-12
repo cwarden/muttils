@@ -3,7 +3,7 @@
 class TformatError(Exception):
     '''Exception class for Tformat.'''
 
-class Tformat(object):
+class tformat(object):
     '''
     Subclass to ipages (<- format, itemsdict, keys).
     Provides formatting methods
@@ -11,29 +11,32 @@ class Tformat(object):
     '''
     def __init__(self, format='sf'):
         self.format = format # sf: simple format, bf: bracket format
+        self.items = []      # (text) items to choose from
         self.itemsdict = {}  # dictionary of items to choose
-        self.keys = []       # itemsdict's keys
-        self.maxl = 0        # length of last key
+        self.ilen = 0        # length of items' list
 
-    def simpleFormat(self, key):
-        '''Simple format of choice menu,
-        recommended for 1 line items.'''
-        return '%s) %s\n' % (key.rjust(self.maxl), self.itemsdict[key])
+    def formatitems(self):
+        '''Formats items of itemsdict to numbered list.'''
 
-    def bracketFormat(self, key):
-        '''Format of choice menu with items
-        that are longer than 1 line.'''
-        return '[%s]\n%s\n' % (key, self.itemsdict[key])
+        def simpleformat(key):
+            '''Simple format of choice menu,
+            recommended for 1 line items.'''
+            return '%s) %s\n' % (key.rjust(maxl), self.itemsdict[key])
+        def bracketformat(key):
+            '''Format of choice menu with items
+            that are longer than 1 line.'''
+            return '[%s]\n%s\n' % (key, self.itemsdict[key])
 
-    def formatItems(self):
-        formdict = {'sf': self.simpleFormat, 'bf': self.bracketFormat}
+        formdict = {'sf': simpleformat, 'bf': bracketformat}
         if self.format not in formdict:
-            raise TformatError("`%s': invalid format, use one of `sf', `bf'"
+            raise TformatError('%s: invalid format, use one of "sf", "bf"'
                     % self.format)
-        if not self.keys:
+
+        self.ilen = len(self.items)
+        ikeys = [str(i) for i in xrange(1, self.ilen+1)]
+        map(self.itemsdict.__setitem__, ikeys, self.items)
+        if not self.itemsdict:
             return []
-        # dictionary of format functions
-        if self.format == 'sf':
-            self.maxl = len(self.keys[-1])
+        maxl = len(ikeys[-1])
         formatfunc = formdict[self.format]
-        return [formatfunc(key) for key in self.keys]
+        return [formatfunc(k) for k in ikeys]
