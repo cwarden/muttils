@@ -69,4 +69,4 @@ def run():
     except urlpager.UrlpagerError, inst:
         sys.exit(inst)
     except KeyboardInterrupt:
-        sys.exit('need filenames or standard input')
+        sys.exit(-1)
