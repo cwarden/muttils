@@ -17,15 +17,18 @@ proginfo = 'Urlpager - search, choose and retrieve url'
 
 progdesc = '''Search files or standard input for urls,
 choose 1 url interactively and retrieve it.
-Urls are either web locations or Message-IDs.'''
+Urls are either web locations or Message-IDs.
+Options "-p mid", "-i", "-n", "-b", "-l", "-m", "-d", "-D", "-M"
+switch to message retrieval.'''
 
 def run():
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
             usage='%prog [option] [files]', description=progdesc,
             version=version.version_(proginfo))
-    parser.set_defaults(midrelax=False, specdirs=None,
-            proto='all', pat=None, xb=False, tb=False, getdir='', ftp='',
-            local=False, browse=False, news=False, mhiers=None, mspool=True)
+    parser.set_defaults(proto='all', decl=False, pat=None,
+            xb=False, tb=False, getdir='', ftp='',
+            midrelax=False, local=False, browse=False, news=False,
+            kiosk='', mhiers='', specdirs='', mask=None)
 
     parser.add_option('-p', '--protocol', dest='proto',
             type='choice', choices=valid_protos,
@@ -58,19 +61,6 @@ def run():
             help='exclude mailboxes matching MASK from search')
 
     options, args = parser.parse_args()
-
-    for o in [options.midrelax, options.news, options.local, options.browse,
-            options.kiosk, options.mhiers, options.specdirs, options.mask]:
-        if o:
-            options.proto = 'mid'
-            break
-
-    if options.midrelax:
-        options.decl = False
-    if options.specdirs:
-        options.mhiers = options.specdirs
-        options.mspool = False
-    del options.midrelax, options.specdirs
 
     try:
         u = urlpager.urlpager(files=args, opts=options.__dict__)

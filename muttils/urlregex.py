@@ -159,7 +159,7 @@ class urlregex(urlparser.urlparser):
     and urls spanning more than 1 line
     if they are enclosed in '<>'.
     '''
-    def __init__(self, proto='all', decl=False, uniq=True):
+    def __init__(self, proto='all', decl=False, midrelax=False, uniq=True):
         urlparser.urlparser.__init__(self, proto=proto)
         # ^ items, proto
         self.decl = decl        # list only declared urls
@@ -275,10 +275,10 @@ class urlregex(urlparser.urlparser):
             if not self.decl:
                 self.proto_re = re.compile(r'^%s' % self.protocol,
                         re.IGNORECASE)
-        elif self.decl:
+        elif not self.midrelax:
             self.url_re = re.compile(declid, re.IGNORECASE|re.VERBOSE)
             if search:
-                self.kill_re = re.compile(nproto, re.I)
+                self.kill_re = re.compile(nproto, re.IGNORECASE)
         else:
             self.url_re = re.compile(simplid, re.IGNORECASE|re.VERBOSE)
 

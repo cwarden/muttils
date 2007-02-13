@@ -17,9 +17,8 @@ mutti = ["-e", "'set uncollapse_jump'",
         "-e" "'push <search>~i\ \'%s\'<return>'", "-f"]
 
 def getmspool():
-    '''Tries to return a sensible default for user's mail spool.
-    Returns None otherwise.'''
-    mailspool = os.getenv('MAIL')
+    '''Tries to return a sensible default for user's mail spool.'''
+    mailspool = os.getenv('MAIL', '')
     if not mailspool:
         ms = os.path.join('var', 'mail', os.environ['USER'])
         if os.path.isfile(ms):
@@ -69,8 +68,8 @@ class kiosk(html2text.html2text):
             'browse': False,
             'local': False,
             'news': False,
-            'mhiers': None,
-            'mspool': False,
+            'mhiers': '',
+            'specdirs': '',
             'mask': None,
             'xb': False,
             'tb': False,
@@ -84,6 +83,7 @@ class kiosk(html2text.html2text):
         for k in self.defaults.keys():
             setattr(self, k, opts.get(k, self.defaults[k]))
 
+        self.mspool = ''         # path to local mail spool
         self.msgs = []           # list of retrieved message objects
         self.muttone = True      # configure mutt for display of 1 msg only
         self.mdmask = '^(cur|new|tmp)$'
@@ -115,20 +115,21 @@ class kiosk(html2text.html2text):
         else:
             raise KioskError('%s: not a unix mailbox' % self.kiosk)
 
-    def mhiertest(self):
+    def getmhiers(self):
         '''Checks whether given directories exist and
         creates mhiers set (unique elems) with absolute paths.'''
-        mhiers = []
-        if self.mhiers:
+        if self.mhiers or self.specdirs: # cmdline priority
+            # specdirs have priority
+            mhiers = self.specdirs or self.mhiers
             # split colon-separated list from cmdline
-            mhiers += self.mhiers.split(':')
-        if self.mspool:
-            cfgmhiers = self.ui.configitem('messages', 'maildirs')
-            if cfgmhiers is None:
-                mhiers += getmhier()
+            mhiers = mhiers.split(':')
+        else:
+            mhiers = self.ui.configitem('messages', 'maildirs')
+            if mhiers is not None:
+                mhiers = [i.strip() for i in mhiers.split(',')]
             else:
-                mhiers += [i.strip() for i in cfgmhiers.split(',')]
-        mhiers = set(mhiers)
+                mhiers = getmhier()
+        # create set of unique elements
         self.mhiers = set()
         for hier in mhiers:
             abshier = util.absolutepath(hier)
@@ -269,7 +270,7 @@ class kiosk(html2text.html2text):
             if msg is None:
                 sys.stdout.write('\n')
                 break
-            msgid = msg.get('message-id','')[1:-1]
+            msgid = msg.get('message-id', '').strip('<>')
             if msgid in self.items:
                 self.msgs.append(msg)
                 self.items.remove(msgid)
@@ -301,10 +302,11 @@ class kiosk(html2text.html2text):
         '''Announces search of mailboxes, searches spool,
         and passes mail hierarchies to walkmhier.'''
         sys.stdout.write('Searching local mailboxes ...\n')
-        if self.mspool:
+        if not self.specdirs: # include mspool
             self.mspool = getmspool()
-            self.boxparser(self.mspool,
-                    os.path.isdir(self.mspool), isspool=True)
+            if self.mspool:
+                self.boxparser(self.mspool,
+                        os.path.isdir(self.mspool), isspool=True)
         self.mdmask = re.compile(r'%s' % self.mdmask)
         for mhier in self.mhiers:
             self.walkmhier(mhier)
@@ -322,7 +324,7 @@ class kiosk(html2text.html2text):
             g = email.Generator.Generator(fp, maxheaderlen=0)
             for msg in self.msgs:
                 # delete read status and local server info
-                for h in ('Status', 'Xref'):
+                for h in ('status', 'xref'):
                     del msg[h]
                 if not msg.get_unixfrom():
                     msg = mkunixfrom(msg)
@@ -357,7 +359,7 @@ class kiosk(html2text.html2text):
         itemscopy = self.items[:]
         self.leafsearch()
         if self.items and not self.news:
-            self.mhiertest()
+            self.getmhiers()
             if self.mask:
                 self.maskompile()
             self.mailsearch()

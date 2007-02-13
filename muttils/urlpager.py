@@ -4,6 +4,9 @@ import iterm, kiosk, pybrowser, tpager, ui, urlcollector, util
 from urlregex import mailcheck, ftpcheck
 import os, readline
 
+message_opts = ['midrelax', 'news', 'local', 'browse',
+        'kiosk', 'mhiers', 'specdirs', 'mask']
+
 class UrlpagerError(Exception):
     '''Exception class for the urlpager module.'''
 
@@ -11,13 +14,15 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     options = {
             'proto': 'all',
+            'decl': False,
             'pat': None,
+            'midrelax': False,
             'kiosk': '',
             'browse': False,
             'local': False,
             'news': False,
             'mhiers': None,
-            'mspool': True,
+            'specdirs': None,
             'mask': None,
             'xb': False,
             'tb': False,
@@ -31,8 +36,13 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         self.ui = parentui or ui.config()
         self.files = files
         self.options.update(opts.items())
-        for k in self.options.keys():
-            setattr(self, k, self.options[k])
+        if self.options['proto'] != 'mid':
+            for o in message_opts:
+                if self.options[o]:
+                    self.options['proto'] = 'mid'
+                    break
+        for k, v in self.options.iteritems():
+            setattr(self, k, v)
 
     def urlchoice(self):
         if self.proto not in ('all', 'mid'):
@@ -115,7 +125,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
                 pass
         else:
             try:
-                for o in ['proto', 'pat', 'ftp', 'getdir']:
+                for o in ['proto', 'decl', 'pat', 'ftp', 'getdir']:
                     del self.options[o]
                 k = kiosk.kiosk(self.ui, items=self.items, opts=self.options)
                 k.kioskstore()
