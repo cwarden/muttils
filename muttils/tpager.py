@@ -1,6 +1,6 @@
 # $Id$
 
-import ipages, iterm
+import ipages, iterm, util
 import os
 
 # format default paging command
@@ -10,9 +10,6 @@ def valclamp(x, low, high):
     '''Clamps x between low and high.'''
     return max(low, min(x, high))
 
-
-class TpagerError(Exception):
-    '''Exception class for Tpager module.'''
 
 class tpager(ipages.ipages):
     '''
@@ -25,7 +22,7 @@ class tpager(ipages.ipages):
         self.name = name            # general name of an item
         self.qfunc = qfunc          # name of exit function
         if ckey and ckey in 'qQ-':
-            raise TpagerError("the `%s' key is internally reserved." % ckey)
+            raise util.DeadMan("the `%s' key is internally reserved." % ckey)
         else:
             self.ckey = ckey        # key to customize pager
         self.crit = crit            # criterion for customizing
@@ -97,10 +94,7 @@ class tpager(ipages.ipages):
         return reply
 
     def interact(self):
-        try:
-            self.pagesdict()
-        except ipages.IpagesError, e:
-            raise TpagerError(e)
+        self.pagesdict()
         notty = not os.isatty(0) or not os.isatty(1) # not connected to term
         if notty:
             it = iterm.iterm()

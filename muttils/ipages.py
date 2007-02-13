@@ -20,9 +20,6 @@ def screendims():
     return t_rows-3, t_cols+1
 
 
-class IpagesError(Exception):
-    '''Exception class for ipages.'''
-
 class ipages(tformat.tformat):
     '''
     Subclass for Tpager.
@@ -53,10 +50,7 @@ class ipages(tformat.tformat):
         '''Creates dictionary of pages to display in terminal window.
         Keys are integers as string starting from "1".'''
         self.itemsdict, self.pages, self.pn = {}, {}, 0
-        try:
-            items = self.formatitems()
-        except tformat.TformatError, e:
-            raise IpagesError(e)
+        items = self.formatitems()
         # all this still supposes that no wrapped text item
         # has more lines than the terminal rows
         buff, lines = '', 0

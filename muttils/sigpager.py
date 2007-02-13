@@ -3,15 +3,6 @@
 import tpager, util
 import os, random, re, readline, sys
 
-class SignatureError(Exception):
-    '''Exception class for signature.'''
-    def __init__(self, inst=''):
-        self.inst = inst
-    def __str__(self):
-        if isinstance(self.inst, str):
-            return self.inst
-        return str(self.inst)
-
 class signature(tpager.tpager):
     '''
     Provides functions to interactively choose a mail signature
@@ -39,7 +30,7 @@ class signature(tpager.tpager):
                 f.close()
             return s
         except IOError, inst:
-            raise SignatureError(inst)
+            raise util.DeadMan(inst)
 
     def getsig(self):
         if self.pat:
@@ -47,10 +38,7 @@ class signature(tpager.tpager):
         else:
             self.items = self.sigs
         random.shuffle(self.items)
-        try:
-            return self.interact()
-        except tpager.TpagerError, inst:
-            raise SignatureError(inst)
+        return self.interact()
 
     def checkpattern(self):
         try:
@@ -71,9 +59,9 @@ class signature(tpager.tpager):
         try:
             sl = filter(lambda f: f.endswith(self.tail), os.listdir(self.sdir))
         except OSError, inst:
-            raise SignatureError(inst)
+            raise util.DeadMan(inst)
         if not sl:
-            raise SignatureError('no signature files in %s' % self.sdir)
+            raise util.DeadMan('no signature files in %s' % self.sdir)
         self.sigs = [self.getstring(fn) for fn in sl]
         while True:
             reply = self.getsig()
@@ -94,7 +82,7 @@ class signature(tpager.tpager):
                     finally:
                         f.close()
                 except IOError, inst:
-                    raise SignatureError(inst)
+                    raise util.DeadMan(inst)
             if not self.dest:
                 sys.stdout.write(sig)
             else:
@@ -106,6 +94,6 @@ class signature(tpager.tpager):
                         finally:
                             f.close()
                 except IOError, inst:
-                    raise SignatureError(inst)
+                    raise util.DeadMan(inst)
         elif self.dest:
             sys.stdout.write('\n')

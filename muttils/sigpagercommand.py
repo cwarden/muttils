@@ -1,6 +1,7 @@
 # $Id$
 
 import sigpager
+import util
 import version
 import optparse
 import sys
@@ -29,6 +30,7 @@ def run():
         s = sigpager.signature(dest=args,
                 sig=options.defsig, sdir=options.sigdir,
                 tail=options.tail, sep=options.sigsep)
+        parser.destroy()
         s.sign()
-    except sigpager.SignatureError, inst:
+    except util.DeadMan, inst:
         sys.exit(inst)

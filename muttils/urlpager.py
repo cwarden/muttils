@@ -4,11 +4,7 @@ import iterm, kiosk, pybrowser, tpager, ui, urlcollector, util
 from urlregex import mailcheck, ftpcheck
 import os, readline
 
-class UrlpagerError(Exception):
-    '''Exception class for the urlpager module.'''
-
 class urlpager(urlcollector.urlcollector, tpager.tpager):
-
     options = {
             'proto': 'all',
             'decl': False,
@@ -43,21 +39,15 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         elif self.proto == 'mid':
             self.name = 'message-id'
         self.name = 'unique %s' % self.name
-        try:
-            # as there is no ckey, interact() returns always 0
-            self.interact()
-        except tpager.TpagerError, inst:
-            raise UrlpagerError(inst)
+        # as there is no ckey, interact() returns always 0
+        self.interact()
 
     def urlgo(self):
         url, cs, conny = self.items[0], [], True
         if (self.proto == 'mailto'
                 or self.proto == 'all' and mailcheck(url)):
-            try:
-                self.ui.updateconfig()
-                cs = [self.ui.configitem('messages', 'mailer')]
-            except self.ui.ConfigError, inst:
-                raise UrlpagerError(inst)
+            self.ui.updateconfig()
+            cs = [self.ui.configitem('messages', 'mailer')]
             conny = False
         elif self.getdir:
             cs = ['wget', '-P', self.getdir]
@@ -66,12 +56,9 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
                 self.items = [url + '/']
             cs = [self.ftp]
         if not cs:
-            try:
-                b = pybrowser.browser(parentui=self.ui,
-                        items=self.items, tb=self.tb, xb=self.xb)
-                b.urlvisit()
-            except pybrowser.BrowserError, e:
-                raise UrlpagerError(e)
+            b = pybrowser.browser(parentui=self.ui,
+                    items=self.items, tb=self.tb, xb=self.xb)
+            b.urlvisit()
         else:
             cs += [url]
             if conny:
@@ -85,16 +72,10 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     def urlsearch(self):
         if self.proto != 'mid':
-            try:
-                self.ui.updateconfig()
-                self.cpan = self.ui.configitem('can', 'cpan')
-                self.ctan = self.ui.configitem('can', 'ctan')
-            except self.ui.ConfigError, inst:
-                raise UrlpagerError(inst)
-        try:
-            self.urlcollect()
-        except urlcollector.UrlcollectorError, e:
-            raise UrlpagerError(e)
+            self.ui.updateconfig()
+            self.cpan = self.ui.configitem('can', 'cpan')
+            self.ctan = self.ui.configitem('can', 'ctan')
+        self.urlcollect()
         self.urlchoice()
         if not self.items:
             return
@@ -117,9 +98,6 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             except KeyboardInterrupt:
                 pass
         else:
-            try:
-                opts = util.deletewebonlyopts(self.options)
-                k = kiosk.kiosk(self.ui, items=self.items, opts=opts)
-                k.kioskstore()
-            except kiosk.KioskError, inst:
-                raise UrlpagerError(inst)
+            opts = util.deletewebonlyopts(self.options)
+            k = kiosk.kiosk(self.ui, items=self.items, opts=opts)
+            k.kioskstore()

@@ -5,6 +5,15 @@
 
 import os
 
+class DeadMan(Exception):
+    '''Exception class for muttils package.'''
+    def __init__(self, inst=''):
+        self.inst = inst
+    def __str__(self):
+        if isinstance(self.inst, str):
+            return self.inst
+        return str(self.inst)
+
 def checkmidproto(options):
     '''Sets protocol to "mid", if it encounters one of message_opts.'''
     message_opts = ['midrelax', 'news', 'local', 'browse',

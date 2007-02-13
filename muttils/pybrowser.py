@@ -24,9 +24,6 @@ def weburlregex():
     return u.url_re, u.proto_re
 
 
-class BrowserError(Exception):
-    '''Exception class for the pybrowser module.'''
-
 class browser(object):
     '''
     Visits items with default or given browser.
@@ -54,20 +51,17 @@ class browser(object):
             if not url.startswith('/'):
                 url = os.path.join(os.getcwd, url)
             if not os.path.exists(url):
-                raise BrowserError('%s: file not found')
+                raise util.DeadMan('%s: file not found' % url)
             url = 'file://%s' % url
         return url
 
     def urlvisit(self):
         '''Visit url(s).'''
-        try:
-            self.ui.updateconfig()
-            xbrowser = self.ui.configitem('browser', 'xbrowser')
-            textbrowser = self.ui.configitem('browser', 'textbrowser')
-            self.items = (self.items
-                    or [self.ui.configitem('browser', 'homepage')])
-        except self.ui.ConfigError, inst:
-            raise BrowserError(inst)
+        self.ui.updateconfig()
+        xbrowser = self.ui.configitem('browser', 'xbrowser')
+        textbrowser = self.ui.configitem('browser', 'textbrowser')
+        self.items = (self.items
+                or [self.ui.configitem('browser', 'homepage')])
         self.items = [self.urlcomplete(url) for url in self.items]
         try:
             if self.xb and xbrowser:
@@ -80,5 +74,5 @@ class browser(object):
                 util.goonline()
             for url in self.items:
                 b.open(url)
-        except webbrowser.Error, e:
-            raise BrowserError(e)
+        except webbrowser.Error, inst:
+            raise util.DeadMan(inst)

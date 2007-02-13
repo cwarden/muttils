@@ -3,9 +3,6 @@
 import urlregex, util
 import re, sys, urllib2
 
-class UrlcollectorError(Exception):
-    '''Exception class for the urlcollector module.'''
-
 class urlcollector(urlregex.urlregex):
     '''
     Provides function to retrieve urls
@@ -19,26 +16,20 @@ class urlcollector(urlregex.urlregex):
 
     def urlcollect(self):
         '''Harvests urls from stdin or files.'''
-        def urlfind(data):
-            try:
-                self.findurls(data)
-            except urlregex.UrlregexError, inst:
-                raise UrlcollectorError(inst)
-
         if not self.files: # read from stdin
-            urlfind(sys.stdin.read())
+            self.findurls(sys.stdin.read())
         else:
             for f in self.files:
                 f = util.absolutepath(f)
                 fp = urllib2.urlopen('file://%s' % f)
                 try:
                     if fp.info().gettype().startswith('text/'):
-                        urlfind(fp.read())
+                        self.findurls(fp.read())
                 finally:
                     fp.close()
         if self.pat and self.items:
             try:
                 self.pat = re.compile(r'%s' % self.pat, re.I)
-            except re.error, e:
-                raise UrlcollectorError("%s in pattern `%s'" % (e, self.pat))
+            except re.error, err:
+                raise util.DeadMan("%s in pattern `%s'" % (err, self.pat))
             self.items = filter(lambda i: self.pat.search(i), self.items)

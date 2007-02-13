@@ -1,6 +1,7 @@
 # $Id$
 
 import pybrowser
+import util
 import version
 import optparse
 import sys
@@ -22,6 +23,7 @@ def run():
     try:
         b = pybrowser.browser(items=args,
                 tb=options.textbrowser, xb=options.xbrowser)
+        parser.destroy()
         b.urlvisit()
-    except pybrowser.BrowserError, inst:
+    except util.DeadMan, inst:
         sys.exit(inst)

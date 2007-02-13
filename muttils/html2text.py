@@ -4,9 +4,6 @@ from cStringIO import StringIO
 from formatter import DumbWriter, AbstractFormatter
 from htmllib import HTMLParser, HTMLParseError
 
-class HTML2TextError(Exception):
-    '''Exception class for the html2text module.'''
-
 class html2text(HTMLParser):
     '''
     Provides methods for very simple html to text conversion.
@@ -28,11 +25,11 @@ class html2text(HTMLParser):
         overriding HTMLParser's feed method.'''
         try:
             HTMLParser.feed(self, html)
-        except HTMLParseError, e:
+        except HTMLParseError, inst:
             if not self.strict:
                 pass
             else:
-                raise HTML2TextError(e)
+                raise util.DeadMan(inst)
     
     def htpwrite(self, html='', append=False):
         '''Writes converted text to file object.'''

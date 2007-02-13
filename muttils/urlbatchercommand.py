@@ -9,7 +9,7 @@
 # input is checked anew for each file.
 ###
 
-import urlbatcher, version
+import urlbatcher, util, version
 import optparse, sys
 
 valid_protos = ['web', 'http', 'ftp', 'mid']
@@ -62,7 +62,7 @@ def run():
         u = urlbatcher.urlbatcher(files=args, opts=options.__dict__)
         parser.destroy()
         u.urlsearch()
-    except urlbatcher.UrlbatcherError, inst:
+    except util.DeadMan, inst:
         sys.exit(inst)
     except KeyboardInterrupt:
         sys.exit(-1)

@@ -1,7 +1,6 @@
 # $Id$
 
-class TformatError(Exception):
-    '''Exception class for Tformat.'''
+import util
 
 class tformat(object):
     '''
@@ -29,7 +28,7 @@ class tformat(object):
 
         formdict = {'sf': simpleformat, 'bf': bracketformat}
         if self.format not in formdict:
-            raise TformatError('%s: invalid format, use one of "sf", "bf"'
+            raise util.DeadMan('%s: invalid format, use one of "sf", "bf"'
                     % self.format)
 
         self.ilen = len(self.items)

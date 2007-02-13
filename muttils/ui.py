@@ -3,10 +3,8 @@
 '''ui.py - user interface for muttils package
 '''
 
+import util
 import ConfigParser, os.path
-
-class ConfigError(Exception):
-    '''Exception class for ui configuration.'''
 
 class config(object):
     def __init__(self, rcpath=None):
@@ -34,7 +32,7 @@ class config(object):
         try:
             self.config.read(self.rcpath)
         except ConfigParser.ParsingError, inst:
-            raise ConfigError(inst)
+            raise util.DeadMan(inst)
         for section in sections:
             if not self.config.has_section(section):
                 self.config.add_section(section)

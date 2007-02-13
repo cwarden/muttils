@@ -9,7 +9,7 @@
 # input is checked anew for each file.
 ###
 
-import urlpager, version
+import urlpager, util, version
 from urlregex import valid_protos
 import optparse, sys
 
@@ -66,7 +66,7 @@ def run():
         u = urlpager.urlpager(files=args, opts=options.__dict__)
         parser.destroy()
         u.urlsearch()
-    except urlpager.UrlpagerError, inst:
+    except util.DeadMan, inst:
         sys.exit(inst)
     except KeyboardInterrupt:
         sys.exit(-1)

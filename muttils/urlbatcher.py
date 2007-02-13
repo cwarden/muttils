@@ -12,9 +12,6 @@
 import iterm, kiosk, pybrowser, ui, urlcollector, util
 import os
 
-class UrlbatcherError(Exception):
-    '''Exception class for the urlbatcher module.'''
-
 class urlbatcher(urlcollector.urlcollector):
     '''
     Parses input for either web urls or message-ids.
@@ -50,25 +47,16 @@ class urlbatcher(urlcollector.urlcollector):
             util.goonline()
             os.execvp('wget', ['wget', '-P', self.getdir] + self.items)
         else:
-            try:
-                b = pybrowser.browser(parentui=self.ui,
-                        items=self.items, xb=self.xb)
-                b.urlvisit()
-            except pybrowser.BrowserError, e:
-                raise UrlbatcherError(e)
+            b = pybrowser.browser(parentui=self.ui,
+                    items=self.items, xb=self.xb)
+            b.urlvisit()
                     
     def urlsearch(self):
         if self.proto != 'mid':
-            try:
-                self.ui.updateconfig()
-                self.cpan = self.ui.configitem('can', 'cpan')
-                self.ctan = self.ui.configitem('can', 'ctan')
-            except ui.ConfigError, inst:
-                raise UrlbatcherError(inst)
-        try:
-            self.urlcollect()
-        except urlcollector.UrlcollectorError, e:
-            raise UrlbatcherError(e)
+            self.ui.updateconfig()
+            self.cpan = self.ui.configitem('can', 'cpan')
+            self.ctan = self.ui.configitem('can', 'ctan')
+        self.urlcollect()
         if not self.files:
             it = iterm.iterm()
             it.terminit()
@@ -81,12 +69,9 @@ class urlbatcher(urlcollector.urlcollector):
                 if self.proto != 'mid':
                     self.urlgo()
                 else:
-                    try:
-                        opts = util.deletewebonlyopts(self.options)
-                        k = kiosk.kiosk(self.ui, items=self.items, opts=opts)
-                        k.kioskstore()
-                    except kiosk.KioskError, inst:
-                        raise UrlbatcherError(inst)
+                    opts = util.deletewebonlyopts(self.options)
+                    k = kiosk.kiosk(self.ui, items=self.items, opts=opts)
+                    k.kioskstore()
         else:
             msg = 'No %s found. [Ok] ' % ('url',
                     'message-id')[self.proto=='mid']

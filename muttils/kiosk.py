@@ -55,9 +55,6 @@ def mkunixfrom(msg):
     return msg
 
 
-class KioskError(Exception):
-    '''Exception class for the kiosk module.'''
-
 class kiosk(html2text.html2text):
     '''
     Provides methods to search for and retrieve
@@ -98,7 +95,7 @@ class kiosk(html2text.html2text):
             # non existant or empty is fine
             return
         if not os.path.isfile(self.kiosk):
-            raise KioskError('%s: not a regular file' % self.kiosk)
+            raise util.DeadMan('%s: not a regular file' % self.kiosk)
         e = '%s: not a unix mailbox' % self.kiosk
         fp = open(self.kiosk, 'rb')
         try:
@@ -109,11 +106,11 @@ class kiosk(html2text.html2text):
             p = Parser()
             check = p.parsestr(testline, headersonly=True)
         except HeaderParseError, inst:
-            raise KioskError(inst)
+            raise util.DeadMan(inst)
         if check.get_unixfrom():
             self.muttone = False
         else:
-            raise KioskError('%s: not a unix mailbox' % self.kiosk)
+            raise util.DeadMan('%s: not a unix mailbox' % self.kiosk)
 
     def getmhiers(self):
         '''Checks whether given directories exist and
@@ -147,12 +144,9 @@ class kiosk(html2text.html2text):
     def goobrowse(self):
         '''Visits given urls with browser and exits.'''
         items = [self.makequery(mid) for mid in self.items]
-        try:
-            b = pybrowser.browser(parentui=self.ui,
-                    items=items, tb=self.tb, xb=self.xb)
-            b.urlvisit()
-        except pybrowser.BrowserError, inst:
-            raise KioskError(inst)
+        b = pybrowser.browser(parentui=self.ui,
+                items=items, tb=self.tb, xb=self.xb)
+        b.urlvisit()
         sys.exit()
 
     def gooretrieve(self, mid, found, opener, header_re):
@@ -163,9 +157,9 @@ class kiosk(html2text.html2text):
             liniter = iter(self.htpreadlines(nl=False))
         except urllib2.URLError, inst:
             if hasattr(inst, 'reason'):
-                raise KioskError(urlfailmsg + inst)
+                raise util.DeadMan(urlfailmsg + inst)
             if hasattr(inst, 'code'):
-                raise KioskError(urlerrmsg + inst)
+                raise util.DeadMan(urlerrmsg + inst)
         line = ''
         try:
             while not header_re.match(line):
@@ -181,7 +175,7 @@ class kiosk(html2text.html2text):
                     lines.append(line)
             except StopIteration:
                 sys.stderr.write('\n'.join(lines) + '\n')
-                raise KioskError(changedsrcview)
+                raise util.DeadMan(changedsrcview)
             msg = '\n'.join(lines[:-1])
             msg = email.message_from_string(msg)
             found.append(mid)
@@ -231,7 +225,7 @@ class kiosk(html2text.html2text):
                         finally:
                             f.close()
                     except MessageParseError, inst:
-                        raise KioskError(inst)
+                        raise util.DeadMan(inst)
                     self.msgs.append(msg)
                     self.items.remove(fn[1:-1])
         if self.items:
@@ -315,7 +309,7 @@ class kiosk(html2text.html2text):
         try:
             self.mask = re.compile(r'%s' % self.mask)
         except re.error, inst:
-            raise KioskError("%s in pattern `%s'" % (inst, self.mask))
+            raise util.DeadMan("%s in pattern `%s'" % (inst, self.mask))
 
     def openkiosk(self, firstid):
         '''Opens mutt on kiosk mailbox.'''
@@ -352,10 +346,7 @@ class kiosk(html2text.html2text):
         if self.browse:
             self.gogoogle()
         self.kiosktest()
-        try:
-            self.ui.updateconfig()
-        except self.ui.ConfigError, inst:
-            raise KioskError(inst)
+        self.ui.updateconfig()
         itemscopy = self.items[:]
         self.leafsearch()
         if self.items and not self.news:

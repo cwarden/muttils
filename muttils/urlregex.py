@@ -1,6 +1,6 @@
 # $Id$
 
-import urlparser
+import urlparser, util
 import re
 
 valid_protos = ['all', 'web',
@@ -148,9 +148,6 @@ filterdict = { 'web':    webcheck,
                'mailto': mailcheck }
 
 
-class UrlregexError(Exception):
-    '''Exception class for the Urlregex module.'''
-
 class urlregex(urlparser.urlparser):
     '''
     Provides functions to extract urls from text,
@@ -260,7 +257,7 @@ class urlregex(urlparser.urlparser):
     def urlobject(self, search=True):
         '''Creates customized regex objects of url.'''
         if self.proto not in valid_protos:
-            raise UrlregexError(
+            raise util.DeadMan(
                     '%s: invalid protocol parameter, use one of:\n%s'
                     % (self.proto, ', '.join(valid_protos)))
         if self.proto == 'mailto':# be pragmatic and list not only declared
