@@ -9,6 +9,12 @@
 # input is checked anew for each file.
 ###
 
+'''Searches files or standard input for urls, and retrieves them.
+Urls are either web locations or Message-IDs.
+Options "-p mid", "-i", "-n", "-b", "-l", "-m", "-d", "-D", "-M"
+switch to message retrieval.
+'''
+
 import urlbatcher, util, version
 import optparse, sys
 
@@ -16,14 +22,9 @@ valid_protos = ['web', 'http', 'ftp', 'mid']
 
 proginfo = 'Urlbatcher - search and retrieve urls'
 
-progdesc = '''Search files or standard input for urls, and retrieve them.
-Urls are either web locations or Message-IDs.
-Options "-p mid", "-i", "-n", "-b", "-l", "-m", "-d", "-D", "-M"
-switch to message retrieval.'''
-
 def run():
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
-            usage='%prog [option] [files]', description=progdesc,
+            usage='%prog [option] [files]', description=__doc__,
             version=version.version_(proginfo))
     parser.set_defaults(proto='web', decl=False, pat=None,
             xb=False, getdir='',

@@ -1,5 +1,10 @@
 # $Id$
 
+'''Launches browser to visit given urls.
+x11-browser or textbrowser configured in muttilsrc may
+optionally override system default.
+'''
+
 import pybrowser
 import util
 import version
@@ -10,7 +15,7 @@ proginfo = 'Pybrowser - python interface to system browsers'
 
 def run():
     parser = optparse.OptionParser(usage='%prog [option] [urls]',
-            version=version.version_(proginfo))
+            description=__doc__, version=version.version_(proginfo))
     parser.set_defaults(xbrowser=False, textbrowser=False)
 
     parser.add_option('-x', '--xbrowser', action='store_true',

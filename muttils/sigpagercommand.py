@@ -1,5 +1,9 @@
 # $Id$
 
+'''Presents choice of randomly ordered email signatures
+and prints selected signature to standard output or files.
+'''
+
 import sigpager
 import util
 import version
@@ -10,7 +14,7 @@ proginfo = 'Sigpager - email signature selection'
 
 def run():
     parser = optparse.OptionParser(usage='%prog [options] [files to sign]',
-            version=version.version_(proginfo))
+            description=__doc__, version=version.version_(proginfo))
     parser.set_defaults(defsig='', sigdir='~/.Sig', defsig='',
             tail='.sig', sigsep='-- \n')
 

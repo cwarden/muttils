@@ -9,21 +9,22 @@
 # input is checked anew for each file.
 ###
 
+'''Searches files or standard input for urls.
+User chooses 1 url interactively which is subsequently retrieved.
+Urls are either web locations or Message-IDs.
+Options "-p mid", "-i", "-n", "-b", "-l", "-m", "-d", "-D", "-M"
+switch to message retrieval.
+'''
+
 import urlpager, util, version
 from urlregex import valid_protos
 import optparse, sys
 
 proginfo = 'Urlpager - search, choose and retrieve url'
 
-progdesc = '''Search files or standard input for urls,
-choose 1 url interactively and retrieve it.
-Urls are either web locations or Message-IDs.
-Options "-p mid", "-i", "-n", "-b", "-l", "-m", "-d", "-D", "-M"
-switch to message retrieval.'''
-
 def run():
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
-            usage='%prog [option] [files]', description=progdesc,
+            usage='%prog [option] [files]', description=__doc__,
             version=version.version_(proginfo))
     parser.set_defaults(proto='all', decl=False, pat=None,
             xb=False, tb=False, getdir='', ftp='',
