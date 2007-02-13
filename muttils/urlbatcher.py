@@ -15,7 +15,7 @@ import os
 class UrlbatcherError(Exception):
     '''Exception class for the urlbatcher module.'''
 
-class Urlbatcher(urlcollector.urlcollector):
+class urlbatcher(urlcollector.urlcollector):
     '''
     Parses input for either web urls or message-ids.
     Browses all urls or creates a message tree in mutt.
@@ -23,39 +23,41 @@ class Urlbatcher(urlcollector.urlcollector):
     '''
     options = {
             'proto': 'web',
-            'files': None,
+            'decl': False,
             'pat': None,
+            'midrelax': False,
             'kiosk': '',
             'browse': False,
             'local': False,
-            'mhiers': None,
-            'mspool': True,
+            'mhiers': '',
+            'specdirs': '',
             'mask': None,
             'xb': False,
-            'ftp': 'ftp',
             'getdir': '',
             }
 
-    def __init__(self, parentui=None, opts={}):
+    def __init__(self, parentui=None, files=None, opts={}):
         urlcollector.urlcollector.__init__(self)
         self.ui = parentui or ui.config()
+        self.files = files
         self.options.update(opts.items())
-        for k in self.options.keys():
-            setattr(self, k, self.options[k])
+        self.options = util.checkmidproto(self.options)
+        for k, v in self.options.iteritems():
+            setattr(self, k, v)
 
-    def urlGo(self):
+    def urlgo(self):
         if self.getdir:
             util.goonline()
             os.execvp('wget', ['wget', '-P', self.getdir] + self.items)
         else:
             try:
                 b = pybrowser.browser(parentui=self.ui,
-                        items=self.items, tb=self.tb, xb=self.xb)
+                        items=self.items, xb=self.xb)
                 b.urlvisit()
             except pybrowser.BrowserError, e:
                 raise UrlbatcherError(e)
                     
-    def urlSearch(self):
+    def urlsearch(self):
         if self.proto != 'mid':
             try:
                 self.ui.updateconfig()
@@ -77,11 +79,11 @@ class Urlbatcher(urlcollector.urlcollector):
                            ('url', 'message-id')[self.proto=='mid']))
             if raw_input(yorn).lower() in ('y', 'yes'):
                 if self.proto != 'mid':
-                    self.urlGo()
+                    self.urlgo()
                 else:
                     try:
-                        k = kiosk.kiosk(self.ui,
-                                items=self.items, opts=self.options)
+                        opts = util.deletewebonlyopts(self.options)
+                        k = kiosk.kiosk(self.ui, items=self.items, opts=opts)
                         k.kioskstore()
                     except kiosk.KioskError, inst:
                         raise UrlbatcherError(inst)

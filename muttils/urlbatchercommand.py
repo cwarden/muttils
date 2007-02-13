@@ -9,74 +9,60 @@
 # input is checked anew for each file.
 ###
 
-import usage, util
-from urlbatcher import Urlbatcher, UrlbatcherError
-import getopt, os.path, sys
+import urlbatcher, version
+import optparse, sys
 
-optstring = 'd:D:hiIk:lnr:w:x'
+valid_protos = ['web', 'http', 'ftp', 'mid']
 
-urlbatcher_help = '''
-[-x][-r <pattern>][file ...]
--w <download dir> [-r <pattern]
--i [-r <pattern>][-k <mbox>][<file> ...]
--I [-r <pattern>][-k <mbox>][<file> ...]
--l [-I][-r <pattern>][-k <mbox>][<file> ...]
--d <mail hierarchy>[:<mail hierarchy>[:...]] \\
-        [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
--D <mail hierarchy>[:<mail hierarchy>[:...]] \\
-        [-l][-I][-r <pattern>][-k <mbox>][<file> ...]
--n [-l][-I][-r <pattern>][-k <mbox>][<file> ...] 
--h (display this help)'''
+proginfo = 'Urlbatcher - search and retrieve urls'
 
-def userhelp(error='', i=False):
-    usage.usage(help=urlbatcher_help, err=error, interrupt=i)
-
+progdesc = '''Search files or standard input for urls, and retrieve them.
+Urls are either web locations or Message-IDs.
+Options "-p mid", "-i", "-n", "-b", "-l", "-m", "-d", "-D", "-M"
+switch to message retrieval.'''
 
 def run():
-    '''Command interface to Urlbatcher.'''
+    parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
+            usage='%prog [option] [files]', description=progdesc,
+            version=version.version_(proginfo))
+    parser.set_defaults(proto='web', decl=False, pat=None,
+            xb=False, getdir='',
+            midrelax=False, local=False, browse=False, news=False,
+            kiosk='', mhiers='', specdirs='', mask=None)
 
-    opts = {}
+    parser.add_option('-p', '--protocol', dest='proto',
+            type='choice', choices=valid_protos,
+            help='narrow down url choice to protocol PROTO')
+    parser.add_option('-r', '--regex', dest='pat',
+            help='narrow down url choice to urls matching PAT')
+    parser.add_option('-x', '--xbrowser', dest='xb', action='store_true',
+            help='prefer x11-browser over system default')
+    parser.add_option('-w', '--wget', dest='getdir',
+            help='download urls to directory GETDIR using wget')
+    parser.add_option('-i', '--midrelax', action='store_true',
+            help='choose from undeclared message-ids (false positives probable)')
+    parser.add_option('-l', '--local', action='store_true',
+            help='search for messages only locally')
+    parser.add_option('-b', '--browse', action='store_true',
+            help='view messages at google groups with browser')
+    parser.add_option('-n', '--news', action='store_true',
+            help='news only: do not search local mailboxes')
+    parser.add_option('-m', '--mbox', dest='kiosk',
+            help='append messages to mbox KIOSK')
+    parser.add_option('-d', '--dirs', dest='mhiers',
+            help='search for messages in directories MHIERS (colon-separated list, including mail spool)')
+    parser.add_option('-D', '--specdirs',
+            help='search for messages in directories SPECDIRS (colon-separated list, excluding mail spool)')
+    parser.add_option('-M', '--mask',
+            help='exclude mailboxes matching MASK from search')
+
+    options, args = parser.parse_args()
+
     try:
-        sysopts, opts['files'] = getopt.getopt(sys.argv[1:], optstring)
-
-        for o, a in sysopts:
-            if o == '-d': # specific mail hierarchies
-                opts['proto'] = 'mid'
-                opts['mhiers'] = a.split(':')
-            if o == '-D': # specific mail hierarchies, exclude mspool
-                opts['proto'] = 'mid'
-                opts['mspool'] = False
-                opts['mhiers'] = a.split(':')
-            if o == '-h':
-                userhelp()
-            if o == '-i': # look for message-ids
-                opts['proto'] = 'mid'
-            if o == '-I': # look for declared message-ids
-                opts['proto'] = 'mid'
-                opts['decl'] = True
-            if o == '-k': # mailbox to store retrieved messages
-                opts['proto'] = 'mid'
-                opts['kiosk'] = a
-            if o == '-l': # only local search for message-ids
-                opts['proto'] = 'mid'
-                opts['local'] = True
-            if o == '-n': # don't search local mailboxes
-                opts['proto'] = 'mid'
-                opts['mhiers'] = None
-            if o == '-r':
-                opts['pat'] = a
-            if o == '-w': # download dir for wget
-                if not os.path.isdir(util.absolutepath(a)):
-                    userhelp('%s: not a directory' % a)
-                opts['proto'] = 'web'
-                opts['getdir'] = a
-            if o == '-x':
-                opts['xb'] = True
-
-        u = Urlbatcher(opts=opts)
-        u.urlSearch()
-
-    except (getopt.GetoptError, UrlbatcherError), e:
-        userhelp(e)
+        u = urlbatcher.urlbatcher(files=args, opts=options.__dict__)
+        parser.destroy()
+        u.urlsearch()
+    except urlbatcher.UrlbatcherError, inst:
+        sys.exit(inst)
     except KeyboardInterrupt:
-        userhelp('needs filename(s) or stdin', i=True)
+        sys.exit(-1)

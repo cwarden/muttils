@@ -36,9 +36,9 @@ def run():
     parser.add_option('-r', '--regex', dest='pat',
             help='narrow down url choice to urls matching PAT')
     parser.add_option('-x', '--xbrowser', dest='xb', action='store_true',
-            help='prefer x11-browser')
+            help='prefer x11-browser over system default')
     parser.add_option('-t', '--textbrowser', dest='tb', action='store_true',
-            help='prefer textbrowser')
+            help='prefer textbrowser over system default')
     parser.add_option('-w', '--wget', dest='getdir',
             help='download chosen url to directory GETDIR using wget')
     parser.add_option('-f', '--ftp',
