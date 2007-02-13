@@ -11,11 +11,11 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     options = {
             'proto': 'all',
-            'files': None,
             'pat': None,
             'kiosk': '',
             'browse': False,
             'local': False,
+            'news': False,
             'mhiers': None,
             'mspool': True,
             'mask': None,
@@ -25,10 +25,11 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             'getdir': '',
             }
 
-    def __init__(self, parentui=None, opts={}):
+    def __init__(self, parentui=None, files=None, opts={}):
         urlcollector.urlcollector.__init__(self)
         tpager.tpager.__init__(self, name='url')
         self.ui = parentui or ui.config()
+        self.files = files
         self.options.update(opts.items())
         for k in self.options.keys():
             setattr(self, k, self.options[k])
@@ -114,6 +115,8 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
                 pass
         else:
             try:
+                for o in ['proto', 'pat', 'ftp', 'getdir']:
+                    del self.options[o]
                 k = kiosk.kiosk(self.ui, items=self.items, opts=self.options)
                 k.kioskstore()
             except kiosk.KioskError, inst:

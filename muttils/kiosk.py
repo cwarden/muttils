@@ -68,6 +68,7 @@ class kiosk(html2text.html2text):
             'kiosk': '',
             'browse': False,
             'local': False,
+            'news': False,
             'mhiers': None,
             'mspool': False,
             'mask': None,
@@ -117,13 +118,17 @@ class kiosk(html2text.html2text):
     def mhiertest(self):
         '''Checks whether given directories exist and
         creates mhiers set (unique elems) with absolute paths.'''
-        if not self.mhiers:
-            mhiers = self.ui.configitem('messages', 'maildirs')
-            if mhiers is None:
-                self.mhiers = getmhier()
+        mhiers = []
+        if self.mhiers:
+            # split colon-separated list from cmdline
+            mhiers += self.mhiers.split(':')
+        if self.mspool:
+            cfgmhiers = self.ui.configitem('messages', 'maildirs')
+            if cfgmhiers is None:
+                mhiers += getmhier()
             else:
-                self.mhiers = [i.strip() for i in mhiers.split(',')]
-        mhiers = set(self.mhiers)
+                mhiers += [i.strip() for i in cfgmhiers.split(',')]
+        mhiers = set(mhiers)
         self.mhiers = set()
         for hier in mhiers:
             abshier = util.absolutepath(hier)
@@ -351,7 +356,7 @@ class kiosk(html2text.html2text):
             raise KioskError(inst)
         itemscopy = self.items[:]
         self.leafsearch()
-        if self.items:
+        if self.items and not self.news:
             self.mhiertest()
             if self.mask:
                 self.maskompile()
