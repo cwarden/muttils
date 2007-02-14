@@ -4,7 +4,7 @@ import html2text, pybrowser, util
 import email, email.Generator, email.Parser, email.Errors
 import mailbox, os, re, tempfile, time, urllib, urllib2, sys
 
-gmsgterminator = 'Create a group[8] - Google Groups[9]'
+gmsgend = r'^[A-Z]([a-zA-Z -]+\[\d+\]){3,}'
 ggroups = 'http://groups.google.com/groups'
 useragent = ('User-Agent', 'w3m')
 urlfailmsg = 'reason of url retrieval failure: '
@@ -149,7 +149,7 @@ class kiosk(html2text.html2text):
         b.urlvisit()
         sys.exit()
 
-    def gooretrieve(self, mid, found, opener, header_re):
+    def gooretrieve(self, mid, found, opener, header_re, bottom_re):
         try:
             fp = opener.open(self.makequery(mid))
             self.htpwrite(html=fp.read(), append=False)
@@ -165,12 +165,12 @@ class kiosk(html2text.html2text):
             while not header_re.match(line):
                 line = liniter.next()
         except StopIteration:
-            sys.stdout.write('%s: not at Google\n' % mid)
+            sys.stdout.write('%s: not at google\n' % mid)
             time.sleep(5)
         else:
             lines = [line]
             try:
-                while not line.startswith(gmsgterminator):
+                while not bottom_re.match(line):
                     line = liniter.next()
                     lines.append(line)
             except StopIteration:
@@ -183,19 +183,18 @@ class kiosk(html2text.html2text):
 
     def gogoogle(self):
         '''Gets messages from Google Groups.'''
-        sys.stdout.write('Going google ...\n')
-        if self.browse:
-            self.goobrowse()
-        sys.stdout.write('*Unfortunately Google masks all email addresses*\n')
+        sys.stdout.write(
+                'note: google masks all email addresses\ngoing google ...\n')
+        util.goonline()
         opener = urllib2.build_opener()
         opener.addheaders = [useragent]
         header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
-        util.goonline()
+        bottom_re = re.compile(gmsgend, re.MULTILINE)
         found = []
         self.open()
         try:
             for mid in self.items:
-                self.gooretrieve(mid, found, opener, header_re)
+                self.gooretrieve(mid, found, opener, header_re, bottom_re)
         finally:
             self.close()
         self.items = [mid for mid in self.items if mid not in found]
@@ -344,7 +343,7 @@ class kiosk(html2text.html2text):
         '''Collects messages identified by ID either
         by retrieving them locally or from GoogleGroups.'''
         if self.browse:
-            self.gogoogle()
+            self.goobrowse()
         self.kiosktest()
         self.ui.updateconfig()
         itemscopy = self.items[:]
