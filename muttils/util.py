@@ -28,7 +28,10 @@ def checkmidproto(options):
 def deletewebonlyopts(options):
     '''Deletes options that are not used by kiosk.'''
     for o in ['proto', 'decl', 'pat', 'ftp', 'getdir']:
-        del options[o]
+        try:
+            del options[o]
+        except KeyError:
+            pass
     return options
 
 def absolutepath(path):
