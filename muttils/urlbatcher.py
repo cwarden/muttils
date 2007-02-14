@@ -43,7 +43,11 @@ class urlbatcher(urlcollector.urlcollector):
             setattr(self, k, v)
 
     def urlgo(self):
-        if self.getdir:
+        if self.proto == 'mid':
+            opts = util.deletewebonlyopts(self.options)
+            k = kiosk.kiosk(self.ui, items=self.items, opts=opts)
+            k.kioskstore()
+        elif self.getdir:
             util.goonline()
             os.execvp('wget', ['wget', '-P', self.getdir] + self.items)
         else:
@@ -61,19 +65,14 @@ class urlbatcher(urlcollector.urlcollector):
             it = iterm.iterm()
             it.terminit()
         if self.items:
-            yorn = '%s\nRetrieve the above %s? yes, [No] ' \
+            yorn = '%s\nretrieve the above %s? yes, [No] ' \
                     % ('\n'.join(self.items),
                        util.plural(len(self.items),
                            ('url', 'message-id')[self.proto=='mid']))
             if raw_input(yorn).lower() in ('y', 'yes'):
-                if self.proto != 'mid':
-                    self.urlgo()
-                else:
-                    opts = util.deletewebonlyopts(self.options)
-                    k = kiosk.kiosk(self.ui, items=self.items, opts=opts)
-                    k.kioskstore()
+                self.urlgo()
         else:
-            msg = 'No %s found. [Ok] ' % ('url',
+            msg = 'no %ss found. [ok] ' % ('url',
                     'message-id')[self.proto=='mid']
             raw_input(msg)
         if not self.files:

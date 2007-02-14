@@ -121,7 +121,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
                 pass
 
     def midyorn(self):
-        yorn = raw_input('retrieve message-id <%s>? Yes [No] ' % self.items[0])
+        yorn = raw_input('retrieve message-id <%s>? yes [No] ' % self.items[0])
         if yorn.lower() in ('y', 'yes'):
             self.msgretrieval()
         self.items = None
