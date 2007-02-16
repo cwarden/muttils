@@ -136,7 +136,6 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         else:
             self.name = 'message-id'
         self.urlcollect()
-        ilen = len(self.items)
         if len(self.items) > 1:
             self.urlsel()
         elif self.items and self.mailcondition():

@@ -159,12 +159,13 @@ class urlregex(urlparser.urlparser):
     def __init__(self, proto='all', decl=False, midrelax=False, uniq=True):
         urlparser.urlparser.__init__(self, proto=proto)
         # ^ items, proto
-        self.decl = decl        # list only declared urls
-        self.uniq = uniq        # list only unique urls
-        self.url_re = None      # that's what it's all about
-        self.kill_re = None     # customized pattern to find non url chars
+        self.decl = decl         # list only declared urls
+        self.midrelax = midrelax # undeclared message-ids
+        self.uniq = uniq         # list only unique urls
+        self.url_re = None       # that's what it's all about
+        self.kill_re = None      # customized pattern to find non url chars
         self.intro = ''
-        self.protocol = ''      # pragmatic proto (may include www., ftp.)
+        self.protocol = ''       # pragmatic proto (may include www., ftp.)
         self.proto_re = None
         self.cpan = ''
         self.ctan = ''
