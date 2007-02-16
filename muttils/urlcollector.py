@@ -21,7 +21,10 @@ class urlcollector(urlregex.urlregex):
         else:
             for f in self.files:
                 f = util.absolutepath(f)
-                fp = urllib2.urlopen('file://%s' % f)
+                try:
+                    fp = urllib2.urlopen('file://%s' % f)
+                except OSError, inst:
+                    raise util.DeadMan(inst)
                 try:
                     if fp.info().gettype().startswith('text/'):
                         self.findurls(fp.read())
