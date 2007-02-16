@@ -103,7 +103,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         if not self.items:
             return
         if self.proto == 'mid':
-            self.msgretrieval(self)
+            self.msgretrieval()
         elif self.mailcondition():
             # mail client allows editing of address
             self.urlgo(mail=True)
