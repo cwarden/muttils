@@ -67,7 +67,5 @@ def run():
         u = urlpager.urlpager(files=args, opts=options.__dict__)
         parser.destroy()
         u.urlsearch()
-    except util.DeadMan, inst:
+    except (util.DeadMan, KeyboardInterrupt), inst:
         sys.exit(inst)
-    except KeyboardInterrupt:
-        sys.exit(-1)
