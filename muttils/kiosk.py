@@ -96,16 +96,15 @@ class kiosk(html2text.html2text):
             return
         if not os.path.isfile(self.kiosk):
             raise util.DeadMan('%s: not a regular file' % self.kiosk)
-        e = '%s: not a unix mailbox' % self.kiosk
         fp = open(self.kiosk, 'rb')
         try:
             testline = fp.readline()
         finally:
             fp.close()
         try:
-            p = Parser()
+            p = email.Parser.Parser()
             check = p.parsestr(testline, headersonly=True)
-        except HeaderParseError, inst:
+        except email.Errors.HeaderParseError, inst:
             raise util.DeadMan(inst)
         if check.get_unixfrom():
             self.muttone = False
@@ -223,7 +222,7 @@ class kiosk(html2text.html2text):
                             msg = email.message_from_file(f)
                         finally:
                             f.close()
-                    except MessageParseError, inst:
+                    except email.Errors.MessageParseError, inst:
                         raise util.DeadMan(inst)
                     self.msgs.append(msg)
                     self.items.remove(fn[1:-1])
