@@ -1,10 +1,12 @@
 # $Id$
 
-from cStringIO import StringIO
-from formatter import DumbWriter, AbstractFormatter
-from htmllib import HTMLParser, HTMLParseError
+'''html2text.py - dead simple html to text conversion
+'''
 
-class html2text(HTMLParser):
+import util
+import cStringIO, formatter, htmllib
+
+class html2text(htmllib.HTMLParser):
     '''
     Provides methods for very simple html to text conversion.
     '''
@@ -13,19 +15,19 @@ class html2text(HTMLParser):
         self.strict = strict
         self.fp = None
         self.formatter = None
-        HTMLParser.__init__(self, formatter=self.formatter)
+        htmllib.HTMLParser.__init__(self, formatter=self.formatter)
 
     def open(self):
-        self.fp = StringIO()
-        writer = DumbWriter(file=self.fp)
-        self.formatter = AbstractFormatter(writer=writer)
+        self.fp = cStringIO.StringIO()
+        writer = formatter.DumbWriter(file=self.fp)
+        self.formatter = formatter.AbstractFormatter(writer=writer)
 
     def feed(self, html):
         '''Passes hypertext thru parser,
         overriding HTMLParser's feed method.'''
         try:
-            HTMLParser.feed(self, html)
-        except HTMLParseError, inst:
+            htmllib.HTMLParser.feed(self, html)
+        except htmllib.HTMLParseError, inst:
             if not self.strict:
                 pass
             else:
@@ -57,5 +59,5 @@ class html2text(HTMLParser):
     def close(self):
         '''Closes parser and file object,
         overriding HTMLParser's close method but calling it.'''
-        HTMLParser.close(self)
+        htmllib.HTMLParser.close(self)
         self.fp.close()
