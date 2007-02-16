@@ -152,9 +152,9 @@ class kiosk(html2text.html2text):
     def gooretrieve(self, mid, found, opener, header_re, bottom_re):
         try:
             fp = opener.open(self.makequery(mid))
-            self.htpwrite(html=fp.read(), append=False)
+            self.htwrite(ht=fp.read(), append=False)
             fp.close()
-            liniter = iter(self.htpreadlines(nl=False))
+            liniter = iter(self.htreadlines(nl=False))
         except urllib2.URLError, inst:
             if hasattr(inst, 'reason'):
                 raise util.DeadMan(urlfailmsg + inst)

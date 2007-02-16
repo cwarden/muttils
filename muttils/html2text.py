@@ -22,37 +22,36 @@ class html2text(htmllib.HTMLParser):
         writer = formatter.DumbWriter(file=self.fp)
         self.formatter = formatter.AbstractFormatter(writer=writer)
 
-    def feed(self, html):
+    def feed(self, ht):
         '''Passes hypertext thru parser,
         overriding HTMLParser's feed method.'''
         try:
-            htmllib.HTMLParser.feed(self, html)
+            htmllib.HTMLParser.feed(self, ht)
         except htmllib.HTMLParseError, inst:
             if not self.strict:
                 pass
             else:
                 raise util.DeadMan(inst)
     
-    def htpwrite(self, html='', append=False):
+    def htwrite(self, ht='', append=False):
         '''Writes converted text to file object.'''
         if not append:
             self.fp.truncate(0)
-        self.feed(html)
+        self.feed(ht)
 
-    def htpwritelines(self, linelist=None, append=False):
+    def htwritelines(self, linelist=None, append=False):
         '''Writes a list of lines to file object.'''
-        if linelist is None:
-            linelist = []
+        lines = linelist or []
         if not append:
             self.fp.truncate(0)
-        for line in linelist:
-            self.htpwrite(html=line, append=True)
+        for line in lines:
+            self.feed(line)
 
-    def htpread(self):
+    def htread(self):
         '''Returns converted text.'''
         return self.fp.getvalue()
 
-    def htpreadlines(self, nl=True):
+    def htreadlines(self, nl=True):
         '''Returns converted lines of text.'''
         return self.fp.getvalue().splitlines(nl)
 
