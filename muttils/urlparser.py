@@ -86,5 +86,5 @@ class urlparser(object):
         else:
             self.headparser(msg, refheads)
         for part in email.Iterators.typed_subpart_iterator(msg):
-            sl.append(part.get_payload())
+            sl.append(part.get_payload(decode=True))
         return sl
