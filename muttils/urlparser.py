@@ -34,7 +34,6 @@ class urlparser(object):
     '''
     def __init__(self, proto='all'):
         self.proto = proto
-        self.url_re = None
         self.items = []
 
     def headparser(self, msg, hkeys):
