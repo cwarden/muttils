@@ -112,7 +112,7 @@ class urlcollector(urlregex.urlregex):
                     textlist.append(text)
                 finally:
                     fp.close()
-        text = '\n'.join([t for t in textlist if t])
+        text = '\n'.join(textlist)
         if text:
             self.findurls(text)
         if self.pat and self.items:
