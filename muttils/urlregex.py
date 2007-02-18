@@ -1,6 +1,6 @@
 # $Id$
 
-import urlparser, util
+import util
 import re
 
 valid_protos = ['all', 'web',
@@ -148,7 +148,7 @@ filterdict = { 'web':    webcheck,
                'mailto': mailcheck }
 
 
-class urlregex(urlparser.urlparser):
+class urlregex(object):
     '''
     Provides functions to extract urls from text,
     customized by attributes.
@@ -157,8 +157,7 @@ class urlregex(urlparser.urlparser):
     if they are enclosed in '<>'.
     '''
     def __init__(self, proto='all', decl=False, midrelax=False, uniq=True):
-        urlparser.urlparser.__init__(self, proto=proto)
-        # ^ items, proto
+        self.proto = proto
         self.decl = decl         # list only declared urls
         self.midrelax = midrelax # undeclared message-ids
         self.uniq = uniq         # list only unique urls
@@ -169,6 +168,7 @@ class urlregex(urlparser.urlparser):
         self.proto_re = None
         self.cpan = ''
         self.ctan = ''
+        self.items = []
 
     def setstrings(self):
         ### intro ###
@@ -285,7 +285,6 @@ class urlregex(urlparser.urlparser):
         Data is supposed to be text but tested whether
         it's a message/Mailbox (then passed to urlparser).'''
         self.urlobject() # compile url_re
-        text = self.maildeconstructor(text)
         if self.proto != 'mid':
             wipe_re = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE)
             text = wipe_re.sub('', text)
