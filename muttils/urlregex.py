@@ -280,20 +280,20 @@ class urlregex(urlparser.urlparser):
         else:
             self.url_re = re.compile(simplid, re.IGNORECASE|re.VERBOSE)
 
-    def findurls(self, data):
-        '''Conducts a search for urls in data.
+    def findurls(self, text):
+        '''Conducts a search for urls in text.
         Data is supposed to be text but tested whether
         it's a message/Mailbox (then passed to urlparser).'''
         self.urlobject() # compile url_re
-        s = self.maildeconstructor(data)
+        text = self.maildeconstructor(text)
         if self.proto != 'mid':
             wipe_re = re.compile(rawwipe, re.IGNORECASE|re.VERBOSE)
-            s = wipe_re.sub('', s)
+            text = wipe_re.sub('', text)
             for can in [(self.cpan, 'P'), (self.ctan, 'T')]:
                 if can[0]:
                     cansub = r'%s/\1' % can[0].rstrip('/')
-                    s = re.sub(rawcan % can[1], cansub, s)
-        urls = [u[0] for u in self.url_re.findall(s)]
+                    text = re.sub(rawcan % can[1], cansub, text)
+        urls = [u[0] for u in self.url_re.findall(text)]
         if self.kill_re:
             urls = [self.kill_re.sub('', u) for u in urls]
         if urls:
