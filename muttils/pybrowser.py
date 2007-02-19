@@ -13,11 +13,6 @@ def getlocals():
         localaddresses += i
     return localaddresses
 
-local_re = re.compile('http://(%s)' %
-        '|'.join(re.escape(a) for a in getlocals()),
-        re.IGNORECASE)
-file_re  = re.compile(r'file:/+', re.IGNORECASE)
-
 def weburlregex():
     u = urlregex.urlregex(proto='web', uniq=False)
     u.urlobject(search=False)
@@ -34,19 +29,36 @@ class browser(object):
         self.tb = tb # text browser
         self.xb = xb # x11 browser
         self.conny = False # try to connect to net
-        self.weburl_re, self.webproto_re = weburlregex()
+        self.weburl_re, self.webproto_re = weburlregex() # check for remote url
+        self.local_re = None           # check local protocol declaration
+        self.file_re = None            # check file protocol declaration
+
+    def get_localre(self):
+        '''Compiles local_re on demand and returns it.'''
+        self.local_re = (self.local_re or re.compile('http://(%s)'
+                    % '|'.join(re.escape(a) for a in getlocals()),
+                    re.IGNORECASE))
+        return self.local_re
+
+    def get_filere(self):
+        '''Compiles file_re on demand and returns it.'''
+        self.file_re = self.file_re or re.compile(r'file:/+', re.IGNORECASE)
+        return self.file_re
 
     def urlcomplete(self, url):
         '''Adapts possibly short url to pass as browser argument.'''
         if self.weburl_re.match(url):
             # not local
             self.conny = True
-            if self.webproto_re and not self.webproto_re.match(url):
+            if not self.webproto_re.match(url):
                 # eg. tug.org -> http://tug.org
-                url = 'http://%s' % url
-        elif not local_re.match(url):
+                if not url.startswith('ftp'):
+                    url = 'http://%s' % url
+                else:
+                    url = 'ftp://%s' % url
+        elif not self.get_localre().match(url):
             # strip url to pure pathname
-            url = file_re.sub('/', url, 1)
+            url = self.get_filere().sub('/', url, 1)
             url = util.absolutepath(url)
             if not url.startswith('/'):
                 url = os.path.join(os.getcwd, url)
@@ -69,7 +81,7 @@ class browser(object):
             elif self.tb and textbrowser:
                 b = webbrowser.get(textbrowser)
             else:
-                b = webbrowser
+                b = webbrowser.get()
             if self.conny:
                 util.goonline()
             for url in self.items:
