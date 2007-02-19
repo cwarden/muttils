@@ -22,7 +22,6 @@ class urlbatcher(urlcollector.urlcollector):
             'proto': 'web',
             'decl': False,
             'pat': None,
-            'midrelax': False,
             'kiosk': '',
             'browse': False,
             'local': False,
@@ -37,8 +36,8 @@ class urlbatcher(urlcollector.urlcollector):
         urlcollector.urlcollector.__init__(self)
         self.ui = parentui or ui.config()
         self.files = files
+        opts = util.checkmidproto(opts)
         self.options.update(opts.items())
-        self.options = util.checkmidproto(self.options)
         for k, v in self.options.iteritems():
             setattr(self, k, v)
 

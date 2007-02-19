@@ -26,7 +26,7 @@ def run():
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
             usage='%prog [option] [files]', description=__doc__,
             version=version.version_(proginfo))
-    parser.set_defaults(proto='all', decl=False, pat=None,
+    parser.set_defaults(proto='all', pat=None,
             xb=False, tb=False, getdir='', ftp='',
             midrelax=False, local=False, browse=False, news=False,
             kiosk='', mhiers='', specdirs='', mask=None)

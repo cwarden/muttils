@@ -22,7 +22,11 @@ def checkmidproto(options):
         for o in message_opts:
             if options[o]:
                 options['proto'] = 'mid'
+                options['decl'] = not options['midrelax']
                 break
+    else:
+        options['decl'] = True
+    del options['midrelax']
     return options
 
 def deletewebonlyopts(options):

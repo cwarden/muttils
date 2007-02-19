@@ -22,7 +22,6 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             'proto': 'all',
             'decl': False,
             'pat': None,
-            'midrelax': False,
             'kiosk': '',
             'browse': False,
             'local': False,
@@ -41,8 +40,8 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         tpager.tpager.__init__(self, name='url')
         self.ui = parentui or ui.config()
         self.files = files
+        opts = util.checkmidproto(opts)
         self.options.update(opts.items())
-        self.options = util.checkmidproto(self.options)
         for k, v in self.options.iteritems():
             setattr(self, k, v)
 
