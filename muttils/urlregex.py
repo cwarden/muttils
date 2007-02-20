@@ -9,8 +9,6 @@ valid_protos = ['all', 'web',
 # finger, telnet, whois, wais?
 
 serverchars = r'-.a-z0-9'
-# regexes on demand
-mail_re = ftp_re = None
 
 def topdompat():
     '''Returns pattern matching top level domains, preceded by dot.'''
@@ -140,20 +138,36 @@ def wipepat():
         ''' % headers
     return r'%s|%s' % (header, declmidpat())
 
+# regexes on demand
+web_re = mail_re = ftp_re = None
+
 def get_mailre():
     '''Returns email address pattern on demand.'''
     global mail_re
-    mail_re = (mail_re or
-            re.compile(r'(%s)' % mailpat(), re.IGNORECASE|re.VERBOSE))
+    if not mail_re:
+        mail_re = re.compile(r'(%s)' % mailpat(), re.IGNORECASE|re.VERBOSE)
     return mail_re
 
 def get_ftpre():
+    '''Returns ftp scheme pattern on demand.'''
     global ftp_re
-    ftp_re = ftp_re or re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
+    if not ftp_re:
+        ftp_re = ftp_re or re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
     return ftp_re
-    
-# filter functions
+ 
+# completion and filter functions
 # also usable by "outside" scripts, eg. urlpager
+
+def webschemecomplete(url):
+    '''Returns url with protocol scheme prepended if needed.'''
+    global web_re
+    if not web_re:
+        web_re = re.compile(r'(https?|s?ftp|gopher)://', re.IGNORECASE)
+    if web_re.match(url):
+        return url
+    if not url.startswith('ftp'):
+        return 'http://%s' % url
+    return 'ftp://%s' % url
 
 def webcheck(url):
     '''Returns True if url is not email address.'''
@@ -256,9 +270,9 @@ class urlregex(object):
             self.url_re = re.compile(self.getraw(), re.IGNORECASE|re.VERBOSE)
             if search:
                 self.kill_re = re.compile(r'^url:\s?|\s+', re.IGNORECASE)
-            if not self.decl:
-                self.proto_re = re.compile(r'^%s' % self.protocol,
-                        re.IGNORECASE)
+                if not self.decl:
+                    self.proto_re = re.compile(r'^%s' % self.protocol,
+                            re.IGNORECASE)
         elif self.decl:
             self.url_re = re.compile(declmidpat(), re.IGNORECASE|re.VERBOSE)
             if search:

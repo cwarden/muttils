@@ -14,9 +14,10 @@ def getlocals():
     return localaddresses
 
 def weburlregex():
+    '''Returns regex matching web url.'''
     u = urlregex.urlregex(proto='web', uniq=False)
     u.urlobject(search=False)
-    return u.url_re, u.proto_re
+    return u.url_re
 
 
 class browser(object):
@@ -28,42 +29,38 @@ class browser(object):
         self.items = items # urls
         self.app = app     # browser app
         self.conny = False # try to connect to net
-        self.weburl_re, self.webproto_re = weburlregex()
-        self.local_re = None           # check local protocol declaration
-        self.file_re = None            # check file protocol declaration
+        self.weburl_re = weburlregex() # check remote url protocol scheme
+        self.local_re = None           # check local protocol scheme
+        self.file_re = None            # strip file url
 
     def get_localre(self):
         '''Compiles local_re on demand and returns it.'''
-        self.local_re = (self.local_re or re.compile('http://(%s)'
+        if not self.local_re:
+            self.local_re = re.compile('http://(%s)'
                     % '|'.join(re.escape(a) for a in getlocals()),
-                    re.IGNORECASE))
+                    re.IGNORECASE)
         return self.local_re
 
-    def get_filere(self):
+    def mkfileurl(self, url):
         '''Compiles file_re on demand and returns it.'''
-        self.file_re = self.file_re or re.compile(r'file:/+', re.IGNORECASE)
-        return self.file_re
+        if not self.file_re:
+            self.file_re = re.compile(r'file:/+', re.IGNORECASE)
+        # strip url to pure pathname
+        url = self.file_re.sub('/', url, 1)
+        url = util.absolutepath(url)
+        if not url.startswith('/'):
+            url = os.path.join(os.getcwd, url)
+        if not os.path.exists(url):
+            raise util.DeadMan('%s: file not found' % url)
+        return 'file://%s' % url
 
     def urlcomplete(self, url):
         '''Adapts possibly short url to pass as browser argument.'''
         if self.weburl_re.match(url):
-            # not local
             self.conny = True
-            if not self.webproto_re.match(url):
-                # eg. tug.org -> http://tug.org
-                if not url.startswith('ftp'):
-                    url = 'http://%s' % url
-                else:
-                    url = 'ftp://%s' % url
+            url = urlregex.webschemecomplete(url)
         elif not self.get_localre().match(url):
-            # strip url to pure pathname
-            url = self.get_filere().sub('/', url, 1)
-            url = util.absolutepath(url)
-            if not url.startswith('/'):
-                url = os.path.join(os.getcwd, url)
-            if not os.path.exists(url):
-                raise util.DeadMan('%s: file not found' % url)
-            url = 'file://%s' % url
+            url = self.mkfileurl(url)
         return url
 
     def urlvisit(self):
