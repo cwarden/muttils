@@ -36,15 +36,11 @@ class urlbatcher(urlcollector.urlcollector):
         urlcollector.urlcollector.__init__(self)
         self.ui = parentui or ui.config()
         self.files = files
-        opts = util.checkmidproto(opts)
-        self.options.update(opts.items())
-        for k, v in self.options.iteritems():
-            setattr(self, k, v)
+        util.resolveopts(self, self.options, opts)
 
     def urlgo(self):
         if self.proto == 'mid':
-            opts = util.deletewebonlyopts(self.options)
-            k = kiosk.kiosk(self.ui, items=self.items, opts=opts)
+            k = kiosk.kiosk(self.ui, items=self.items, opts=self.options)
             k.kioskstore()
         elif self.getdir:
             util.goonline()

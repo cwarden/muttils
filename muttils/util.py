@@ -14,8 +14,22 @@ class DeadMan(Exception):
             return self.inst
         return str(self.inst)
 
-def checkmidproto(options):
-    '''Sets protocol to "mid", if it encounters one of message_opts.'''
+def updateattribs(obj, defaults, options):
+    '''Updates default values with optional values.'''
+    for k in defaults.iterkeys():
+        if options.has_key(k):
+            defaults[k] = options[k]
+        setattr(obj, k, defaults[k])
+
+def resolveopts(obj, defaults, options):
+    '''Adapts option sets.
+    Sets protocol to "web", if "getdir" is without corresponding proto.
+    Sets protocol to "mid", if it encounters one of message_opts.'''
+
+    webschemes = ['web', 'http', 'ftp']
+    if options['getdir'] and options['proto'] not in webschemes:
+        options['proto'] = 'web'
+
     message_opts = ['midrelax', 'news', 'local', 'browse',
             'kiosk', 'mhiers', 'specdirs', 'mask']
     if options['proto'] != 'mid':
@@ -27,16 +41,8 @@ def checkmidproto(options):
     else:
         options['decl'] = True
     del options['midrelax']
-    return options
 
-def deletewebonlyopts(options):
-    '''Deletes options that are not used by kiosk.'''
-    for o in ['proto', 'decl', 'pat', 'ftp', 'getdir']:
-        try:
-            del options[o]
-        except KeyError:
-            pass
-    return options
+    updateattribs(obj, defaults, options)
 
 def absolutepath(path):
     '''Guesses an absolute path, eg. given on command line.'''

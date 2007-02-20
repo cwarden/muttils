@@ -39,10 +39,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         tpager.tpager.__init__(self, name='url')
         self.ui = parentui or ui.config()
         self.files = files
-        opts = util.checkmidproto(opts)
-        self.options.update(opts.items())
-        for k, v in self.options.iteritems():
-            setattr(self, k, v)
+        util.resolveopts(self, self.options, opts)
 
     def urlconfirm(self):
         if not self.files:
@@ -62,8 +59,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     def msgretrieval(self):
         '''Passes message-id and relevant options to kiosk.'''
-        opts = util.deletewebonlyopts(self.options)
-        k = kiosk.kiosk(self.ui, items=self.items, opts=opts)
+        k = kiosk.kiosk(self.ui, items=self.items, opts=self.options)
         k.kioskstore()
 
     def urlgo(self, mail=False):

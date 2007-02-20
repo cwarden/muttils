@@ -75,9 +75,7 @@ class kiosk(html2text.html2text):
         html2text.html2text.__init__(self, strict=False)
         self.ui = ui
         self.items = items or []
-        self.defaults.update(opts.items())
-        for k, v in self.defaults.iteritems():
-            setattr(self, k, v)
+        util.updateattribs(self, self.defaults, opts)
         self.mspool = ''         # path to local mail spool
         self.msgs = []           # list of retrieved message objects
         self.muttone = True      # configure mutt for display of 1 msg only
