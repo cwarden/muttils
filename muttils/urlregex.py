@@ -203,9 +203,11 @@ class urlregex(object):
         gopher = r'gopher://'
         # finger, telnet, whois, wais?
         if self.proto in ('all', 'web'):
-            protocols = [mailto, http, ftp, gopher][self.proto=='web':]
+            protocols = [http, ftp]
+            if self.proto == 'all':
+                protocols += [mailto, gopher]
             protocol = r'(%s)' % '|'.join(protocols)
-        else:                  ## singles
+        else:
             self.decl = True
             protocol = eval(self.proto)
         self.protocol = r'(url:\s?)?%s' % protocol
