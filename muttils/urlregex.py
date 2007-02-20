@@ -37,7 +37,7 @@ def topdompat():
 def weburlpats(proto='', serv=serverchars, top=topdompat()):
     '''Creates 2 url patterns. The first according to protocol,
     The second may contain spaces but is enclosed in '<>'.'''
-    valid = serv + r'/#~:,;?+=&%!()@'   # valid url-chars+comma+semicolon+parenthesises+@
+    valid = serv + r'_/#~:,;?+=&%!()@'  # valid url-chars+comma+semicolon+parenthesises+@
                                         # @: filtered with webcheck, false positives with
                                         # che@*blacktrash.org* otherwise
                                         # Message-ID: <10rb6mngqccs018@corp.supernews.com>
@@ -79,7 +79,7 @@ def weburlpats(proto='', serv=serverchars, top=topdompat()):
 def mailpat(serv=serverchars, top=topdompat()):
     '''Creates pattern for email addresses,
     grabbing those containing a subject first.'''
-    address = '[%(serv)s]+@[%(serv)s]+%(top)s' % vars()
+    address = '[%(serv)s_]+@[%(serv)s]+%(top)s' % vars()
     return r'''
         \b(                 # word boundary and group open
           mailto:           #  mandatory mailto
@@ -107,7 +107,7 @@ def nntppat():
 
 def midpat(serv=serverchars, top=topdompat()):
     '''Creates pattern for message ids.'''
-    idy = serv + r'#~?+=&%!$\]['   # valid message-id-chars ### w/o ':/'?
+    idy = serv + r'_#~?+=&%!$\]['   # valid message-id-chars ### w/o ':/'?
     return r'''
         [%(idy)s] +     # one or more valid id char
         @
