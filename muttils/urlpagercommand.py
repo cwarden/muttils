@@ -12,7 +12,8 @@
 '''Searches files or standard input for urls.
 User chooses 1 url interactively which is subsequently retrieved.
 Urls are either web locations or Message-IDs.
-Options "-p mid", "-i", "-n", "-b", "-l", "-m", "-d", "-D", "-M"
+Valid url schemes are: "all", "web", "http", "ftp", "gopher", "mid".
+Options "-p mid", "-i", "-n", "-B", "-l", "-m", "-d", "-D", "-M"
 switch to message retrieval.
 '''
 
@@ -26,8 +27,7 @@ def run():
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
             usage='%prog [option] [files]', description=__doc__,
             version=version.version_(proginfo))
-    parser.set_defaults(proto='all', pat=None,
-            xb=False, tb=False, getdir='', ftp='',
+    parser.set_defaults(proto='all', pat=None, browser='', getdir='', ftp='',
             midrelax=False, local=False, browse=False, news=False,
             kiosk='', mhiers='', specdirs='', mask=None)
 
@@ -36,10 +36,8 @@ def run():
             help='narrow down url choice to protocol PROTO')
     parser.add_option('-r', '--regex', dest='pat',
             help='narrow down url choice to urls matching PAT')
-    parser.add_option('-x', '--xbrowser', dest='xb', action='store_true',
-            help='prefer x11-browser over system default')
-    parser.add_option('-t', '--textbrowser', dest='tb', action='store_true',
-            help='prefer textbrowser over system default')
+    parser.add_option('-b', '--browser', dest='app',
+            help='prefer browser APP over system default')
     parser.add_option('-w', '--wget', dest='getdir',
             help='download chosen url to directory GETDIR using wget')
     parser.add_option('-f', '--ftp',
@@ -48,7 +46,7 @@ def run():
             help='choose from undeclared message-ids (false positives probable)')
     parser.add_option('-l', '--local', action='store_true',
             help='search for chosen message only locally')
-    parser.add_option('-b', '--browse', action='store_true',
+    parser.add_option('-B', '--browse', action='store_true',
             help='view chosen message at google groups with browser')
     parser.add_option('-n', '--news', action='store_true',
             help='news only: do not search local mailboxes')

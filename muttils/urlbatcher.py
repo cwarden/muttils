@@ -28,7 +28,7 @@ class urlbatcher(urlcollector.urlcollector):
             'mhiers': '',
             'specdirs': '',
             'mask': None,
-            'xb': False,
+            'app': '',
             'getdir': '',
             }
 
@@ -51,14 +51,14 @@ class urlbatcher(urlcollector.urlcollector):
             os.execvp('wget', ['wget', '-P', self.getdir] + self.items)
         else:
             b = pybrowser.browser(parentui=self.ui,
-                    items=self.items, xb=self.xb)
+                    items=self.items, app=self.app)
             b.urlvisit()
                     
     def urlsearch(self):
         if self.proto != 'mid':
             self.ui.updateconfig()
-            self.cpan = self.ui.configitem('can', 'cpan')
-            self.ctan = self.ui.configitem('can', 'ctan')
+            self.cpan = self.ui.configitem('net', 'cpan')
+            self.ctan = self.ui.configitem('net', 'ctan')
         self.urlcollect()
         if not self.files:
             it = iterm.iterm()

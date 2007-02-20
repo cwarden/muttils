@@ -17,6 +17,6 @@ macro index,pager,attach ^B "\
 " "go to any url"
 macro index,pager,attach ,t "\
 <enter-command> set my_wait_key=\$wait_key wait_key=no<enter>\
-<pipe-message>urlpager -t -pweb<enter>\
+<pipe-message>urlpager -b w3m -p web<enter>\
 <enter-command> set wait_key=\$my_wait_key &my_wait_key<enter>\
 " "text browse web"

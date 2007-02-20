@@ -2,15 +2,6 @@
 # rcfile example for Python muttils package
 # RCPATH: /etc/muttilsrc:/usr/local/etc/muttilsrc:~/.muttilsrc
 
-[browser]
-textbrowser = w3m
-xbrowser = firefox
-homepage = http://localhost
-# defaults:
-# textbrowser =
-# xbrowser =
-# homepage =
-
 [messages]
 mailer = /usr/local/bin/mutt
 maildirs = ~/Mail, ~/mail-archive
@@ -22,9 +13,11 @@ maildirs = ~/Mail, ~/mail-archive
 # or
 # maildirs = ~/Maildir
 
-[can]
+[net]
+homepage = http://localhost
 cpan = ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN
 CTAN = ftp://ftp.dante.de/tex-archive
 # defaults:
+# homepage =
 # cpan = ftp://ftp.cpan.org/pub/CPAN
 # ctan = ftp://ftp.ctan.org/tex-archive

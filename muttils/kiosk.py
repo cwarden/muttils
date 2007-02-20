@@ -68,18 +68,16 @@ class kiosk(html2text.html2text):
             'mhiers': '',
             'specdirs': '',
             'mask': None,
-            'xb': False,
-            'tb': False,
+            'app': '',
             }
 
     def __init__(self, ui, items=None, opts={}):
         html2text.html2text.__init__(self, strict=False)
         self.ui = ui
         self.items = items or []
-
-        for k in self.defaults.keys():
-            setattr(self, k, opts.get(k, self.defaults[k]))
-
+        self.defaults.update(opts.items())
+        for k, v in self.defaults.iteritems():
+            setattr(self, k, v)
         self.mspool = ''         # path to local mail spool
         self.msgs = []           # list of retrieved message objects
         self.muttone = True      # configure mutt for display of 1 msg only
@@ -143,8 +141,7 @@ class kiosk(html2text.html2text):
     def goobrowse(self):
         '''Visits given urls with browser and exits.'''
         items = [self.makequery(mid) for mid in self.items]
-        b = pybrowser.browser(parentui=self.ui,
-                items=items, tb=self.tb, xb=self.xb)
+        b = pybrowser.browser(parentui=self.ui, items=items, app=self.app)
         b.urlvisit()
         sys.exit()
 

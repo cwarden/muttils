@@ -14,11 +14,11 @@ class config(object):
                 os.path.expanduser('~/.muttilsrc')]
         defaults = {
                 'messages':
-                [('mailer', 'mail'), ('maildirs', None)],
-                'browser':
-                [('textbrowser', ''), ('xbrowser', ''), ('homepage', '')],
-                'can':
-                [('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
+                [   ('mailer', 'mail'),
+                    ('maildirs', None)],
+                'net':
+                [   ('homepage', ''),
+                    ('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
                     ('ctan', 'ftp://ftp.ctan.org/tex-archive')],
                 }
         self.config = ConfigParser.SafeConfigParser(defaults)

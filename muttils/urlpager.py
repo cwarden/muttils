@@ -29,8 +29,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             'mhiers': '',
             'specdirs': '',
             'mask': None,
-            'xb': False,
-            'tb': False,
+            'app': '',
             'ftp': 'ftp',
             'getdir': '',
             }
@@ -81,7 +80,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             cs = [self.ftp]
         if not cs:
             b = pybrowser.browser(parentui=self.ui,
-                    items=self.items, tb=self.tb, xb=self.xb)
+                    items=self.items, app=self.app)
             b.urlvisit()
         else:
             cs += [url]
@@ -128,8 +127,8 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
     def urlsearch(self):
         if self.proto != 'mid':
             self.ui.updateconfig()
-            self.cpan = self.ui.configitem('can', 'cpan')
-            self.ctan = self.ui.configitem('can', 'ctan')
+            self.cpan = self.ui.configitem('net', 'cpan')
+            self.ctan = self.ui.configitem('net', 'ctan')
             if self.proto != 'all':
                 self.name = '%s %s' % (self.proto, self.name)
         else:

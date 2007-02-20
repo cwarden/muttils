@@ -23,13 +23,12 @@ class browser(object):
     '''
     Visits items with default or given browser.
     '''
-    def __init__(self, parentui=None, items=None, tb=False, xb=False):
+    def __init__(self, parentui=None, items=None, app=''):
         self.ui = parentui or ui.config()
-        self.items = items
-        self.tb = tb # text browser
-        self.xb = xb # x11 browser
+        self.items = items # urls
+        self.app = app     # browser app
         self.conny = False # try to connect to net
-        self.weburl_re, self.webproto_re = weburlregex() # check for remote url
+        self.weburl_re, self.webproto_re = weburlregex()
         self.local_re = None           # check local protocol declaration
         self.file_re = None            # check file protocol declaration
 
@@ -69,17 +68,13 @@ class browser(object):
 
     def urlvisit(self):
         '''Visit url(s).'''
-        self.ui.updateconfig()
-        xbrowser = self.ui.configitem('browser', 'xbrowser')
-        textbrowser = self.ui.configitem('browser', 'textbrowser')
-        self.items = (self.items
-                or [self.ui.configitem('browser', 'homepage')])
+        if not self.items:
+            self.ui.updateconfig()
+            self.items = [self.ui.configitem('net', 'homepage')]
         self.items = [self.urlcomplete(url) for url in self.items]
         try:
-            if self.xb and xbrowser:
-                b = webbrowser.get(xbrowser)
-            elif self.tb and textbrowser:
-                b = webbrowser.get(textbrowser)
+            if self.app:
+                b = webbrowser.get(self.app)
             else:
                 b = webbrowser.get()
             if self.conny:
