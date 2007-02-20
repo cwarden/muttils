@@ -25,9 +25,9 @@ proginfo = 'Urlbatcher - search and retrieve urls'
 
 def run():
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
-            usage='%prog [option] [files]', description=__doc__,
+            usage='%app [option] [files]', description=__doc__,
             version=version.version_(proginfo))
-    parser.set_defaults(proto='web', pat=None, prog='', getdir='',
+    parser.set_defaults(proto='web', pat=None, app='', getdir='',
             midrelax=False, local=False, browse=False, news=False,
             kiosk='', mhiers='', specdirs='', mask=None)
 
@@ -36,8 +36,8 @@ def run():
             help='narrow down url choice to protocol PROTO')
     parser.add_option('-r', '--regex', dest='pat',
             help='narrow down url choice to urls matching PAT')
-    parser.add_option('-b', '--browser', dest='prog',
-            help='prefer browser PROG over system default')
+    parser.add_option('-b', '--browser', dest='app',
+            help='prefer browser APP over system default')
     parser.add_option('-w', '--wget', dest='getdir',
             help='download urls to directory GETDIR using wget')
     parser.add_option('-i', '--midrelax', action='store_true',
