@@ -1,7 +1,10 @@
 # $Id$
 
 import ui, urlregex, util
-import os.path, re, socket, webbrowser
+import os, re, socket, subprocess, webbrowser
+
+# textbrowsers that need redirection if not connected to term
+tbredir = ['lynx', ] # (e)links not tested yet
 
 def getlocals():
     '''Returns valid local addresses.'''
@@ -69,14 +72,26 @@ class browser(object):
             self.ui.updateconfig()
             self.items = [self.ui.configitem('net', 'homepage')]
         self.items = [self.urlcomplete(url) for url in self.items]
-        try:
-            if self.app:
-                b = webbrowser.get(self.app)
-            else:
-                b = webbrowser.get()
-            if self.conny:
-                util.goonline()
+        if self.app in tbredir and not os.isatty(0):
+            tty = os.ctermid()
             for url in self.items:
-                b.open(url)
-        except webbrowser.Error, inst:
-            raise util.DeadMan(inst)
+                args = (' %(url)s < %(tty)s > %(tty)s'
+                        % {'url': url, 'tty': tty})
+                try:
+                    r = subprocess.call(self.app + args, shell=True)
+                    if r:
+                        raise util.DeadMan('%s returned %i' % (self.app, r))
+                except OSError, inst:
+                    raise util.DeadMan(inst)
+        else:
+            try:
+                if self.app:
+                    b = webbrowser.get(self.app)
+                else:
+                    b = webbrowser.get()
+                if self.conny:
+                    util.goonline()
+                for url in self.items:
+                    b.open(url)
+            except webbrowser.Error, inst:
+                raise util.DeadMan(inst)
