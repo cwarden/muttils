@@ -12,7 +12,10 @@
 '''Searches files or standard input for urls.
 User chooses 1 url interactively which is subsequently retrieved.
 Urls are either web locations or Message-IDs.
-Valid url schemes are: "all", "web", "http", "ftp", "gopher", "mid".
+
+Valid url schemes are: "all", "web", "mailto", "http", "ftp", "gopher",
+"mid" (for Message-ID).
+
 Options "-p mid", "-i", "-n", "-B", "-l", "-m", "-d", "-D", "-M"
 switch to message retrieval.
 '''
@@ -24,6 +27,7 @@ import optparse, sys
 proginfo = 'Urlpager - search, choose and retrieve url'
 
 def run():
+    '''Runs the urlpager script.'''
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
             usage='%prog [option] [files]', description=__doc__,
             version=version.version_(proginfo))

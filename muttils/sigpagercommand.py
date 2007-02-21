@@ -13,6 +13,7 @@ import sys
 proginfo = 'Sigpager - email signature selection'
 
 def run():
+    '''Runs the sigpager script.'''
     parser = optparse.OptionParser(usage='%prog [options] [files to sign]',
             description=__doc__, version=version.version_(proginfo))
     parser.set_defaults(defsig='', sigdir='~/.Sig', defsig='',

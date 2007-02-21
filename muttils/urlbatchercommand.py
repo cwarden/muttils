@@ -11,7 +11,9 @@
 
 '''Searches files or standard input for urls, and retrieves them.
 Urls are either web locations or Message-IDs.
-Valid url schemes are: "web", "http", "ftp", "mid".
+
+Valid url schemes are: "web", "http", "ftp", "mid" (for Message-ID).
+
 Options "-p mid", "-i", "-n", "-B", "-l", "-m", "-d", "-D", "-M"
 switch to message retrieval.
 '''
@@ -24,8 +26,9 @@ valid_protos = ['web', 'http', 'ftp', 'mid']
 proginfo = 'Urlbatcher - search and retrieve urls'
 
 def run():
+    '''Runs the urlbatcher script.'''
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
-            usage='%app [option] [files]', description=__doc__,
+            usage='%prog [option] [files]', description=__doc__,
             version=version.version_(proginfo))
     parser.set_defaults(proto='web', pat=None, app='', getdir='',
             midrelax=False, local=False, browse=False, news=False,
