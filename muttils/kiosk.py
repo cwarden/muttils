@@ -2,7 +2,7 @@
 
 import html2text, pybrowser, util
 import email, email.Generator, email.Parser, email.Errors
-import mailbox, os, re, tempfile, time, urllib, urllib2, sys
+import mailbox, os, re, tempfile, time, subprocess, sys, urllib, urllib2
 
 gmsgend = r'^[A-Z]([a-zA-Z -]+\[\d+\]){3,}'
 ggroups = 'http://groups.google.com/groups'
@@ -318,9 +318,8 @@ class kiosk(html2text.html2text):
                 g.flatten(msg, unixfrom=True)
         finally:
             fp.close()
-        self.kiosk = "'%s'" % self.kiosk
         mailer = self.ui.configitem('messages', 'mailer')
-        cs = [str(mailer)]
+        cs = [mailer]
         if  mailer[:4] != 'mutt':
             cs = [mailer, '-f', self.kiosk]
         elif len(self.msgs) == 1 and self.muttone:
@@ -328,10 +327,20 @@ class kiosk(html2text.html2text):
         else:
             mutti[-2] = mutti[-2] % firstid
             cs += mutti + [self.kiosk] 
+        sh = False
         if not os.isatty(0):
             tty = os.ctermid()
             cs += ['<', tty, '>', tty]
-        os.system(' '.join(cs))
+            sh = True
+        try:
+            if sh:
+                r = subprocess.call(' '.join(cs), shell=True)
+            else:
+                r = subprocess.call(cs)
+            if r:
+                raise util.DeadMan('%s returned %i' % (cs[0], r))
+        except OSError, inst:
+            raise util.DeadMan(inst)
 
     def kioskstore(self):
         '''Collects messages identified by ID either
