@@ -77,7 +77,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             cs = ['wget', '-P', self.getdir]
         elif self.ftpdir:
             self.ftpdir = savedir(self.ftpdir)
-            wd = os.getcwd()
+            wd = os.getcwdu()
             os.chdir(self.ftpdir)
             if not os.path.splitext(url)[1] and not url.endswith('/'):
                 self.items = [url + '/']

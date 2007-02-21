@@ -51,8 +51,6 @@ class browser(object):
         # strip url to pure pathname
         url = self.file_re.sub('/', url, 1)
         url = util.absolutepath(url)
-        if not url.startswith('/'):
-            url = os.path.join(os.getcwd, url)
         if not os.path.exists(url):
             raise util.DeadMan('%s: file not found' % url)
         return 'file://%s' % url
