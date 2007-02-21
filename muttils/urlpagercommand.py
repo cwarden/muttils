@@ -41,7 +41,7 @@ def run():
     parser.add_option('-r', '--regex', dest='pat',
             help='narrow down url choice to urls matching PAT')
     parser.add_option('-b', '--browser', dest='app',
-            help='prefer browser APP over system default')
+            help='prefer browser APP over $BROWSER environment')
     parser.add_option('-w', '--wget', dest='getdir',
             help='download chosen url to directory GETDIR using wget')
     parser.add_option('-f', '--ftp', dest='ftpdir',

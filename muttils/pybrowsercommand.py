@@ -1,8 +1,10 @@
 # $Id$
 
 '''Launches browser to visit given urls (local and remote).
+
 Completes short urls like "blacktrash.org" automagically.
-Override choice of system default browser with option -b.
+
+$BROWSER environment may be overridden with option "-b".
 '''
 
 import pybrowser
@@ -19,7 +21,7 @@ def run():
             description=__doc__, version=version.version_(proginfo))
     parser.set_defaults(app='')
     parser.add_option('-b', '--browser', dest='app',
-            help='prefer browser APP over system default')
+            help='prefer browser APP over $BROWSER environment')
     options, args = parser.parse_args()
     
     try:
