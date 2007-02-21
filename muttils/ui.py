@@ -6,23 +6,29 @@
 import util
 import ConfigParser, os.path
 
+default_rcpath = [
+        '/etc/muttils/muttilsrc',
+        '/usr/local/etc/muttilsrc',
+        os.path.expanduser('~/.muttilsrc'),
+        ]
+
+default_config = {
+        'messages': [
+            ('mailer', 'mail'),
+            ('maildirs', None),
+            ],
+        'net': [
+            ('homepage', ''),
+            ('ftpclient', 'ftp'),
+            ('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
+            ('ctan', 'ftp://ftp.ctan.org/tex-archive'),
+            ],
+        }
+
 class config(object):
     def __init__(self, rcpath=None):
-        self.rcpath = rcpath or [
-                '/etc/muttilsrc',
-                '/usr/local/etc/muttilsrc',
-                os.path.expanduser('~/.muttilsrc')]
-        defaults = {
-                'messages':
-                [   ('mailer', 'mail'),
-                    ('maildirs', None)],
-                'net':
-                [   ('homepage', ''),
-                    ('ftpclient', 'ftp'),
-                    ('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
-                    ('ctan', 'ftp://ftp.ctan.org/tex-archive')],
-                }
-        self.config = ConfigParser.SafeConfigParser(defaults)
+        self.rcpath = rcpath or default_rcpath
+        self.config = ConfigParser.SafeConfigParser(default_config)
         self.updated = False
 
     def updateconfig(self):
