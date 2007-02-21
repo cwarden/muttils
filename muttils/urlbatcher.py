@@ -36,6 +36,7 @@ class urlbatcher(urlcollector.urlcollector):
     def __init__(self, parentui=None, files=None, opts={}):
         urlcollector.urlcollector.__init__(self)
         self.ui = parentui or ui.config()
+        self.ui.updateconfig()
         self.files = files
         util.resolveopts(self, self.options, opts)
 
@@ -58,7 +59,6 @@ class urlbatcher(urlcollector.urlcollector):
                     
     def urlsearch(self):
         if self.proto != 'mid':
-            self.ui.updateconfig()
             self.cpan = self.ui.configitem('net', 'cpan')
             self.ctan = self.ui.configitem('net', 'ctan')
         self.urlcollect()

@@ -43,6 +43,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         urlcollector.urlcollector.__init__(self)
         tpager.tpager.__init__(self, name='url')
         self.ui = parentui or ui.config()
+        self.ui.updateconfig()
         self.files = files
         util.resolveopts(self, self.options, opts)
 
@@ -69,7 +70,6 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
     def urlgo(self, mail=False):
         url, cs, conny = self.items[0], [], True
         if mail:
-            self.ui.updateconfig()
             cs = [self.ui.configitem('messages', 'mailer')]
             conny = False
         elif self.getdir:
@@ -125,7 +125,6 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     def urlsearch(self):
         if self.proto != 'mid':
-            self.ui.updateconfig()
             self.cpan = self.ui.configitem('net', 'cpan')
             self.ctan = self.ui.configitem('net', 'ctan')
             if self.proto != 'all':

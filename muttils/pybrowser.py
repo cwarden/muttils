@@ -29,6 +29,7 @@ class browser(object):
     '''
     def __init__(self, parentui=None, items=None, app=''):
         self.ui = parentui or ui.config()
+        self.ui.updateconfig()
         self.items = items # urls
         self.app = app     # browser app
         self.conny = False # try to connect to net
@@ -67,7 +68,6 @@ class browser(object):
     def urlvisit(self):
         '''Visit url(s).'''
         if not self.items:
-            self.ui.updateconfig()
             self.items = [self.ui.configitem('net', 'homepage')]
         self.items = [self.urlcomplete(url) for url in self.items]
         if self.app in tbredir and not os.isatty(0):

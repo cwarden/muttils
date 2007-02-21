@@ -74,6 +74,7 @@ class kiosk(html2text.html2text):
     def __init__(self, ui, items=None, opts={}):
         html2text.html2text.__init__(self, strict=False)
         self.ui = ui
+        self.ui.updateconfig()
         self.items = items or []
         util.updateattribs(self, self.defaults, opts)
         self.mspool = ''         # path to local mail spool
@@ -335,7 +336,6 @@ class kiosk(html2text.html2text):
         if self.browse:
             self.goobrowse()
         self.kiosktest()
-        self.ui.updateconfig()
         itemscopy = self.items[:]
         self.leafsearch()
         if self.items and not self.news:
