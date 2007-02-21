@@ -24,6 +24,7 @@ class urlbatcher(urlcollector.urlcollector):
             'pat': None,
             'kiosk': '',
             'browse': False,
+            'news': False,
             'local': False,
             'mhiers': '',
             'specdirs': '',
