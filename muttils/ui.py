@@ -18,6 +18,7 @@ class config(object):
                     ('maildirs', None)],
                 'net':
                 [   ('homepage', ''),
+                    ('ftpclient', 'ftp'),
                     ('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
                     ('ctan', 'ftp://ftp.ctan.org/tex-archive')],
                 }

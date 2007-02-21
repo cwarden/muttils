@@ -15,9 +15,11 @@ maildirs = ~/Mail, ~/mail-archive
 
 [net]
 homepage = http://localhost
+ftpclient = /usr/local/bin/lftp
 cpan = ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN
 CTAN = ftp://ftp.dante.de/tex-archive
 # defaults:
 # homepage =
+# ftpclient = ftp
 # cpan = ftp://ftp.cpan.org/pub/CPAN
 # ctan = ftp://ftp.ctan.org/tex-archive

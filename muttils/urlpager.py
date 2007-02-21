@@ -15,6 +15,12 @@ or enter %(name)s manually:
 %(url)s
 '''
 
+def savedir(directory):
+    '''Returns absolute path of directory if it is one.'''
+    directory = util.absolutepath(directory)
+    if not os.path.isdir(directory):
+        raise util.DeadMan('%s: not a directory' % directory)
+    return directory
 
 class urlpager(urlcollector.urlcollector, tpager.tpager):
     options = {
@@ -29,7 +35,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             'specdirs': '',
             'mask': None,
             'app': '',
-            'ftp': 'ftp',
+            'ftpdir': '',
             'getdir': '',
             }
 
@@ -67,11 +73,15 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             cs = [self.ui.configitem('messages', 'mailer')]
             conny = False
         elif self.getdir:
+            self.getdir = savedir(self.getdir)
             cs = ['wget', '-P', self.getdir]
-        elif self.proto == 'ftp' or urlregex.ftpcheck(url):
+        elif self.ftpdir:
+            self.ftpdir = savedir(self.ftpdir)
+            wd = os.getcwd()
+            os.chdir(self.ftpdir)
             if not os.path.splitext(url)[1] and not url.endswith('/'):
                 self.items = [url + '/']
-            cs = [self.ftp]
+            cs = [self.ui.configitem('net', 'ftpclient')]
         if not cs:
             b = pybrowser.browser(parentui=self.ui,
                     items=self.items, app=self.app)
@@ -79,6 +89,8 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         else:
             cs += [url]
             util.systemcall(cs, conny)
+        if self.ftpdir:
+            os.chdir(wd)
 
     def urlsel(self):
         name = self.name

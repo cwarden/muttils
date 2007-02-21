@@ -23,11 +23,13 @@ def updateattribs(obj, defaults, options):
 
 def resolveopts(obj, defaults, options):
     '''Adapts option sets.
-    Sets protocol to "web", if "getdir" is without corresponding proto.
+    Sets protocol to "web", if "getdir" or "ftpdir" is without
+    corresponding protocol scheme.
     Sets protocol to "mid", if it encounters one of message_opts.'''
 
     webschemes = ['web', 'http', 'ftp']
-    if options['getdir'] and options['proto'] not in webschemes:
+    if ((options['getdir'] or options['ftpdir'])
+            and options['proto'] not in webschemes):
         options['proto'] = 'web'
 
     message_opts = ['midrelax', 'news', 'local', 'browse',

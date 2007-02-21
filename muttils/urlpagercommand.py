@@ -27,7 +27,7 @@ def run():
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
             usage='%prog [option] [files]', description=__doc__,
             version=version.version_(proginfo))
-    parser.set_defaults(proto='all', pat=None, app='', getdir='', ftp='',
+    parser.set_defaults(proto='all', pat=None, app='', getdir='', ftpdir='',
             midrelax=False, local=False, browse=False, news=False,
             kiosk='', mhiers='', specdirs='', mask=None)
 
@@ -40,8 +40,8 @@ def run():
             help='prefer browser APP over system default')
     parser.add_option('-w', '--wget', dest='getdir',
             help='download chosen url to directory GETDIR using wget')
-    parser.add_option('-f', '--ftp',
-            help='use ftp client FTP for ftp urls')
+    parser.add_option('-f', '--ftp', dest='ftpdir',
+            help='use ftp client to download into directory FTPDIR')
     parser.add_option('-i', '--midrelax', action='store_true',
             help='choose from undeclared message-ids (false positives probable)')
     parser.add_option('-l', '--local', action='store_true',
