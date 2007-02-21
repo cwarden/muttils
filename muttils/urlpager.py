@@ -1,8 +1,7 @@
 # $Id$
 
-import iterm, kiosk, pybrowser, tpager, ui, urlcollector, util
-from urlregex import mailcheck, ftpcheck
-import os, readline
+import iterm, kiosk, pybrowser, tpager, ui, urlcollector, urlregex, util
+import os.path, readline
 
 readline_prompt = '''
 press <UP> or <C-P> to edit %(name)s,
@@ -55,7 +54,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
     def mailcondition(self):
         '''Return True if mail client should be called.'''
         return (self.proto == 'mailto'
-                or self.proto == 'all' and mailcheck(self.items[0]))
+                or self.proto == 'all' and urlregex.mailcheck(self.items[0]))
 
     def msgretrieval(self):
         '''Passes message-id and relevant options to kiosk.'''
@@ -70,7 +69,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             conny = False
         elif self.getdir:
             cs = ['wget', '-P', self.getdir]
-        elif self.proto == 'ftp' or ftpcheck(url):
+        elif self.proto == 'ftp' or urlregex.ftpcheck(url):
             if not os.path.splitext(url)[1] and not url.endswith('/'):
                 self.items = [url + '/']
             cs = [self.ftp]
