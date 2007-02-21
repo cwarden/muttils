@@ -28,9 +28,11 @@ def resolveopts(obj, defaults, options):
     Sets protocol to "mid", if it encounters one of message_opts.'''
 
     webschemes = ['web', 'http', 'ftp']
-    if ((options['getdir'] or options['ftpdir'])
-            and options['proto'] not in webschemes):
-        options['proto'] = 'web'
+    for o in ('getdir', 'ftpdir'):
+        if (options.has_key(o) and options[o]
+                and options.proto not in webschemes):
+            options['proto'] = web
+            break
 
     message_opts = ['midrelax', 'news', 'local', 'browse',
             'kiosk', 'mhiers', 'specdirs', 'mask']
