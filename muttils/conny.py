@@ -1,6 +1,6 @@
 # $Id$
 
-import os, sys, time
+import os, sys, time, util
 
 connstat = '''tell application "Internet Connect"
     set visible of window 1 to false
@@ -26,7 +26,10 @@ def appleconnect():
     def cstat():
         '''Returns connection status.'''
         f0, f1 = os.popen2(applescript + [connstat])
-        return int(f1.read()[:-1])
+        try:
+            return int(f1.read()[:-1])
+        except ValueError, inst:
+            raise util.DeadMan('failed to connect: %s' % inst)
 
     stat = cstat()
     if stat > 0:
