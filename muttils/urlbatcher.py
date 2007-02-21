@@ -10,7 +10,7 @@
 ###
 
 import iterm, kiosk, pybrowser, ui, urlcollector, util
-import os
+import subprocess
 
 class urlbatcher(urlcollector.urlcollector):
     '''
@@ -45,7 +45,12 @@ class urlbatcher(urlcollector.urlcollector):
             k.kioskstore()
         elif self.getdir:
             util.goonline()
-            os.execvp('wget', ['wget', '-P', self.getdir] + self.items)
+            try:
+                r = subprocess.call(['wget', '-P', self.getdir] + self.items)
+                if r:
+                    raise util.DeadMan('wget returned %i' % r)
+            except OSError, inst:
+                raise util.DeadMan(inst)
         else:
             b = pybrowser.browser(parentui=self.ui,
                     items=self.items, app=self.app)

@@ -3,7 +3,7 @@
 '''util.py - helper functions for muttils package
 '''
 
-import os
+import os, subprocess
 
 class DeadMan(Exception):
     '''Exception class for muttils package.'''
@@ -43,6 +43,24 @@ def resolveopts(obj, defaults, options):
     del options['midrelax']
 
     updateattribs(obj, defaults, options)
+
+def systemcall(cs, conny=False):
+    '''Calls command sequence cs in manner suiting
+    terminal connectivity.'''
+    if conny:
+        goonline()
+    try:
+        if os.isatty(0):
+            # connected to terminal
+            r = subprocess.call(cs)
+        else:
+            tty = os.ctermid()
+            cs += ['<', tty, '>', tty]
+            r = subprocess.call(' '.join(cs), shell=True)
+        if r:
+            raise DeadMan('%s returned %i' % (cs[0], r))
+    except OSError, inst:
+        raise DeadMan(inst)
 
 def absolutepath(path):
     '''Guesses an absolute path, eg. given on command line.'''

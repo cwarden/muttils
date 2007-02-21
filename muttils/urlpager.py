@@ -80,14 +80,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             b.urlvisit()
         else:
             cs += [url]
-            if conny:
-                util.goonline()
-            if not os.isatty(0): # not connected to terminal
-                tty = os.ctermid()
-                cs += ['<', tty, '>', tty]
-                os.system(' '.join(cs))
-            else:
-                os.execvp(cs[0], cs)
+            util.systemcall(cs, conny)
 
     def urlsel(self):
         name = self.name
