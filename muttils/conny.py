@@ -1,6 +1,6 @@
 # $Id$
 
-import os, sys, time, util
+import subprocess, sys, time, util
 
 connstat = '''tell application "Internet Connect"
     set visible of window 1 to false
@@ -25,18 +25,23 @@ def appleconnect():
 
     def cstat():
         '''Returns connection status.'''
-        f0, f1 = os.popen2(applescript + [connstat])
+        p = subprocess.Popen(applescript + [connstat], close_fds=True,
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        out = p.stdout.read()[:-1]
         try:
-            return int(f1.read()[:-1])
-        except ValueError, inst:
-            raise util.DeadMan('failed to connect: %s' % inst)
+            return int(out)
+        except ValueError:
+            raise util.DeadMan(
+                    'AppleScript cannot handle this configuration\nresult: %s'
+                    % out)
 
     stat = cstat()
     if stat > 0:
         return
 
-    f0, f1 = os.popen2(applescript + [connect])
-    conname = f1.read()[:-1]
+    p = subprocess.Popen(applescript + [connect], close_fds=True,
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    conname = p.stdout.read()[:-1]
     sys.stdout.write('connecting via %s ' % conname)
     try:
         while stat < 1:
@@ -47,8 +52,13 @@ def appleconnect():
     except KeyboardInterrupt:
         pass
     if stat > 0:
+        prog = '/etc/ppp/ip-up'
         sys.stdout.write('\nconnected via %s\n' % conname)
-        os.spawnlp(os.P_WAIT, '/etc/ppp/ip-up')
+        ret = subprocess.call([prog])
     else:
-        os.spawnvp(os.P_WAIT, 'osascript', applescript + [disconnect])
-        sys.exit('\nconnection via %s failed' % conname)
+        prog = 'osascript'
+        ret = subprocess.call(applescript + [disconnect])
+        if ret:
+            raise util.DeadMan(
+                    '\nerror connecting %s: %s returned %i'
+                    % (conname, prog, ret))
