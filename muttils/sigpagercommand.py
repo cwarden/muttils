@@ -16,8 +16,8 @@ def run():
     '''Runs the sigpager script.'''
     parser = optparse.OptionParser(usage='%prog [options] [files to sign]',
             description=__doc__, version=version.version_(proginfo))
-    parser.set_defaults(defsig='', sigdir='~/.Sig', defsig='',
-            tail='.sig', sigsep='-- \n')
+    parser.set_defaults(defsig='', sigdir='', defsig='',
+            tail='', sigsep='-- \n')
 
     parser.add_option('-d', '--sigdir',
             help='choose from signatures in directory SIGDIR')

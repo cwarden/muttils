@@ -16,6 +16,9 @@ default_config = {
         'messages': [
             ('mailer', 'mail'),
             ('maildirs', None),
+            ('signature', ''),
+            ('sigdir', ''),
+            ('sigtail', ''),
             ],
         'net': [
             ('homepage', ''),

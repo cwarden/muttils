@@ -1,6 +1,6 @@
 # $Id$
 
-import tpager, util
+import tpager, util, ui
 import os, random, re, readline, sys
 
 class signature(tpager.tpager):
@@ -8,13 +8,17 @@ class signature(tpager.tpager):
     Provides functions to interactively choose a mail signature
     matched against a regular expression of your choice.
     '''
-    def __init__(self, dest=None, sig='', sdir='', sep='-- \n', tail=''):
+    def __init__(self, parentui=None,
+            dest=None, sig='', sdir='', sep='-- \n', tail=''):
         tpager.tpager.__init__(self,
             name='sig', format='bf', qfunc='default sig', ckey='/')
+        self.ui = parentui or ui.config()
+        self.ui.updateconfig()
         self.dest = dest        # input: list of files or string
-        self.sig = sig or os.getenv('SIGNATURE') or '~/.signature'
-        self.sdir = sdir        # directory containing sig files
-        self.tail = tail        # suffix of signature files
+        self.sig = (sig or self.ui.configitem('messages', 'signature')
+                or os.getenv('SIGNATURE') or '~/.signature')
+        self.sdir = sdir or self.ui.configitem('messages', 'sigdir')
+        self.tail = tail or self.ui.configitem('messages', 'sigtail')
         self.sep = sep          # signature separator
         self.sigs = []          # complete list of signature strings
         self.pat = None         # match sigs against pattern

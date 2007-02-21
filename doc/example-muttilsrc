@@ -5,13 +5,20 @@
 [messages]
 mailer = /usr/local/bin/mutt
 maildirs = ~/Mail, ~/mail-archive
+signature = ~/path/to/my/favorite/sig
+sigdir = ~/path/to/dir/with/sigs
+sigtail = .sig
 # defaults:
 # mailer = mail
 # maildirs = $MAIL
-# or
+## or
 # maildirs = ~/Mail
-# or
+## or
 # maildirs = ~/Maildir
+# signature = $SIGNATURE
+## or
+# signature = ~/.signature
+# sigtail =
 
 [net]
 homepage = http://localhost
