@@ -41,13 +41,12 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         util.resolveopts(self, self.options, opts)
 
     def urlconfirm(self):
+        expando = {'name': self.name, 'url': self.items[0]}
         if not self.files:
-            url = raw_input(edit_prompt %
-                    {'name': self.name, 'url': self.items[0]})
+            url = raw_input(edit_prompt % expando)
         else:
             readline.add_history(self.items[0])
-            url = raw_input(readline_prompt %
-                    {'name': self.name, 'url': self.items[0]})
+            url = raw_input(readline_prompt % expando)
         if url:
             self.items = [url]
 
