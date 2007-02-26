@@ -31,7 +31,6 @@ class tpager(object):
         self.qfunc = qfunc       # name of exit function
         self.crit = crit         # name of criterion for customizing
         self.pages =  {}         # dictionary of pages
-        self.pn = 0              # current page/key of pages
         self.rows = 0            # terminal $LINES
         self.cols = 0            # terminal $COLUMNS
         self.notty = False       # True if not connected to terminal
@@ -63,12 +62,13 @@ class tpager(object):
         return reduce(lambda a, b: a+b,
             [len(line)/self.cols + 1 for line in lines])
 
-    def addpage(self, buff, lines):
-        '''Adds a page to pages.'''
-        self.pn += 1
+    def addpage(self, buff, lines, pn):
+        '''Adds a page to pages and returns pageno.'''
+        pn += 1
         # fill page with newlines
         buff += '\n' * (self.rows-lines-1)
-        self.pages[self.pn] = buff
+        self.pages[pn] = buff
+        return pn
 
     def formatitems(self):
         '''Formats items of itemsdict to numbered list.'''
@@ -96,11 +96,11 @@ class tpager(object):
         '''Creates dictionary of pages to display in terminal window.
         Keys are integers as string starting from "1".'''
         self.terminspect()
-        self.itemsdict, self.pages, self.pn = {}, {}, 0
+        self.itemsdict, self.pages = {}, {}
         items = self.formatitems()
         # all this still supposes that no wrapped text item
         # has more lines than the terminal rows
-        buff, lines = '', 0
+        buff, lines, pn = '', 0, 0
         for item in items:
             ilines = self.softcount(item)
             linecheck = lines + ilines
@@ -108,9 +108,9 @@ class tpager(object):
                 buff += item
                 lines = linecheck
             else:
-                self.addpage(buff, lines)
+                pn = self.addpage(buff, lines, pn)
                 buff, lines = item, ilines
-        self.addpage(buff, lines)
+        pn = self.addpage(buff, lines, pn)
 
     def coltrunc(self, s, cols=0):
         '''Truncates string at beginning by inserting '>'
