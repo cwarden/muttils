@@ -33,20 +33,20 @@ class tpager(object):
         self.pages =  {}         # dictionary of pages
         self.rows = 0            # terminal $LINES
         self.cols = 0            # terminal $COLUMNS
-        self.notty = False       # True if not connected to terminal
         self.itemsdict = {}      # dictionary of items to choose
         self.ilen = 0            # length of items' list
 
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''
-        buf = 'abcd' # string length 4
+        notty = False # assume connection to terminal
+        buf = 'abcd'  # string length 4
         for dev in (sys.stdout, sys.stdin):
             fd = dev.fileno()
             istty = os.isatty(fd)
             if istty and buf == 'abcd':
                 buf = fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
             elif not istty:
-                self.notty = True
+                notty = True
         if buf == 'abcd':
             raise util.DeadMan('could not get terminal size')
         t_rows, t_cols = struct.unpack('hh', buf) # 'hh': 2 signed short
@@ -54,6 +54,7 @@ class tpager(object):
         # cols need 1 extra when lines are broken
         self.rows = t_rows-1
         self.cols = t_cols+1
+        return notty
 
     def addpage(self, buff, lines, pn):
         '''Adds a page to pages and returns pageno.'''
@@ -88,7 +89,6 @@ class tpager(object):
     def pagesdict(self):
         '''Creates dictionary of pages to display in terminal window.
         Keys are integers as string starting from "1".'''
-        self.terminspect()
         self.itemsdict, self.pages = {}, {}
         items = self.formatitems()
         # all this still supposes that no wrapped text item
@@ -174,14 +174,15 @@ class tpager(object):
         return reply
 
     def interact(self):
+        notty = self.terminspect()
         self.pagesdict()
-        if self.notty:
+        if notty:
             it = iterm.iterm()
             it.terminit()
         try:
             retval = self.pagemenu()
         except KeyboardInterrupt:
             retval, self.items = '', None
-        if self.notty:
+        if notty:
             it.reinit()
         return retval
