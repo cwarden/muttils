@@ -55,13 +55,6 @@ class tpager(object):
         self.rows = t_rows-1
         self.cols = t_cols+1
 
-    def softcount(self, item):
-        '''Counts lines of item as displayed in
-        a terminal with cols columns.'''
-        lines = item.splitlines()
-        return reduce(lambda a, b: a+b,
-            [len(line)/self.cols + 1 for line in lines])
-
     def addpage(self, buff, lines, pn):
         '''Adds a page to pages and returns pageno.'''
         pn += 1
@@ -102,7 +95,10 @@ class tpager(object):
         # has more lines than the terminal rows
         buff, lines, pn = '', 0, 0
         for item in items:
-            ilines = self.softcount(item)
+            # lines of item, taking overruns into account
+            ilines = item.splitlines()
+            ilines = reduce(lambda a, b: a+b,
+                    [len(line)/self.cols + 1 for line in ilines])
             linecheck = lines + ilines
             if linecheck < self.rows:
                 buff += item
