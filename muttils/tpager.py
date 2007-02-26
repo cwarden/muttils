@@ -129,8 +129,8 @@ class tpager(object):
 
     def pagemenu(self):
         '''Lets user page through a list of items and make a choice.'''
-        header = self.coltrunc('*%d %s*\n'
-                % (self.ilen, self.name+'s'[self.ilen==1:]), self.cols - 2)
+        header = self.coltrunc('*%s*\n' % util.plural(self.ilen, self.name),
+                self.cols - 2)
         plen = len(self.pages)
         if plen == 1: # no paging
             cs = ', ^C:Cancel'
