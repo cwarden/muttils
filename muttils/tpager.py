@@ -16,23 +16,27 @@ class tpager(object):
     Customizes interactive choice to current terminal.
     '''
     def __init__(self, items=None,
-            name='item', format='sf', qfunc='Quit', ckey='', crit='pattern'):
+            name='item', format='sf', ckey='', qfunc='Quit', crit='pattern'):
         self.items = items or [] # (text) items to choose from
         self.name = name         # general name of an item
-        self.qfunc = qfunc       # name of exit function
-        if ckey and ckey in 'qQ-':
-            raise util.DeadMan("the `%s' key is internally reserved." % ckey)
+        if format in ('sf', 'bf'):
+            self.format = format # sf: simple format, bf: bracket format
         else:
+            raise util.DeadMan(
+                    '%s: invalid format, use one of "sf", "bf"' % format)
+        if not ckey or not ckey in 'qQ-':
             self.ckey = ckey     # key to customize pager
-        self.format = format     # sf: simple format, bf: bracket format
+        else:
+            raise util.DeadMan("the `%s' key is internally reserved." % ckey)
+        self.qfunc = qfunc       # name of exit function
+        self.crit = crit         # name of criterion for customizing
         self.pages =  {}         # dictionary of pages
         self.pn = 0              # current page/key of pages
-        self.rows = 0
-        self.cols = 0
+        self.rows = 0            # terminal $LINES
+        self.cols = 0            # terminal $COLUMNS
         self.notty = False       # True if not connected to terminal
         self.itemsdict = {}      # dictionary of items to choose
         self.ilen = 0            # length of items' list
-        self.crit = crit         # criterion for customizing
 
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''
@@ -47,7 +51,7 @@ class tpager(object):
         if buf == 'abcd':
             raise util.DeadMan('could not get terminal size')
         t_rows, t_cols = struct.unpack('hh', buf) # 'hh': 2 signed short
-        # rows: retain 2 lines for header + 1 for menu
+        # rows: retain 1 line for header + 1 for menu
         # cols need 1 extra when lines are broken
         self.rows = t_rows-1
         self.cols = t_cols+1
@@ -79,10 +83,6 @@ class tpager(object):
             return '[%s]\n%s\n' % (key, self.itemsdict[key])
 
         formdict = {'sf': simpleformat, 'bf': bracketformat}
-        if self.format not in formdict:
-            raise util.DeadMan('%s: invalid format, use one of "sf", "bf"'
-                    % self.format)
-
         self.ilen = len(self.items)
         ikeys = [str(i) for i in xrange(1, self.ilen+1)]
         map(self.itemsdict.__setitem__, ikeys, self.items)
