@@ -33,7 +33,6 @@ class tpager(object):
         self.itemsdict = {}      # dictionary of items to choose
         self.ilen = 0            # length of items' list
         self.crit = crit         # criterion for customizing
-        self.header = ''
 
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''
@@ -50,7 +49,7 @@ class tpager(object):
         t_rows, t_cols = struct.unpack('hh', buf) # 'hh': 2 signed short
         # rows: retain 2 lines for header + 1 for menu
         # cols need 1 extra when lines are broken
-        self.rows = t_rows-3
+        self.rows = t_rows-1
         self.cols = t_cols+1
 
     def softcount(self, item):
@@ -123,14 +122,14 @@ class tpager(object):
         else:
             return '>%s' % s[slen-mcols:]
 
-    def pagedisplay(self, menu, pn=1):
+    def pagedisplay(self, header, menu, pn=1):
         '''Displays a page of items including header and choice menu.'''
-        print self.header + self.pages[pn]
+        sys.stdout.write(header + self.pages[pn])
         return raw_input(self.coltrunc(menu))
 
     def pagemenu(self):
         '''Lets user page through a list of items and make a choice.'''
-        self.header = self.coltrunc('*%d %s*\n\n'
+        header = self.coltrunc('*%d %s*\n'
                 % (self.ilen, self.name+'s'[self.ilen==1:]), self.cols - 2)
         plen = len(self.pages)
         if plen == 1: # no paging
@@ -140,7 +139,7 @@ class tpager(object):
             if self.itemsdict:
                 cs += ', Number'
             menu = 'Page 1 of 1 [%s]%s ' % (self.qfunc, cs)
-            reply = self.pagedisplay(menu)
+            reply = self.pagedisplay(header, menu)
             if reply in self.itemsdict:
                 self.items = [self.itemsdict[reply]]
             elif not reply:
@@ -161,7 +160,7 @@ class tpager(object):
                 if self.ckey:
                     menu += ', %s<%s>' % (self.ckey, self.crit)
                 menu += ', Number '
-                reply = self.pagedisplay(menu, pn)
+                reply = self.pagedisplay(header, menu, pn)
                 if not reply:
                     pn = valclamp(pn+pdir, 1, plen)
                 elif bs and reply == '-':
