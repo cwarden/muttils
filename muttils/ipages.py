@@ -1,23 +1,19 @@
 # $Id$
 
 import util
-import os
+import subprocess
 
 def screendims():
     '''Get current term's columns and rows, return customized values.'''
-    if os.uname()[0] == 'Darwin':
-        p = os.popen('stty -a -f %s' % os.ctermid())
-        tt = p.readline().split()
-        t_rows = int(tt[3])
-        t_cols = int(tt[5])
-    else: # Linux
-        p = os.popen('stty -a -F %s' % os.ctermid())
-        tt = p.readline().split('; ')
-        t_rows = int(tt[1].split()[1])
-        t_cols = int(tt[2].split()[1])
+    p = subprocess.Popen(['tput', 'lines'], close_fds=True,
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    t_rows = p.stdout.readline()
+    p = subprocess.Popen(['tput', 'cols'], close_fds=True,
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    t_cols = p.stdout.readline()
     # rows: retain 2 lines for header + 1 for menu
     # cols need 1 extra when lines are broken
-    return t_rows-3, t_cols+1
+    return int(t_rows)-3, int(t_cols)+1
 
 
 class ipages(object):
