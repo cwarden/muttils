@@ -1,15 +1,18 @@
 # $Id$
 
 import util
-import fcntl, struct, sys, termios
+import fcntl, os, struct, sys, termios
 
 def screendims():
     '''Get current term's columns and rows, return customized values.'''
     buf = 'abcd' # string length 4
-    try:
-        buf = fcntl.ioctl(sys.stdout, termios.TIOCGWINSZ, buf)
-    except IOError:
-        buf = fcntl.ioctl(sys.stdin, termios.TIOCGWINSZ, buf)
+    for dev in (sys.stdout, sys.stdin, sys.stderr):
+        fd = dev.fileno()
+        if os.isatty(fd):
+            buf = fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
+            break
+    if buf == 'abcd':
+        raise util.DeadMan('could not get terminal size')
     t_rows, t_cols = struct.unpack('hh', buf) # 'hh': 2 signed short
     # rows: retain 2 lines for header + 1 for menu
     # cols need 1 extra when lines are broken
