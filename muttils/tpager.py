@@ -1,32 +1,111 @@
 # $Id$
 
-import ipages, iterm, util
-import os
+import iterm, util
+import fcntl, os, struct, sys, termios
 
 # format default paging command
 pds = {-1:'Back', 1:'Forward'}
+
+def screendims():
+    '''Get current term's columns and rows, return customized values.'''
+    buf = 'abcd' # string length 4
+    for dev in (sys.stdout, sys.stdin, sys.stderr):
+        fd = dev.fileno()
+        if os.isatty(fd):
+            buf = fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
+            break
+    if buf == 'abcd':
+        raise util.DeadMan('could not get terminal size')
+    t_rows, t_cols = struct.unpack('hh', buf) # 'hh': 2 signed short
+    # rows: retain 2 lines for header + 1 for menu
+    # cols need 1 extra when lines are broken
+    return t_rows-3, t_cols+1
 
 def valclamp(x, low, high):
     '''Clamps x between low and high.'''
     return max(low, min(x, high))
 
 
-class tpager(ipages.ipages):
+class tpager(object):
     '''
     Customizes interactive choice to current terminal.
     '''
     def __init__(self, items=None,
             name='item', format='sf', qfunc='Quit', ckey='', crit='pattern'):
-        ipages.ipages.__init__(self, items=items, format=format)
-        # ^ items, ilen, pages, itemsdict, cols
-        self.name = name            # general name of an item
-        self.qfunc = qfunc          # name of exit function
+        self.items = items or [] # (text) items to choose from
+        self.name = name         # general name of an item
+        self.qfunc = qfunc       # name of exit function
         if ckey and ckey in 'qQ-':
             raise util.DeadMan("the `%s' key is internally reserved." % ckey)
         else:
-            self.ckey = ckey        # key to customize pager
-        self.crit = crit            # criterion for customizing
+            self.ckey = ckey     # key to customize pager
+        self.format = format     # sf: simple format, bf: bracket format
+        self.pages =  {}         # dictionary of pages
+        self.pn = 0              # current page/key of pages
+        self.rows, self.cols = screendims()
+        self.itemsdict = {}      # dictionary of items to choose
+        self.ilen = 0            # length of items' list
+        self.crit = crit         # criterion for customizing
         self.header = ''
+
+    def softcount(self, item):
+        '''Counts lines of item as displayed in
+        a terminal with cols columns.'''
+        lines = item.splitlines()
+        return reduce(lambda a, b: a+b,
+            [len(line)/self.cols + 1 for line in lines])
+
+    def addpage(self, buff, lines):
+        '''Adds a page to pages.'''
+        self.pn += 1
+        # fill page with newlines
+        buff += '\n' * (self.rows-lines-1)
+        self.pages[self.pn] = buff
+
+    def formatitems(self):
+        '''Formats items of itemsdict to numbered list.'''
+
+        def simpleformat(key):
+            '''Simple format of choice menu,
+            recommended for 1 line items.'''
+            return '%s) %s\n' % (key.rjust(maxl), self.itemsdict[key])
+        def bracketformat(key):
+            '''Format of choice menu with items
+            that are longer than 1 line.'''
+            return '[%s]\n%s\n' % (key, self.itemsdict[key])
+
+        formdict = {'sf': simpleformat, 'bf': bracketformat}
+        if self.format not in formdict:
+            raise util.DeadMan('%s: invalid format, use one of "sf", "bf"'
+                    % self.format)
+
+        self.ilen = len(self.items)
+        ikeys = [str(i) for i in xrange(1, self.ilen+1)]
+        map(self.itemsdict.__setitem__, ikeys, self.items)
+        if not self.itemsdict:
+            return []
+        maxl = len(ikeys[-1])
+        formatfunc = formdict[self.format]
+        return [formatfunc(k) for k in ikeys]
+
+    def pagesdict(self):
+        '''Creates dictionary of pages to display in terminal window.
+        Keys are integers as string starting from "1".'''
+        self.itemsdict, self.pages, self.pn = {}, {}, 0
+        items = self.formatitems()
+        # all this still supposes that no wrapped text item
+        # has more lines than the terminal rows
+        buff, lines = '', 0
+        for item in items:
+            ilines = self.softcount(item)
+            linecheck = lines + ilines
+            if linecheck < self.rows:
+                buff += item
+                lines = linecheck
+            else:
+                self.addpage(buff, lines)
+                buff, lines = item, ilines
+        self.addpage(buff, lines)
 
     def coltrunc(self, s, cols=0):
         '''Truncates string at beginning by inserting '>'
