@@ -3,7 +3,7 @@
 '''util.py - helper functions for muttils package
 '''
 
-import os, subprocess
+import os, subprocess, sys
 
 class DeadMan(Exception):
     '''Exception class for muttils package.'''
@@ -54,7 +54,7 @@ def systemcall(cs, conny=False):
     if conny:
         goonline()
     try:
-        if os.isatty(0):
+        if os.isatty(sys.stdin.fileno()):
             # connected to terminal
             r = subprocess.call(cs)
         else:

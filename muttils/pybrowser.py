@@ -1,7 +1,7 @@
 # $Id$
 
 import ui, urlregex, util
-import os, re, socket, subprocess, webbrowser
+import os, re, socket, subprocess, sys, webbrowser
 
 # textbrowsers that need redirection if not connected to term
 tbredir = ['lynx', ] # (e)links not tested yet
@@ -70,7 +70,7 @@ class browser(object):
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
         self.items = [self.urlcomplete(url) for url in self.items]
-        if self.app in tbredir and not os.isatty(0):
+        if self.app in tbredir and not os.isatty(sys.stdin.fileno()):
             tty = os.ctermid()
             for url in self.items:
                 args = (' %(url)s < %(tty)s > %(tty)s'
