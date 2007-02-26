@@ -1,19 +1,16 @@
 # $Id$
 
 import util
-import subprocess
+import fcntl, struct, sys, termios
 
 def screendims():
     '''Get current term's columns and rows, return customized values.'''
-    p = subprocess.Popen(['tput', 'lines'], close_fds=True,
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    t_rows = p.stdout.readline()
-    p = subprocess.Popen(['tput', 'cols'], close_fds=True,
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    t_cols = p.stdout.readline()
+    buf = 'abcd' # string length 4
+    buf = fcntl.ioctl(sys.stdout, termios.TIOCGWINSZ, buf)
+    t_rows, t_cols = struct.unpack('hh', buf) # 'hh': 2 signed short
     # rows: retain 2 lines for header + 1 for menu
     # cols need 1 extra when lines are broken
-    return int(t_rows)-3, int(t_cols)+1
+    return t_rows-3, t_cols+1
 
 
 class ipages(object):
