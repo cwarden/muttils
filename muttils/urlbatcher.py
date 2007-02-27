@@ -18,7 +18,7 @@ class urlbatcher(urlcollector.urlcollector):
     Browses all urls or creates a message tree in mutt.
     You can specify urls/ids by a regex pattern.
     '''
-    options = {
+    defaults = {
             'proto': 'web',
             'decl': False,
             'pat': None,
@@ -38,11 +38,11 @@ class urlbatcher(urlcollector.urlcollector):
         self.ui = parentui or ui.config()
         self.ui.updateconfig()
         self.files = files
-        util.resolveopts(self, self.options, opts)
+        util.resolveopts(self, opts)
 
     def urlgo(self):
         if self.proto == 'mid':
-            k = kiosk.kiosk(self.ui, items=self.items, opts=self.options)
+            k = kiosk.kiosk(self.ui, items=self.items, opts=self.defaults)
             k.kioskstore()
         elif self.getdir:
             util.goonline()

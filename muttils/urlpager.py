@@ -23,7 +23,7 @@ def savedir(directory):
     return directory
 
 class urlpager(urlcollector.urlcollector, tpager.tpager):
-    options = {
+    defaults = {
             'proto': 'all',
             'decl': False,
             'pat': None,
@@ -45,7 +45,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         self.ui = parentui or ui.config()
         self.ui.updateconfig()
         self.files = files
-        util.resolveopts(self, self.options, opts)
+        util.resolveopts(self, opts)
 
     def urlconfirm(self):
         expando = {'name': self.name, 'url': self.items[0]}
@@ -64,7 +64,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     def msgretrieval(self):
         '''Passes message-id and relevant options to kiosk.'''
-        k = kiosk.kiosk(self.ui, items=self.items, opts=self.options)
+        k = kiosk.kiosk(self.ui, items=self.items, opts=self.defaults)
         k.kioskstore()
 
     def urlgo(self, mail=False):

@@ -17,14 +17,14 @@ class DeadMan(Exception):
         return '%s: abort: %s' % (os.path.basename(sys.argv[0]), self.inst)
 
 
-def updateattribs(obj, defaults, options):
+def updateattribs(obj, options):
     '''Updates default values with optional values.'''
-    for k in defaults.iterkeys():
+    for k in obj.defaults.iterkeys():
         if options.has_key(k):
-            defaults[k] = options[k]
-        setattr(obj, k, defaults[k])
+            obj.defaults[k] = options[k]
+        setattr(obj, k, obj.defaults[k])
 
-def resolveopts(obj, defaults, options):
+def resolveopts(obj, options):
     '''Adapts option sets.
     Sets protocol to "web", if "getdir" or "ftpdir" is without
     corresponding protocol scheme.
@@ -43,7 +43,7 @@ def resolveopts(obj, defaults, options):
     else:
         options['decl'] = True
     del options['midrelax']
-    updateattribs(obj, defaults, options)
+    updateattribs(obj, options)
 
 def systemcall(cs, conny=False):
     '''Calls command sequence cs in manner suiting
