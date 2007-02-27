@@ -10,9 +10,8 @@ class DeadMan(Exception):
     def __init__(self, inst=''):
         self.inst = inst
     def __str__(self):
-        if isinstance(self.inst, str):
-            return self.inst
-        return str(self.inst)
+        return '%s: abort: %s' % (os.path.basename(sys.argv[0]), self.inst)
+
 
 def updateattribs(obj, defaults, options):
     '''Updates default values with optional values.'''
