@@ -66,6 +66,8 @@ class tpager(object):
 
     def formatitems(self):
         '''Formats items of itemsdict to numbered list.'''
+        if not self.items:
+            return []
 
         def simpleformat(key):
             '''Simple format of choice menu,
@@ -80,9 +82,8 @@ class tpager(object):
         self.ilen = len(self.items)
         ikeys = [str(i) for i in xrange(1, self.ilen+1)]
         map(self.itemsdict.__setitem__, ikeys, self.items)
-        if not self.itemsdict:
-            return []
-        maxl = len(ikeys[-1])
+        if self.format == 'sf':
+            maxl = len(ikeys[-1])
         formatfunc = formdict[self.format]
         return [formatfunc(k) for k in ikeys]
 
