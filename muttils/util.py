@@ -30,8 +30,8 @@ def resolveopts(obj, defaults, options):
     webschemes = ['web', 'http', 'ftp']
     for o in ('getdir', 'ftpdir'):
         if (options.has_key(o) and options[o]
-                and options.proto not in webschemes):
-            options['proto'] = web
+                and options['proto'] not in webschemes):
+            options['proto'] = 'web'
             break
 
     message_opts = ['midrelax', 'news', 'local', 'browse',
