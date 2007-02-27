@@ -5,6 +5,10 @@
 
 import os, subprocess, sys
 
+web_schemes = ['web', 'http', 'ftp']
+message_opts = ['midrelax', 'news', 'local', 'browse',
+        'kiosk', 'mhiers', 'specdirs', 'mask']
+
 class DeadMan(Exception):
     '''Exception class for muttils package.'''
     def __init__(self, inst=''):
@@ -25,16 +29,11 @@ def resolveopts(obj, defaults, options):
     Sets protocol to "web", if "getdir" or "ftpdir" is without
     corresponding protocol scheme.
     Sets protocol to "mid", if it encounters one of message_opts.'''
-
-    webschemes = ['web', 'http', 'ftp']
     for o in ('getdir', 'ftpdir'):
         if (options.has_key(o) and options[o]
-                and options['proto'] not in webschemes):
+                and options['proto'] not in web_schemes):
             options['proto'] = 'web'
             break
-
-    message_opts = ['midrelax', 'news', 'local', 'browse',
-            'kiosk', 'mhiers', 'specdirs', 'mask']
     if options['proto'] != 'mid':
         for o in message_opts:
             if options[o]:
@@ -44,7 +43,6 @@ def resolveopts(obj, defaults, options):
     else:
         options['decl'] = True
     del options['midrelax']
-
     updateattribs(obj, defaults, options)
 
 def systemcall(cs, conny=False):
