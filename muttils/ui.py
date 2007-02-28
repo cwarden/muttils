@@ -21,6 +21,7 @@ default_config = {
             ('sigtail', ''),
             ],
         'net': [
+            ('connect', ''),
             ('homepage', ''),
             ('ftpclient', 'ftp'),
             ('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),

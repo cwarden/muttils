@@ -52,13 +52,16 @@ def appleconnect():
     except KeyboardInterrupt:
         pass
     if stat > 0:
-        prog = '/etc/ppp/ip-up'
+        cs = ['/etc/ppp/ip-up']
         sys.stdout.write('\nconnected via %s\n' % conname)
-        ret = subprocess.call([prog])
     else:
-        prog = 'osascript'
-        ret = subprocess.call(applescript + [disconnect])
-        if ret:
-            raise util.DeadMan(
-                    '\nerror connecting %s: %s returned %i'
-                    % (conname, prog, ret))
+        cs = applescript + [disconnect]
+    util.systemcall(cs)
+
+def goonline(ui):
+    '''Connects to internet if not yet connected.
+    Note: only MacOS supported atm.'''
+    if ui.configitem('net', 'connect').lower() != 'true':
+        return
+    if sys.platform == 'darwin':
+        appleconnect()

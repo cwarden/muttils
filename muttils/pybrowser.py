@@ -1,7 +1,7 @@
 # $Id$
 
-import ui, urlregex, util
-import os, re, socket, subprocess, sys, webbrowser
+import conny, ui, urlregex, util
+import os, re, socket, sys, webbrowser
 
 # textbrowsers that need redirection if not connected to term
 tbredir = ['lynx', ] # (e)links not tested yet
@@ -30,9 +30,9 @@ class browser(object):
     def __init__(self, parentui=None, items=None, app=''):
         self.ui = parentui or ui.config()
         self.ui.updateconfig()
-        self.items = items # urls
-        self.app = app     # browser app
-        self.conny = False # try to connect to net
+        self.items = items             # urls
+        self.app = app                 # browser app
+        self.conn = False              # try to connect to net
         self.weburl_re = weburlregex() # check remote url protocol scheme
         self.local_re = None           # check local protocol scheme
         self.file_re = None            # strip file url
@@ -59,7 +59,7 @@ class browser(object):
     def urlcomplete(self, url):
         '''Adapts possibly short url to pass as browser argument.'''
         if self.weburl_re.match(url):
-            self.conny = True
+            self.conn = True
             url = urlregex.webschemecomplete(url)
         elif not self.get_localre().match(url):
             url = self.mkfileurl(url)
@@ -70,25 +70,17 @@ class browser(object):
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
         self.items = [self.urlcomplete(url) for url in self.items]
+        if self.conn:
+            conny.goonline(self.ui)
         if self.app in tbredir and not os.isatty(sys.stdin.fileno()):
-            tty = os.ctermid()
             for url in self.items:
-                args = (' %(url)s < %(tty)s > %(tty)s'
-                        % {'url': url, 'tty': tty})
-                try:
-                    r = subprocess.call(self.app + args, shell=True)
-                    if r:
-                        raise util.DeadMan('%s returned %i' % (self.app, r))
-                except OSError, inst:
-                    raise util.DeadMan(inst)
+                util.systemcall([self.app, url], notty=True)
         else:
             try:
                 if self.app:
                     b = webbrowser.get(self.app)
                 else:
                     b = webbrowser.get()
-                if self.conny:
-                    util.goonline()
                 for url in self.items:
                     b.open(url)
             except webbrowser.Error, inst:

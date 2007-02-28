@@ -5,9 +5,11 @@
 
 import os, subprocess, sys
 
-web_schemes = ['web', 'http', 'ftp']
-message_opts = ['midrelax', 'news', 'local', 'browse',
-        'kiosk', 'mhiers', 'specdirs', 'mask']
+web_schemes = ('web', 'http', 'ftp')
+message_opts = ('midrelax', 'news', 'local', 'browse',
+        'kiosk', 'mhiers', 'specdirs', 'mask')
+# programs that can be launched without terminal connection
+term_progs = ('wget', 'w3m', 'osascript', 'ip-up')
 
 class DeadMan(Exception):
     '''Exception class for muttils package.'''
@@ -45,19 +47,19 @@ def resolveopts(obj, options):
     del options['midrelax']
     updateattribs(obj, options)
 
-def systemcall(cs, conny=False):
+def systemcall(cs, notty=False):
     '''Calls command sequence cs in manner suiting
     terminal connectivity.'''
-    if conny:
-        goonline()
+    notty = (notty
+            or os.path.basename(cs[0]) not in term_progs
+            and not os.isatty(sys.stdin.fileno()))
     try:
-        if os.isatty(sys.stdin.fileno()):
-            # connected to terminal
-            r = subprocess.call(cs)
-        else:
+        if notty: # not connected to terminal
             tty = os.ctermid()
             cs += ['<', tty, '>', tty]
             r = subprocess.call(' '.join(cs), shell=True)
+        else:
+            r = subprocess.call(cs)
         if r:
             raise DeadMan('%s returned %i' % (cs[0], r))
     except OSError, inst:
@@ -70,12 +72,3 @@ def absolutepath(path):
 def plural(n, word):
     '''Returns "number word(s).'''
     return '%d %s%s' % (n, word, 's'[n==1:])
-
-def goonline():
-    '''Connects Mac to internet, if conny is present.'''
-    if os.uname()[0] == 'Darwin':
-        try:
-            import conny
-            conny.appleconnect()
-        except ImportError:
-            pass

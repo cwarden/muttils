@@ -1,6 +1,6 @@
 # $Id$
 
-import iterm, kiosk, pybrowser, tpager, ui, urlcollector, urlregex, util
+import conny, iterm, kiosk, pybrowser, tpager, ui, urlcollector, urlregex, util
 import os.path, readline
 
 readline_prompt = '''
@@ -68,10 +68,10 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         k.kioskstore()
 
     def urlgo(self, mail=False):
-        url, cs, conny = self.items[0], [], True
+        url, cs, conn = self.items[0], [], True
         if mail:
             cs = [self.ui.configitem('messages', 'mailer')]
-            conny = False
+            conn = False
         elif self.getdir:
             self.getdir = savedir(self.getdir)
             cs = ['wget', '-P', self.getdir]
@@ -87,8 +87,10 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
                     items=self.items, app=self.app)
             b.urlvisit()
         else:
+            if conn:
+                conny.goonline(self.ui)
             cs += [url]
-            util.systemcall(cs, conny)
+            util.systemcall(cs)
         if self.ftpdir:
             os.chdir(wd)
 

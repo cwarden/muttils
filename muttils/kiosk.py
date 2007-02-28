@@ -1,6 +1,6 @@
 # $Id$'
 
-import html2text, pybrowser, util
+import conny, html2text, pybrowser, util
 import email, email.Generator, email.Parser, email.Errors
 import mailbox, os, re, tempfile, time, sys, urllib, urllib2
 
@@ -180,7 +180,7 @@ class kiosk(html2text.html2text):
         '''Gets messages from Google Groups.'''
         sys.stdout.write(
                 'note: google masks all email addresses\ngoing google ...\n')
-        util.goonline()
+        conny.goonline(self.ui)
         opener = urllib2.build_opener()
         opener.addheaders = [useragent]
         header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')

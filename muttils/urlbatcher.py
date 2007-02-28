@@ -9,8 +9,7 @@
 # input is checked anew for each file.
 ###
 
-import iterm, kiosk, pybrowser, ui, urlcollector, util
-import subprocess
+import conny, iterm, kiosk, pybrowser, ui, urlcollector, util
 
 class urlbatcher(urlcollector.urlcollector):
     '''
@@ -45,13 +44,8 @@ class urlbatcher(urlcollector.urlcollector):
             k = kiosk.kiosk(self.ui, items=self.items, opts=self.defaults)
             k.kioskstore()
         elif self.getdir:
-            util.goonline()
-            try:
-                r = subprocess.call(['wget', '-P', self.getdir] + self.items)
-                if r:
-                    raise util.DeadMan('wget returned %i' % r)
-            except OSError, inst:
-                raise util.DeadMan(inst)
+            conny.goonline(self.ui)
+            util.systemcall(['wget', '-P', self.getdir] + self.items)
         else:
             b = pybrowser.browser(parentui=self.ui,
                     items=self.items, app=self.app)

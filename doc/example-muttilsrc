@@ -21,11 +21,13 @@ sigtail = .sig
 # sigtail =
 
 [net]
+connect = true
 homepage = http://localhost
 ftpclient = /usr/local/bin/lftp
 cpan = ftp://ftp.rz.ruhr-uni-bochum.de/pub/CPAN
 CTAN = ftp://ftp.dante.de/tex-archive
 # defaults:
+# connect =
 # homepage =
 # ftpclient = ftp
 # cpan = ftp://ftp.cpan.org/pub/CPAN
