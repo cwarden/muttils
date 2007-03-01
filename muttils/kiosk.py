@@ -196,10 +196,13 @@ class kiosk(html2text.html2text):
     def leafsearch(self):
         '''Tries searching a local news spool.
         Works only with leafnode <= 1.5 at the moment.'''
-        p = os.popen('newsq 2> %s' % os.devnull)
-        r = p.readline()
-        # eg.:
-        # 'Contents of queue in directory /var/spool/news/out.going:\n'
+        r = None
+        try:
+            r = util.pipeline(['newsq'])
+            # eg.:
+            # 'Contents of queue in directory /var/spool/news/out.going:\n'
+        except OSError:
+            pass
         if not r:
             self.ui.warn('no leafnode news spool detected\n')
             return

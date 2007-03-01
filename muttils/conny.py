@@ -1,6 +1,6 @@
 # $Id$
 
-import subprocess, sys, time, util
+import sys, time, util
 
 connstat = '''tell application "Internet Connect"
     set visible of window 1 to false
@@ -25,23 +25,19 @@ def appleconnect(ui):
 
     def cstat():
         '''Returns connection status.'''
-        p = subprocess.Popen(applescript + [connstat], close_fds=True,
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        out = p.stdout.read()[:-1]
+        st = util.pipeline(applescript + [connstat])[:-1]
         try:
-            return int(out)
+            return int(st)
         except ValueError:
             raise util.DeadMan(
                     'AppleScript cannot handle this configuration\nresult: %s'
-                    % out)
+                    % st)
 
     stat = cstat()
     if stat > 0:
         return
 
-    p = subprocess.Popen(applescript + [connect], close_fds=True,
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    conname = p.stdout.read()[:-1]
+    conname = util.pipeline(applescript + [connect])[:-1]
     ui.write('connecting via %s ' % conname)
     try:
         while stat < 1:

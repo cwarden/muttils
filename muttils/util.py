@@ -65,6 +65,12 @@ def systemcall(cs, notty=False):
     except OSError, inst:
         raise DeadMan(inst)
 
+def pipeline(cs):
+    '''Returns first line of result of command sequence cs.'''
+    p = subprocess.Popen(cs, close_fds=True,
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    return p.stdout.readline()
+
 def absolutepath(path):
     '''Guesses an absolute path, eg. given on command line.'''
     return os.path.normpath(os.path.abspath(os.path.expanduser(path)))
