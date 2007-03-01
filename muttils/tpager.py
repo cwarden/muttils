@@ -15,8 +15,9 @@ class tpager(object):
     '''
     Customizes interactive choice to current terminal.
     '''
-    def __init__(self, items=None,
+    def __init__(self, ui, items=None,
             name='item', format='sf', ckey='', qfunc='Quit', crit='pattern'):
+        self.ui = ui
         self.items = items or [] # (text) items to choose from
         self.name = name         # general name of an item
         if format in ('sf', 'bf'):
@@ -121,7 +122,7 @@ class tpager(object):
 
     def pagedisplay(self, header, menu, pn=1):
         '''Displays a page of items including header and choice menu.'''
-        sys.stdout.write(header + self.pages[pn])
+        self.ui.write(header + self.pages[pn])
         return raw_input(self.coltrunc(menu))
 
     def pagemenu(self):

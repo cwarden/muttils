@@ -19,7 +19,7 @@ disconnect = '''tell application "Internet Connect"
 end tell'''
 
 
-def appleconnect():
+def appleconnect(ui):
     '''Connects Mac to internet using AppleScript.'''
     applescript = ['osascript', '-l', 'AppleScript', '-e']
 
@@ -42,18 +42,18 @@ def appleconnect():
     p = subprocess.Popen(applescript + [connect], close_fds=True,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     conname = p.stdout.read()[:-1]
-    sys.stdout.write('connecting via %s ' % conname)
+    ui.write('connecting via %s ' % conname)
     try:
         while stat < 1:
-            sys.stdout.write('.')
-            sys.stdout.flush()
+            ui.write('.')
+            ui.flush()
             time.sleep(1)
             stat = cstat()
     except KeyboardInterrupt:
         pass
     if stat > 0:
         cs = ['/etc/ppp/ip-up']
-        sys.stdout.write('\nconnected via %s\n' % conname)
+        ui.write('\nconnected via %s\n' % conname)
     else:
         cs = applescript + [disconnect]
     util.systemcall(cs)
@@ -63,5 +63,8 @@ def goonline(ui):
     Note: only MacOS supported atm.'''
     if ui.configitem('net', 'connect').lower() != 'true':
         return
-    if sys.platform == 'darwin':
-        appleconnect()
+    plat = sys.platform
+    if plat == 'darwin':
+        appleconnect(ui)
+    else:
+        ui.warn('automatic connection not supported for %s\n' % plat)

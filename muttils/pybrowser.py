@@ -28,7 +28,7 @@ class browser(object):
     Visits items with default or given browser.
     '''
     def __init__(self, parentui=None, items=None, app=''):
-        self.ui = parentui or ui.config()
+        self.ui = parentui or ui.ui()
         self.ui.updateconfig()
         self.items = items             # urls
         self.app = app                 # browser app

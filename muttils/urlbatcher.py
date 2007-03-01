@@ -34,7 +34,7 @@ class urlbatcher(urlcollector.urlcollector):
 
     def __init__(self, parentui=None, files=None, opts={}):
         urlcollector.urlcollector.__init__(self)
-        self.ui = parentui or ui.config()
+        self.ui = parentui or ui.ui()
         self.ui.updateconfig()
         self.files = files
         util.resolveopts(self, opts)

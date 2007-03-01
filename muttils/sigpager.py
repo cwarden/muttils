@@ -1,7 +1,7 @@
 # $Id$
 
 import tpager, util, ui
-import os, random, re, readline, sys
+import os, random, re, readline
 
 class signature(tpager.tpager):
     '''
@@ -10,9 +10,9 @@ class signature(tpager.tpager):
     '''
     def __init__(self, parentui=None,
             dest=None, sig='', sdir='', sep='-- \n', tail=''):
-        tpager.tpager.__init__(self,
+        self.ui = parentui or ui.ui()
+        tpager.tpager.__init__(self, self.ui,
             name='sig', format='bf', qfunc='default sig', ckey='/')
-        self.ui = parentui or ui.config()
         self.ui.updateconfig()
         self.dest = dest        # input: list of files or string
         self.sig = (sig or self.ui.configitem('messages', 'signature')
@@ -48,7 +48,7 @@ class signature(tpager.tpager):
         try:
             self.pat = re.compile(r'%s' % self.pat, re.I)
         except re.error, inst:
-            sys.stdout.write('%s in pattern %s\n' % (inst, self.pat))
+            self.ui.warn('%s in pattern %s\n' % (inst, self.pat))
             prompt = ('[choose from %d signatures], new pattern: '
                     % len(self.sigs))
             try:
@@ -88,7 +88,7 @@ class signature(tpager.tpager):
                 except IOError, inst:
                     raise util.DeadMan(inst)
             if not self.dest:
-                sys.stdout.write(sig)
+                self.ui.write(sig)
             else:
                 try:
                     for fn in self.dest:
@@ -100,4 +100,4 @@ class signature(tpager.tpager):
                 except IOError, inst:
                     raise util.DeadMan(inst)
         elif self.dest:
-            sys.stdout.write('\n')
+            self.ui.write('\n')

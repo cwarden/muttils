@@ -2,7 +2,7 @@
 
 import conny, html2text, pybrowser, util
 import email, email.Generator, email.Parser, email.Errors
-import mailbox, os, re, tempfile, time, sys, urllib, urllib2
+import mailbox, os, re, tempfile, time, urllib, urllib2
 
 gmsgend = r'^[A-Z]([a-zA-Z -]+\[\d+\]){3,}'
 ggroups = 'http://groups.google.com/groups'
@@ -129,7 +129,7 @@ class kiosk(html2text.html2text):
             if os.path.isdir(abshier):
                 self.mhiers.add(abshier)
             else:
-                sys.stdout.write('%s: not a directory, skipping\n' % hier)
+                self.ui.warn('%s: not a directory, skipping\n' % hier)
 
     def makequery(self, mid):
         '''Reformats Message-ID to google query.'''
@@ -142,7 +142,6 @@ class kiosk(html2text.html2text):
         items = [self.makequery(mid) for mid in self.items]
         b = pybrowser.browser(parentui=self.ui, items=items, app=self.app)
         b.urlvisit()
-        sys.exit()
 
     def gooretrieve(self, mid, found, opener, header_re, bottom_re):
         try:
@@ -160,7 +159,7 @@ class kiosk(html2text.html2text):
             while not header_re.match(line):
                 line = liniter.next()
         except StopIteration:
-            sys.stdout.write('%s: not at google\n' % mid)
+            self.ui.warn('%s: not at google\n' % mid)
             time.sleep(5)
         else:
             lines = [line]
@@ -169,7 +168,7 @@ class kiosk(html2text.html2text):
                     line = liniter.next()
                     lines.append(line)
             except StopIteration:
-                sys.stderr.write('\n'.join(lines) + '\n')
+                self.ui.warn('\n'.join(lines) + '\n')
                 raise util.DeadMan(changedsrcview)
             msg = '\n'.join(lines[:-1])
             msg = email.message_from_string(msg)
@@ -178,8 +177,8 @@ class kiosk(html2text.html2text):
 
     def gogoogle(self):
         '''Gets messages from Google Groups.'''
-        sys.stdout.write(
-                'note: google masks all email addresses\ngoing google ...\n')
+        self.ui.note('note: google masks all email addresses\n',
+                'going google ...\n')
         conny.goonline(self.ui)
         opener = urllib2.build_opener()
         opener.addheaders = [useragent]
@@ -202,16 +201,16 @@ class kiosk(html2text.html2text):
         # eg.:
         # 'Contents of queue in directory /var/spool/news/out.going:\n'
         if not r:
-            sys.stdout.write('no leafnode news spool detected\n')
+            self.ui.warn('no leafnode news spool detected\n')
             return
         newsout = r.split(':')[0].split()[-1]
         iddir = os.path.join(os.path.dirname(newsout), 'message.id')
         anglist = ['<%s>' % i for i in self.items]
-        sys.stdout.write('Searching local newsserver ...\n')
+        self.ui.note('Searching local newsserver ...\n')
         for root, dirs, files in os.walk(iddir):
             for fn in files:
                 if fn in anglist:
-                    sys.stdout.write('retrieving Message-ID %s\n' % fn)
+                    self.ui.note('retrieving Message-ID %s\n' % fn)
                     try:
                         f = open(os.path.join(root, fn), 'rb')
                         try:
@@ -223,7 +222,7 @@ class kiosk(html2text.html2text):
                     self.msgs.append(msg)
                     self.items.remove(fn[1:-1])
         if self.items:
-            sys.stdout.write('%s not on local server\n'
+            self.ui.note('%s not on local server\n'
                     % util.plural(len(self.items), 'message'))
 
     def boxparser(self, path, maildir=False, isspool=False):
@@ -243,26 +242,26 @@ class kiosk(html2text.html2text):
             try:
                 fp = open(path, 'rb')
             except IOError, inst:
-                sys.stdout.write('%s\n' % inst)
+                self.ui.warn('%s\n' % inst)
                 return
             mbox = mailbox.PortableUnixMailbox(fp, msgfactory)
-        sys.stdout.write('searching %s ' % path)
+        self.ui.note('searching %s ' % path)
         while True:
             try:
                 msg = mbox.next()
-                sys.stdout.write('.')
-                sys.stdout.flush()
+                self.ui.write('.')
+                self.ui.flush()
             except IOError, inst:
-                sys.stdout.write('\n%s\n' % inst)
+                self.ui.warn('\n%s\n' % inst)
                 break
             if msg is None:
-                sys.stdout.write('\n')
+                self.ui.write('\n')
                 break
             msgid = msg.get('message-id', '').strip('<>')
             if msgid in self.items:
                 self.msgs.append(msg)
                 self.items.remove(msgid)
-                sys.stdout.write('\nretrieving Message-ID <%s>\n' % msgid)
+                self.ui.note('\nretrieving Message-ID <%s>\n' % msgid)
                 if not self.items:
                     break
         if not maildir:
@@ -289,7 +288,7 @@ class kiosk(html2text.html2text):
     def mailsearch(self):
         '''Announces search of mailboxes, searches spool,
         and passes mail hierarchies to walkmhier.'''
-        sys.stdout.write('Searching local mailboxes ...\n')
+        self.ui.note('Searching local mailboxes ...\n')
         if not self.specdirs: # include mspool
             self.mspool = getmspool()
             if self.mspool:
@@ -330,11 +329,7 @@ class kiosk(html2text.html2text):
             cs += mutti + [self.kiosk] 
         util.systemcall(cs)
 
-    def kioskstore(self):
-        '''Collects messages identified by ID either
-        by retrieving them locally or from GoogleGroups.'''
-        if self.browse:
-            self.goobrowse()
+    def plainkiosk(self):
         self.kiosktest()
         itemscopy = self.items[:]
         self.leafsearch()
@@ -344,7 +339,7 @@ class kiosk(html2text.html2text):
                 self.maskompile()
             self.mailsearch()
             if self.items:
-                sys.stdout.write('%s not in specified local mailboxes\n'
+                self.ui.note('%s not in specified local mailboxes\n'
                         % util.plural(len(self.items), 'message'))
         if self.items and not self.local:
             self.gogoogle()
@@ -357,3 +352,11 @@ class kiosk(html2text.html2text):
                     firstid = mid
                     break
             self.openkiosk(firstid)
+
+    def kioskstore(self):
+        '''Collects messages identified by ID either
+        by retrieving them locally or from GoogleGroups.'''
+        if self.browse:
+            self.goobrowse()
+        else:
+            self.plainkiosk()

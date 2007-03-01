@@ -41,8 +41,8 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     def __init__(self, parentui=None, files=None, opts={}):
         urlcollector.urlcollector.__init__(self)
-        tpager.tpager.__init__(self, name='url')
-        self.ui = parentui or ui.config()
+        self.ui = parentui or ui.ui()
+        tpager.tpager.__init__(self, self.ui, name='url')
         self.ui.updateconfig()
         self.files = files
         util.resolveopts(self, opts)
