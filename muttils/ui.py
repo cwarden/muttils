@@ -29,11 +29,29 @@ default_config = {
             ],
         }
 
+web_schemes = ('web', 'http', 'ftp')
+message_opts = ('midrelax', 'news', 'local', 'browse',
+        'kiosk', 'mhiers', 'specdirs', 'mask')
+
 class ui(object):
     def __init__(self, rcpath=None):
         self.rcpath = rcpath or default_rcpath
         self.config = ConfigParser.SafeConfigParser(default_config)
-        self.updated = False
+        self.updated = False # is config already up to date?
+        # ui attributes that are governed by options
+        self.proto = 'all'   # url protocol scheme
+        self.decl = False    # only care about urls prefixed with scheme
+        self.pat = None      # pattern to match urls against
+        self.kiosk = ''      # path to mbox to append retrieved messages
+        self.browse = False  # browse Google for messages?
+        self.local = False   # search messages only locally?
+        self.news = False    # search local mailboxes?
+        self.mhiers = ''     # colon separated list of mail hierarchies
+        self.specdirs = ''   # colon separated list of specified mail hierarchies
+        self.mask = None     # file mask for mail hierarchies
+        self.app = ''        # browser program
+        self.ftpdir = ''     # download directory for ftp
+        self.getdir = ''     # download directory for wget
 
     def updateconfig(self):
         if self.updated:
@@ -55,6 +73,32 @@ class ui(object):
     def configitem(self, section, name):
         '''Returns value of name of section of config.'''
         return self.config.get(section, name)
+
+    def resolveopts(self, options):
+        '''Adapts option sets.
+        Sets protocol to "web", if "getdir" or "ftpdir" is without
+        corresponding protocol scheme.
+        Sets protocol to "mid", if it encounters one of message_opts.
+        And, finally, update ui's attributes with current options.'''
+        for o in ('getdir', 'ftpdir'):
+            if (options.has_key(o) and options[o]
+                    and options['proto'] not in web_schemes):
+                options['proto'] = 'web'
+                break
+        if options['proto'] != 'mid':
+            for o in message_opts:
+                if options[o]:
+                    options['proto'] = 'mid'
+                    options['decl'] = not options['midrelax']
+                    break
+        else:
+            options['decl'] = True
+        del options['midrelax']
+        try:
+            for o in options.iterkeys():
+                setattr(self, o, options[o])
+        except KeyError:
+            raise util.DeadMan('%s: invalid option' % o)
 
     def write(self, *args):
         for a in args:

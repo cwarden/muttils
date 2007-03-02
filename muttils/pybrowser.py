@@ -16,9 +16,9 @@ def getlocals():
         localaddresses += i
     return localaddresses
 
-def weburlregex():
+def weburlregex(ui):
     '''Returns regex matching web url.'''
-    u = urlregex.urlregex(proto='web', uniq=False)
+    u = urlregex.urlregex(ui, uniq=False)
     u.urlobject(search=False)
     return u.url_re
 
@@ -31,9 +31,11 @@ class browser(object):
         self.ui = parentui or ui.ui()
         self.ui.updateconfig()
         self.items = items             # urls
-        self.app = app                 # browser app
+        if app:
+            self.ui.app = app          # browser app
+        self.ui.proto = 'web'
+        self.weburl_re = weburlregex(self.ui) # check remote url protocol scheme
         self.conn = False              # try to connect to net
-        self.weburl_re = weburlregex() # check remote url protocol scheme
         self.local_re = None           # check local protocol scheme
         self.file_re = None            # strip file url
 
@@ -72,13 +74,13 @@ class browser(object):
         self.items = [self.urlcomplete(url) for url in self.items]
         if self.conn:
             conny.goonline(self.ui)
-        if self.app in tbredir and not os.isatty(sys.stdin.fileno()):
+        if self.ui.app in tbredir and not os.isatty(sys.stdin.fileno()):
             for url in self.items:
-                util.systemcall([self.app, url], notty=True)
+                util.systemcall([self.ui.app, url], notty=True)
         else:
             try:
-                if self.app:
-                    b = webbrowser.get(self.app)
+                if self.ui.app:
+                    b = webbrowser.get(self.ui.app)
                 else:
                     b = webbrowser.get()
                 for url in self.items:

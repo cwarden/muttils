@@ -198,16 +198,13 @@ class urlregex(object):
     Detects also www-urls that don't start with a protocol and
     urls spanning more than 1 line if they are enclosed in '<>'.
     '''
-    def __init__(self, proto='all', decl=False, uniq=True):
-        self.proto = proto
-        self.decl = decl         # list only declared urls
+    def __init__(self, ui, uniq=True):
+        self.ui = ui             # proto, decl
         self.uniq = uniq         # list only unique urls
         self.url_re = None       # that's what it's all about
         self.kill_re = None      # customized pattern to find non url chars
         self.protocol = ''       # pragmatic proto (may include www., ftp.)
         self.proto_re = None
-        self.cpan = ''
-        self.ctan = ''
         self.items = []
 
     def setprotocol(self):
@@ -216,21 +213,21 @@ class urlregex(object):
         ftp = r'(s?ftp://|ftp\.)'
         gopher = r'gopher://'
         # finger, telnet, whois, wais?
-        if self.proto in ('all', 'web'):
+        if self.ui.proto in ('all', 'web'):
             protocols = [http, ftp]
-            if self.proto == 'all':
+            if self.ui.proto == 'all':
                 protocols += [mailto, gopher]
             protocol = r'(%s)' % '|'.join(protocols)
         else:
-            self.decl = True
-            protocol = eval(self.proto)
+            self.ui.decl = True
+            protocol = eval(self.ui.proto)
         self.protocol = r'(url:\s?)?%s' % protocol
 
     def getraw(self):
         '''Returns raw patterns according to protocol.'''
         self.setprotocol()
         url, spurl = weburlpats(self.protocol)
-        if self.decl:
+        if self.ui.decl:
             return r'(%s|%s)' % (spurl, url)
         any_url, any_spurl = weburlpats()
         return (r'(%s|%s|%s|%s|%s)' %
@@ -250,30 +247,30 @@ class urlregex(object):
         self.items = deluxurls
 
     def urlfilter(self):
-        if not self.decl and self.proto in filterdict:
-            self.items = filter(filterdict[self.proto], self.items)
+        if not self.ui.decl and self.ui.proto in filterdict:
+            self.items = filter(filterdict[self.ui.proto], self.items)
         if self.uniq:
             self.items = list(set(self.items))
-            if self.proto != 'mid' and not self.decl:
+            if self.ui.proto != 'mid' and not self.ui.decl:
                 self.unideluxe()
 
     def urlobject(self, search=True):
         '''Creates customized regex objects of url.'''
-        if self.proto not in valid_protos:
+        if self.ui.proto not in valid_protos:
             raise util.DeadMan(
                     '%s: invalid protocol parameter, use one of:\n%s'
-                    % (self.proto, ', '.join(valid_protos)))
-        if self.proto == 'mailto':# be pragmatic and list not only declared
+                    % (self.ui.proto, ', '.join(valid_protos)))
+        if self.ui.proto == 'mailto':# be pragmatic and list not only declared
             self.url_re = get_mailre()
             self.proto_re = re.compile(r'^mailto:')
-        elif self.proto != 'mid':
+        elif self.ui.proto != 'mid':
             self.url_re = re.compile(self.getraw(), re.IGNORECASE|re.VERBOSE)
             if search:
                 self.kill_re = re.compile(r'^url:\s?|\s+', re.IGNORECASE)
-                if not self.decl:
+                if not self.ui.decl:
                     self.proto_re = re.compile(r'^%s' % self.protocol,
                             re.IGNORECASE)
-        elif self.decl:
+        elif self.ui.decl:
             self.url_re = re.compile(declmidpat(), re.IGNORECASE|re.VERBOSE)
             if search:
                 self.kill_re = re.compile(nntppat(), re.IGNORECASE|re.VERBOSE)
@@ -286,11 +283,13 @@ class urlregex(object):
         Data is supposed to be text but tested whether
         it's a message/Mailbox (then passed to urlparser).'''
         self.urlobject() # compile url_re
-        if self.proto != 'mid':
+        if self.ui.proto != 'mid':
             wipe_re = re.compile(wipepat(), re.IGNORECASE|re.VERBOSE)
             text = wipe_re.sub('', text)
+            cpan = self.ui.configitem('net', 'cpan')
+            ctan = self.ui.configitem('net', 'ctan')
             rawcan = r'C%sAN:\s*/?([a-zA-Z]+?)'
-            for can in [(self.cpan, 'P'), (self.ctan, 'T')]:
+            for can in [(cpan, 'P'), (ctan, 'T')]:
                 if can[0]:
                     cansub = r'%s/\1' % can[0].rstrip('/')
                     text = re.sub(rawcan % can[1], cansub, text)

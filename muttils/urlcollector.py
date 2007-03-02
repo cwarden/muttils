@@ -34,11 +34,11 @@ class urlcollector(urlregex.urlregex):
     Provides function to retrieve urls
     from files or input stream.
     '''
-    def __init__(self, proto='all', decl=False, files=None, pat=None):
-        urlregex.urlregex.__init__(self, proto=proto, decl=decl)
+    def __init__(self, ui, files=None):
+        urlregex.urlregex.__init__(self, ui)
         # ^ items
+        self.ui = ui
         self.files = files or [] # files to search
-        self.pat = pat           # pattern to match urls against
 
     def headparser(self, msg, hkeys):
         for hkey in hkeys:
@@ -50,8 +50,8 @@ class urlcollector(urlregex.urlregex):
 
     def msgharvest(self, msg, strings=None):
         sl = strings or []
-        if self.proto != 'mid':
-            if self.proto in ('all', 'mailto'):
+        if self.ui.proto != 'mid':
+            if self.ui.proto in ('all', 'mailto'):
                 self.headparser(msg, addrheads)
             for skey in searchheads:
                 vals = msg.get_all(skey)
@@ -118,9 +118,9 @@ class urlcollector(urlregex.urlregex):
         text = '\n'.join(textlist)
         if text:
             self.findurls(text)
-        if self.pat and self.items:
+        if self.ui.pat and self.items:
             try:
-                self.pat = re.compile(r'%s' % self.pat, re.I)
+                self.ui.pat = re.compile(r'%s' % self.ui.pat, re.I)
             except re.error, err:
-                raise util.DeadMan("%s in pattern `%s'" % (err, self.pat))
-            self.items = filter(lambda i: self.pat.search(i), self.items)
+                raise util.DeadMan("%s in pattern `%s'" % (err, self.ui.pat))
+            self.items = filter(lambda i: self.ui.pat.search(i), self.items)

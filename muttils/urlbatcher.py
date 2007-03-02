@@ -17,44 +17,25 @@ class urlbatcher(urlcollector.urlcollector):
     Browses all urls or creates a message tree in mutt.
     You can specify urls/ids by a regex pattern.
     '''
-    defaults = {
-            'proto': 'web',
-            'decl': False,
-            'pat': None,
-            'kiosk': '',
-            'browse': False,
-            'news': False,
-            'local': False,
-            'mhiers': '',
-            'specdirs': '',
-            'mask': None,
-            'app': '',
-            'getdir': '',
-            }
-
     def __init__(self, parentui=None, files=None, opts={}):
-        urlcollector.urlcollector.__init__(self)
         self.ui = parentui or ui.ui()
         self.ui.updateconfig()
-        self.files = files
-        util.resolveopts(self, opts)
+        self.ui.resolveopts(opts)
+        urlcollector.urlcollector.__init__(self, self.ui, files=files)
 
     def urlgo(self):
-        if self.proto == 'mid':
-            k = kiosk.kiosk(self.ui, items=self.items, opts=self.defaults)
+        if self.ui.proto == 'mid':
+            k = kiosk.kiosk(self.ui, items=self.items)
             k.kioskstore()
-        elif self.getdir:
+        elif self.ui.getdir:
             conny.goonline(self.ui)
-            util.systemcall(['wget', '-P', self.getdir] + self.items)
+            util.systemcall(['wget', '-P', self.ui.getdir] + self.items)
         else:
             b = pybrowser.browser(parentui=self.ui,
-                    items=self.items, app=self.app)
+                    items=self.items, app=self.ui.app)
             b.urlvisit()
                     
     def urlsearch(self):
-        if self.proto != 'mid':
-            self.cpan = self.ui.configitem('net', 'cpan')
-            self.ctan = self.ui.configitem('net', 'ctan')
         self.urlcollect()
         if not self.files:
             it = iterm.iterm()
@@ -63,12 +44,12 @@ class urlbatcher(urlcollector.urlcollector):
             yorn = '%s\nretrieve the above %s? yes, [No] ' \
                     % ('\n'.join(self.items),
                        util.plural(len(self.items),
-                           ('url', 'message-id')[self.proto=='mid']))
+                           ('url', 'message-id')[self.ui.proto=='mid']))
             if raw_input(yorn).lower() in ('y', 'yes'):
                 self.urlgo()
         else:
             msg = 'no %ss found. [ok] ' % ('url',
-                    'message-id')[self.proto=='mid']
+                    'message-id')[self.ui.proto=='mid']
             raw_input(msg)
         if not self.files:
             it.reinit()

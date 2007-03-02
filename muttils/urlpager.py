@@ -1,6 +1,7 @@
 # $Id$
 
-import conny, iterm, kiosk, pybrowser, tpager, ui, urlcollector, urlregex, util
+import urlcollector, urlregex
+import conny, iterm, kiosk, pybrowser, tpager, ui, util
 import os.path, readline
 
 readline_prompt = '''
@@ -23,29 +24,12 @@ def savedir(directory):
     return directory
 
 class urlpager(urlcollector.urlcollector, tpager.tpager):
-    defaults = {
-            'proto': 'all',
-            'decl': False,
-            'pat': None,
-            'kiosk': '',
-            'browse': False,
-            'local': False,
-            'news': False,
-            'mhiers': '',
-            'specdirs': '',
-            'mask': None,
-            'app': '',
-            'ftpdir': '',
-            'getdir': '',
-            }
-
     def __init__(self, parentui=None, files=None, opts={}):
-        urlcollector.urlcollector.__init__(self)
         self.ui = parentui or ui.ui()
-        tpager.tpager.__init__(self, self.ui, name='url')
         self.ui.updateconfig()
-        self.files = files
-        util.resolveopts(self, opts)
+        self.ui.resolveopts(opts)
+        urlcollector.urlcollector.__init__(self, self.ui, files=files)
+        tpager.tpager.__init__(self, self.ui, name='url')
 
     def urlconfirm(self):
         expando = {'name': self.name, 'url': self.items[0]}
@@ -59,12 +43,12 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     def mailcondition(self):
         '''Return True if mail client should be called.'''
-        return (self.proto == 'mailto'
-                or self.proto == 'all' and urlregex.mailcheck(self.items[0]))
+        return (self.ui.proto == 'mailto'
+                or self.ui.proto == 'all' and urlregex.mailcheck(self.items[0]))
 
     def msgretrieval(self):
         '''Passes message-id and relevant options to kiosk.'''
-        k = kiosk.kiosk(self.ui, items=self.items, opts=self.defaults)
+        k = kiosk.kiosk(self.ui, items=self.items)
         k.kioskstore()
 
     def urlgo(self, mail=False):
@@ -72,26 +56,26 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         if mail:
             cs = [self.ui.configitem('messages', 'mailer')]
             conn = False
-        elif self.getdir:
-            self.getdir = savedir(self.getdir)
-            cs = ['wget', '-P', self.getdir]
-        elif self.ftpdir:
-            self.ftpdir = savedir(self.ftpdir)
+        elif self.ui.getdir:
+            self.ui.getdir = savedir(self.ui.getdir)
+            cs = ['wget', '-P', self.ui.getdir]
+        elif self.ui.ftpdir:
+            self.ui.ftpdir = savedir(self.ui.ftpdir)
             wd = os.getcwdu()
-            os.chdir(self.ftpdir)
+            os.chdir(self.ui.ftpdir)
             if not os.path.splitext(url)[1] and not url.endswith('/'):
                 self.items = [url + '/']
             cs = [self.ui.configitem('net', 'ftpclient')]
         if not cs:
             b = pybrowser.browser(parentui=self.ui,
-                    items=self.items, app=self.app)
+                    items=self.items, app=self.ui.app)
             b.urlvisit()
         else:
             if conn:
                 conny.goonline(self.ui)
             cs += [url]
             util.systemcall(cs)
-        if self.ftpdir:
+        if self.ui.ftpdir:
             os.chdir(wd)
 
     def urlsel(self):
@@ -101,7 +85,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         self.interact()
         if not self.items:
             return
-        if self.proto == 'mid':
+        if self.ui.proto == 'mid':
             self.msgretrieval()
         elif self.mailcondition():
             # mail client allows editing of address
@@ -126,13 +110,10 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         self.items = None
 
     def urlsearch(self):
-        if self.proto != 'mid':
-            self.cpan = self.ui.configitem('net', 'cpan')
-            self.ctan = self.ui.configitem('net', 'ctan')
-            if self.proto != 'all':
-                self.name = '%s %s' % (self.proto, self.name)
-        else:
+        if self.ui.proto == 'mid':
             self.name = 'message-id'
+        elif self.ui.proto != 'all':
+            self.name = '%s %s' % (self.ui.proto, self.name)
         self.urlcollect()
         if len(self.items) > 1:
             self.urlsel()
@@ -144,7 +125,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
                 if not self.files:
                     it = iterm.iterm()
                     it.terminit()
-                if self.items and self.proto != 'mid':
+                if self.items and self.ui.proto != 'mid':
                     self.urlconfirm()
                 elif self.items: # proto == 'mid'
                     self.midyorn()
