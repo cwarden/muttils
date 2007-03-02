@@ -4,7 +4,7 @@ import conny, ui, urlregex, util
 import os, re, socket, sys, webbrowser
 
 # textbrowsers that need redirection if not connected to term
-tbredir = ['lynx', ] # (e)links not tested yet
+tbredir = ('lynx', 'links', 'elinks')
 
 def getlocals():
     '''Returns valid local addresses.'''
@@ -74,7 +74,8 @@ class browser(object):
         self.items = [self.urlcomplete(url) for url in self.items]
         if self.conn:
             conny.goonline(self.ui)
-        if self.ui.app in tbredir and not os.isatty(sys.stdin.fileno()):
+        if (os.path.basename(self.ui.app) in tbredir
+                and not os.isatty(sys.stdin.fileno())):
             for url in self.items:
                 util.systemcall([self.ui.app, url], notty=True)
         else:
