@@ -165,7 +165,7 @@ def webschemecomplete(url):
         web_re = re.compile(r'(https?|s?ftp|gopher)://', re.IGNORECASE)
     if web_re.match(url):
         return url
-    if not url.startswith('ftp'):
+    if not url.startswith('ftp.'):
         return 'http://%s' % url
     return 'ftp://%s' % url
 
