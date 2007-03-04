@@ -3,9 +3,6 @@
 import iterm, util
 import fcntl, os, struct, sys, termios
 
-# format default paging command
-pds = {-1:'Back', 1:'Forward'}
-
 def valclamp(x, low, high):
     '''Clamps x between low and high.'''
     return max(low, min(x, high))
@@ -16,7 +13,7 @@ class tpager(object):
     Customizes interactive choice to current terminal.
     '''
     def __init__(self, ui, items=None,
-            name='item', format='sf', ckey='', qfunc='Quit', crit='pattern'):
+            name='item', format='sf', ckey='', qfunc='quit', crit='pattern'):
         self.ui = ui
         self.items = items or [] # (text) items to choose from
         self.name = name         # general name of an item
@@ -36,6 +33,7 @@ class tpager(object):
         self.cols = 0            # terminal $COLUMNS
         self.itemsdict = {}      # dictionary of items to choose
         self.ilen = 0            # length of items' list
+        self.more = False        # more than 1 page
 
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''
@@ -60,8 +58,9 @@ class tpager(object):
     def addpage(self, buff, lines, pn):
         '''Adds a page to pages and returns pageno.'''
         pn += 1
-        # fill page with newlines
-        buff += '\n' * (self.rows-lines-1)
+        if self.more:
+            # fill page with newlines
+            buff += '\n' * (self.rows-lines-1)
         self.pages[pn] = buff
         return pn
 
@@ -106,6 +105,7 @@ class tpager(object):
                 buff += item
                 lines = linecheck
             else:
+                self.more = True
                 pn = self.addpage(buff, lines, pn)
                 buff, lines = item, ilines
         pn = self.addpage(buff, lines, pn)
@@ -129,14 +129,13 @@ class tpager(object):
         '''Lets user page through a list of items and make a choice.'''
         header = self.coltrunc('*%s*\n' % util.plural(self.ilen, self.name),
                 self.cols - 2)
-        plen = len(self.pages)
-        if plen == 1: # no paging
-            cs = ', ^C:Cancel'
+        if not self.more:
+            cs = ', ^C:cancel'
             if self.ckey:
                 cs += ', %s<%s>' % (self.ckey, self.crit)
             if self.itemsdict:
-                cs += ', Number'
-            menu = 'Page 1 of 1 [%s]%s ' % (self.qfunc, cs)
+                cs += ', number'
+            menu = '[%s]%s ' % (self.qfunc, cs)
             reply = self.pagedisplay(header, menu)
             if reply in self.itemsdict:
                 self.items = [self.itemsdict[reply]]
@@ -145,19 +144,26 @@ class tpager(object):
             elif not self.ckey or not reply.startswith(self.ckey):
                 reply = self.pagemenu() # display same page
         else: # more than 1 page
+            # switch paging command according to paging direction
+            pds = {-1: 'back', 1: 'forward'}
+            plen = len(self.pages)
             pn = 1 # start at first page
             pdir = -1 # initial paging direction reversed
             while True:
                 bs = '' # reverse paging direction
-                if 1 < pn < plen:
-                    bs = '-:%s, ' % pds[pdir*-1]
+                if plen > 1:
+                    if 1 < pn < plen:
+                        bs = '-:%s, ' % pds[pdir*-1]
+                    else:
+                        pdir *= -1
+                    menu = 'page %d of %d [%s], ^C:cancel, %sq:%s' % (pn, plen,
+                            pds[pdir], bs, self.qfunc)
                 else:
-                    pdir *= -1
-                menu = 'Page %d of %d [%s], ^C:Cancel, %sq:%s' % (pn, plen,
-                        pds[pdir], bs, self.qfunc)
+                    # items selected by self.crit might fit on 1 page
+                    menu = '^C:cancel, q:%s' % self.qfunc
                 if self.ckey:
                     menu += ', %s<%s>' % (self.ckey, self.crit)
-                menu += ', Number '
+                menu += ', number '
                 reply = self.pagedisplay(header, menu, pn)
                 if not reply:
                     pn = valclamp(pn+pdir, 1, plen)
