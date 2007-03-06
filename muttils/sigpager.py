@@ -25,16 +25,12 @@ class signature(tpager.tpager):
 
     def getstring(self, fn):
         fn = os.path.join(self.sdir, fn)
-        s = ''
+        f = open(fn)
         try:
-            f = open(fn)
-            try:
-                s = f.read()
-            finally:
-                f.close()
-            return s
-        except IOError, inst:
-            raise util.DeadMan(inst)
+            s = f.read()
+        finally:
+            f.close()
+        return s
 
     def getsig(self):
         if self.pat:
@@ -60,10 +56,7 @@ class signature(tpager.tpager):
 
     def sign(self):
         self.sdir = util.absolutepath(self.sdir)
-        try:
-            sl = filter(lambda f: f.endswith(self.tail), os.listdir(self.sdir))
-        except OSError, inst:
-            raise util.DeadMan(inst)
+        sl = filter(lambda f: f.endswith(self.tail), os.listdir(self.sdir))
         if not sl:
             raise util.DeadMan('no signature files in %s' % self.sdir)
         self.sigs = [self.getstring(fn) for fn in sl]
@@ -79,25 +72,19 @@ class signature(tpager.tpager):
                 sig = self.sep + self.items[0]
             else:
                 self.sig = util.absolutepath(self.sig)
+                f = open(self.sig)
                 try:
-                    f = open(self.sig)
-                    try:
-                        sig = self.sep + f.read()
-                    finally:
-                        f.close()
-                except IOError, inst:
-                    raise util.DeadMan(inst)
+                    sig = self.sep + f.read()
+                finally:
+                    f.close()
             if not self.dest:
                 self.ui.write(sig)
             else:
-                try:
-                    for fn in self.dest:
-                        f = open(fn, 'a')
-                        try:
-                            f.write(sig)
-                        finally:
-                            f.close()
-                except IOError, inst:
-                    raise util.DeadMan(inst)
+                for fn in self.dest:
+                    f = open(fn, 'a')
+                    try:
+                        f.write(sig)
+                    finally:
+                        f.close()
         elif self.dest:
             self.ui.write('\n')

@@ -66,5 +66,5 @@ def run():
         u = urlbatcher.urlbatcher(files=args, opts=options.__dict__)
         parser.destroy()
         u.urlsearch()
-    except (util.DeadMan, KeyboardInterrupt), inst:
+    except (util.DeadMan, IOError, KeyboardInterrupt), inst:
         sys.exit(inst)

@@ -37,5 +37,5 @@ def run():
                 tail=options.tail, sep=options.sigsep)
         parser.destroy()
         s.sign()
-    except util.DeadMan, inst:
+    except (util.DeadMan, IOError, OSError), inst:
         sys.exit(inst)

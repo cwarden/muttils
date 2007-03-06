@@ -106,15 +106,12 @@ class urlcollector(urlregex.urlregex):
         else:
             for f in self.files:
                 f = util.absolutepath(f)
-                try:
-                    fp = open(f, 'rb')
-                except IOError, inst:
-                    raise util.DeadMan(inst)
+                fp = open(f, 'rb')
                 try:
                     text = self.filedeconstructor(fp)
-                    textlist.append(text)
                 finally:
                     fp.close()
+                textlist.append(text)
         text = '\n'.join(textlist)
         if text:
             self.findurls(text)
