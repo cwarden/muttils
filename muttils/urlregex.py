@@ -10,8 +10,16 @@ valid_protos = ['all', 'web',
 
 serverchars = r'-.a-z0-9'
 
-def topdompat():
+reserved = r';/?:@&=+$,'
+unreserved = r"-_.!~*'()a-z0-9"
+escaped = r'(%(\d[a-f]){2})' # % 2 hex
+# 1 or more unreserved|escaped + 0 or 1 reserved
+uric = r'([%s%s]+|%s+)' % (unreserved, reserved, escaped)
+
+def hostname():
     '''Returns pattern matching top level domains, preceded by dot.'''
+    domainlabel = r'[a-z0-9]+([-a-z0-9]+[a-z0-9])?'
+    # generic domains
     generics = [
             'aero', 'arpa', 'biz', 'cat', 'com', 'coop',
             'edu', 'gov', 'info', 'int', 'jobs', 'mil', 'mobi', 'museum',
@@ -30,60 +38,46 @@ def topdompat():
             't[cdfghjkmnoprtvwz]', 'u[agkmsyz]',
             'v[acegivu]', 'w[fs]', 'y[etu]', 'z[amw]'
             ]
-    return r'\.(%s)' % '|'.join(tops)
+    # a sequence of domainlabels + top domain
+    return r'(%s\.)+(%s)' % (domainlabel, '|'.join(tops))
 
-def weburlpats(proto='', serv=serverchars, top=topdompat()):
+def weburlpats(proto='', uric=uric):
     '''Creates 2 url patterns. The first according to protocol,
     The second may contain spaces but is enclosed in '<>'.'''
-    valid = serv + r'_/#~:,;?+=&%!()@'  # valid url-chars+comma+semicolon+parenthesises+@
-                                        # @: filtered with webcheck, false positives with
-                                        # che@*blacktrash.org* otherwise
-                                        # Message-ID: <10rb6mngqccs018@corp.supernews.com>
-                                        # Message-id: <20050702131039.GA10840@oreka.com>
-    last = r'/a-z0-9'                   # allowed at end
-    punct = r'-.,;:?!)('                # punctuation
+    hostnumber = r'(\d+\.){3}\d+'
+    hostport = r'(%s|%s)(:\d+)?' % (hostname(), hostnumber)
     dom = r'''
         \b                  # start at word boundary
         %(proto)s           # protocol or empty
-        [%(serv)s] +        # followed by 1 or more server char
-        %(top)s             # top level preceded by dot
+        %(hostport)s        # host and optional port (no login [yet])
         (                   # 0 or 1 group
-          (/|:\d+)          #  group slash or port
-          (                 #  0 or more group
-            [%(valid)s] +   #   1 or more valid  
-            [%(last)s]      #   1 ending char
-          ) *
+          /                 #   slash
+          %(uric)s +        #   1 or more uri chars
         ) ?
-        (?=                 # look-ahead non-consumptive assertion
-          [%(punct)s] *     #  0 or more punctuation
-          [^%(valid)s]      #  non-url char
-        |                   # or else
-          $                 #  then end of the string
-        )
+        \b
         ''' % vars()
     spdom = r'''
         (?<=<)               # look behind for '<'
         %(proto)s            # protocol or empty
-        [%(serv)s\s] +       # server or space (space to be removed)
-        %(top)s              # top level dom preceded by dot
+        %(hostport)s         # host and optional port (no login [yet])
         (                    # 0 or 1 group
-          (/|:\d+) \s*       #  slash or port + 0 or more spaces
-          [%(valid)s\s] *    #  valid or space (space to be removed)
+          /                  #   slash
+          (%(uric)s|\s) +    #   1 or more uri chars or space
         ) ?
         (?=>)                # lookahead for '>'
         ''' % vars()
     return dom, spdom
 
-def mailpat(serv=serverchars, top=topdompat()):
+def mailpat():
     '''Creates pattern for email addresses,
     grabbing those containing a subject first.'''
-    address = '[%(serv)s_]+@[%(serv)s]+%(top)s' % vars()
+    address = '[-_.a-z0-9]+@%s' % hostname()
     return r'''
         \b(                 # word boundary and group open
           mailto:           #  mandatory mailto
           %(address)s       #  address
           \?subject=        #  ?subject=
-          [^>]              #  any except >
+          [^>]+             #  any except >
         |
           (mailto:)?        #  optional mailto
           %(address)s       #  address
@@ -103,15 +97,9 @@ def nntppat():
         <{,2}                                          # 0--2 '<'
         '''
 
-def midpat(serv=serverchars, top=topdompat()):
+def midpat():
     '''Creates pattern for message ids.'''
-    idy = serv + r'_#~?+=&%!$\]['   # valid message-id-chars ### w/o ':/'?
-    return r'''
-        [%(idy)s] +     # one or more valid id char
-        @
-        [%(serv)s] +    # one or more server char
-        %(top)s         # top level domain
-        ''' % vars()
+    return r'[-_.a-z0-9#~?+=&%%!$[\]]+@%s' % hostname()
 
 def declmidpat():
     '''Returns pattern for message id, prefixed with "attribution".'''
