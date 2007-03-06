@@ -16,8 +16,9 @@ escaped = r'(%(\d[a-f]){2})' # % 2 hex
 # 1 or more unreserved|escaped + 0 or 1 reserved
 uric = r'([%s%s]+|%s+)' % (unreserved, reserved, escaped)
 
-def hostname():
-    '''Returns pattern matching top level domains, preceded by dot.'''
+def hostname(generic=False):
+    '''Returns hostname pattern
+    for all top level domains or just generic domains.'''
     domainlabel = r'[a-z0-9]+([-a-z0-9]+[a-z0-9])?'
     # generic domains
     generics = [
@@ -38,14 +39,26 @@ def hostname():
             't[cdfghjkmnoprtvwz]', 'u[agkmsyz]',
             'v[acegivu]', 'w[fs]', 'y[etu]', 'z[amw]'
             ]
+    if generic:
+        tds = generics
+    else:
+        tds = tops
     # a sequence of domainlabels + top domain
-    return r'(%s\.)+(%s)' % (domainlabel, '|'.join(tops))
+    return r'(%s\.)+(%s)' % (domainlabel, '|'.join(tds))
 
 def weburlpats(proto='', uric=uric):
     '''Creates 2 url patterns. The first according to protocol,
-    The second may contain spaces but is enclosed in '<>'.'''
+    The second may contain spaces but is enclosed in '<>'.
+    If no protocol is given the pattern matches only
+    generic top level domains:
+        gmx.net:    counts as url
+        gmx.de:     does not as url
+        www.gmx.de: counts as url
+    This seems a reasonable compromise between the goal to find
+    malformed urls too and false positives -- especially as we
+    treat "www" as sort of inofficial scheme.'''
     hostnumber = r'(\d+\.){3}\d+'
-    hostport = r'(%s|%s)(:\d+)?' % (hostname(), hostnumber)
+    hostport = r'(%s|%s)(:\d+)?' % (hostname(generic=not proto), hostnumber)
     dom = r'''
         \b                  # start at word boundary
         %(proto)s           # protocol or empty
@@ -214,10 +227,10 @@ class urlregex(object):
     def getraw(self):
         '''Returns raw patterns according to protocol.'''
         self.setprotocol()
-        url, spurl = weburlpats(self.protocol)
+        url, spurl = weburlpats(proto=self.protocol)
         if self.ui.decl:
             return r'(%s|%s)' % (spurl, url)
-        any_url, any_spurl = weburlpats()
+        any_url, any_spurl = weburlpats(proto='')
         return (r'(%s|%s|%s|%s|%s)' %
                     (mailpat(), spurl, any_spurl, url, any_url))
 
