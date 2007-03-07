@@ -81,7 +81,7 @@ class tpager(object):
         formdict = {'sf': simpleformat, 'bf': bracketformat}
         self.ilen = len(self.items)
         ikeys = [str(i) for i in xrange(1, self.ilen+1)]
-        map(self.itemsdict.__setitem__, ikeys, self.items)
+        self.itemsdict = dict(zip(ikeys, self.items))
         if self.format == 'sf':
             maxl = len(ikeys[-1])
         formatfunc = formdict[self.format]
@@ -90,12 +90,12 @@ class tpager(object):
     def pagesdict(self):
         '''Creates dictionary of pages to display in terminal window.
         Keys are integers as string starting from "1".'''
-        self.itemsdict, self.pages = {}, {}
-        items = self.formatitems()
+        self.itemsdict.clear()
+        self.pages.clear()
         # all this still supposes that no wrapped text item
         # has more lines than the terminal rows
         buff, lines, pn = '', 0, 0
-        for item in items:
+        for item in self.formatitems():
             # lines of item, taking overruns into account
             ilines = item.splitlines()
             ilines = reduce(lambda a, b: a+b,
