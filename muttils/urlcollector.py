@@ -120,4 +120,4 @@ class urlcollector(urlregex.urlregex):
                 self.ui.pat = re.compile(r'%s' % self.ui.pat, re.I)
             except re.error, err:
                 raise util.DeadMan("%s in pattern `%s'" % (err, self.ui.pat))
-            self.items = filter(lambda i: self.ui.pat.search(i), self.items)
+            self.items = filter(self.ui.pat.search, self.items)
