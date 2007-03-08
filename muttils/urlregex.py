@@ -249,7 +249,7 @@ class urlregex(object):
 
     def urlfilter(self):
         if not self.ui.decl and self.ui.proto in filterdict:
-            self.items = filter(filterdict[self.ui.proto], self.items)
+            self.items = [i for i in self.items if filterdict[self.ui.proto](i)]
         if self.uniq:
             self.items = list(set(self.items))
             if self.ui.proto != 'mid' and not self.ui.decl:

@@ -117,7 +117,7 @@ class urlcollector(urlregex.urlregex):
             self.findurls(text)
         if self.ui.pat and self.items:
             try:
-                self.ui.pat = re.compile(r'%s' % self.ui.pat, re.I)
+                ui_re = re.compile(r'%s' % self.ui.pat, re.IGNORECASE)
             except re.error, err:
                 raise util.DeadMan("%s in pattern `%s'" % (err, self.ui.pat))
-            self.items = filter(self.ui.pat.search, self.items)
+            self.items = [i for i in self.items if ui_re.search(i)]

@@ -21,7 +21,6 @@ class signature(tpager.tpager):
         self.tail = tail or self.ui.configitem('messages', 'sigtail')
         self.sep = sep          # signature separator
         self.sigs = []          # complete list of signature strings
-        self.pat = None         # match sigs against pattern
 
     def getstring(self, fn):
         fn = os.path.join(self.sdir, fn)
@@ -32,39 +31,39 @@ class signature(tpager.tpager):
             f.close()
         return s
 
-    def getsig(self):
-        if self.pat:
-            self.items = filter(self.pat.search, self.sigs)
+    def getsig(self, weed_re=None):
+        if weed_re:
+            self.items = [sig for sig in self.sigs if weed_re.search(sig)]
         else:
             self.items = self.sigs
         random.shuffle(self.items)
         return self.interact()
 
-    def checkpattern(self):
+    def checkpattern(self, pat):
         try:
-            self.pat = re.compile(r'%s' % self.pat, re.I)
+            return re.compile(r'%s' % pat, re.IGNORECASE)
         except re.error, inst:
-            self.ui.warn('%s in pattern %s\n' % (inst, self.pat))
+            self.ui.warn('%s in pattern %s\n' % (inst, pat))
             prompt = ('[choose from %d signatures], new pattern: '
                     % len(self.sigs))
             try:
-                self.pat = raw_input(prompt) or None
+                pat = raw_input(prompt)
             except KeyboardInterrupt:
-                self.pat = None
-            if self.pat:
-                self.checkpattern()
+                pat = ''
+            if pat:
+                return self.checkpattern(pat)
 
     def sign(self):
         self.sdir = util.absolutepath(self.sdir)
-        sl = filter(lambda f: f.endswith(self.tail), os.listdir(self.sdir))
+        sl = [f for f in os.listdir(self.sdir) if f.endswith(self.tail)]
         if not sl:
             raise util.DeadMan('no signature files in %s' % self.sdir)
         self.sigs = [self.getstring(fn) for fn in sl]
+        weed_re = None
         while True:
-            reply = self.getsig()
-            if reply and reply.startswith(self.ckey):
-                self.pat = reply[1:]
-                self.checkpattern()
+            reply = self.getsig(weed_re)
+            if reply.startswith(self.ckey):
+                weed_re = self.checkpattern(reply[1:])
             else:
                 break
         if self.items is not None:
