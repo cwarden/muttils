@@ -45,11 +45,13 @@ class urlbatcher(urlcollector.urlcollector):
                     % ('\n'.join(self.items),
                        util.plural(len(self.items),
                            ('url', 'message-id')[self.ui.proto=='mid']))
-            if raw_input(yorn).lower() in ('y', 'yes'):
-                self.urlgo()
+            answer = raw_input(yorn).lower()
         else:
             msg = 'no %ss found. [ok] ' % ('url',
                     'message-id')[self.ui.proto=='mid']
             raw_input(msg)
+            answer = ''
         if not self.files:
             it.reinit()
+        if answer in ('y', 'yes'):
+            self.urlgo()
