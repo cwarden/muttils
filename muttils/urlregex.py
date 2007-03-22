@@ -153,11 +153,8 @@ def get_ftpre():
     '''Returns ftp scheme pattern on demand.'''
     global ftp_re
     if not ftp_re:
-        ftp_re = ftp_re or re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
+        ftp_re = re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
     return ftp_re
- 
-# completion and filter functions
-# also usable by "outside" scripts, eg. urlpager
 
 def webschemecomplete(url):
     '''Returns url with protocol scheme prepended if needed.'''
@@ -166,9 +163,10 @@ def webschemecomplete(url):
         web_re = re.compile(r'(https?|s?ftp|gopher)://', re.IGNORECASE)
     if web_re.match(url):
         return url
-    if not url.startswith('ftp.'):
-        return 'http://%s' % url
-    return 'ftp://%s' % url
+    for scheme in ('ftp', 'gopher'):
+        if url.startswith('%s.' % scheme):
+            return '%s://%s' % (scheme, url)
+    return 'http://%s' % url
 
 def webcheck(url):
     '''Returns True if url is not email address.'''
@@ -204,7 +202,8 @@ class urlregex(object):
         self.uniq = uniq         # list only unique urls
         self.url_re = None       # that's what it's all about
         self.kill_re = None      # customized pattern to find non url chars
-        self.protocol = ''       # pragmatic proto (may include www., ftp.)
+        self.protocol = ''       # pragmatic proto
+                                 # (may include www., ftp., gopher.)
         self.proto_re = None
         self.items = []
 
@@ -212,12 +211,12 @@ class urlregex(object):
         mailto = 'mailto:\s?' # needed for proto=='all'
         http = r'(https?://|www\.)'
         ftp = r'(s?ftp://|ftp\.)'
-        gopher = r'gopher://'
+        gopher = r'gopher(://|\.)'
         # finger, telnet, whois, wais?
         if self.ui.proto in ('all', 'web'):
-            protocols = [http, ftp]
+            protocols = [http, ftp, gopher]
             if self.ui.proto == 'all':
-                protocols += [mailto, gopher]
+                protocols.append(mailto)
             protocol = r'(%s)' % '|'.join(protocols)
         else:
             self.ui.decl = True
