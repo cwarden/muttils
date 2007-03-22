@@ -7,7 +7,7 @@ import mailbox
 
 # header tuples (to be extended)
 searchheads = ['subject', 'organization',
-              'user-agent', 'x-mailer', 'x-newsreader',
+              'user-agent', 'x-mailer', 'x-mailer-info', 'x-newsreader',
               'list-subscribe', 'list-unsubscribe',
               'list-help', 'list-archive', 'list-url',
               'mailing-list', 'x-habeas-swe-9']
