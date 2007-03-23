@@ -67,7 +67,7 @@ def weburlpats(proto='', uric=uric):
           /                 #   slash
           %(uric)s +        #   1 or more uri chars
         ) ?
-        \b
+        (/|\b)              # slash or word boundary
         ''' % vars()
     spdom = r'''
         (?<=<)               # look behind for '<'
@@ -75,7 +75,7 @@ def weburlpats(proto='', uric=uric):
         %(hostport)s         # host and optional port (no login [yet])
         (                    # 0 or 1 group
           /                  #   slash
-          (%(uric)s|\s) +    #   1 or more uri chars or space
+          (%(uric)s|\s) *    #   0 or more uri chars or space
         ) ?
         (?=>)                # lookahead for '>'
         ''' % vars()
@@ -92,7 +92,7 @@ def mailpat():
           \?subject=        #  ?subject=
           [^>]+             #  any except >
         |
-          (mailto:)?        #  optional mailto
+          (mailto:) ?       #  optional mailto
           %(address)s       #  address
         )\b                 # close group and word boundary
         ''' % { 'address': address }
