@@ -149,13 +149,6 @@ def get_mailre():
         mail_re = re.compile(r'(%s)' % mailpat(), re.IGNORECASE|re.VERBOSE)
     return mail_re
 
-def get_ftpre():
-    '''Returns ftp scheme pattern on demand.'''
-    global ftp_re
-    if not ftp_re:
-        ftp_re = re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
-    return ftp_re
-
 def webschemecomplete(url):
     '''Returns url with protocol scheme prepended if needed.'''
     global web_re
@@ -174,20 +167,16 @@ def webcheck(url):
 
 def ftpcheck(url):
     '''Returns True if url is ftp location.'''
-    return get_ftpre().match(url)
-
-def httpcheck(url):
-    '''Returns True if url is neither mail address nor ftp location.'''
-    return not get_mailre().match(url) and not get_ftpre().match(url)
+    global ftp_re
+    if not ftp_re:
+        ftp_re = re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
+    return ftp_re.match(url)
 
 def mailcheck(url):
     '''Returns True if url is email address.'''
     return get_mailre().match(url)
 
-filterdict = { 'web':    webcheck,
-               'ftp':    ftpcheck,
-               'http':   httpcheck,
-               'mailto': mailcheck }
+filterdict = { 'web':    webcheck, 'mailto': mailcheck }
 
 
 class urlregex(object):
