@@ -5,6 +5,8 @@ import os, re, socket, sys, webbrowser
 
 # textbrowsers that need redirection if not connected to term
 tbredir = ('lynx', 'links', 'elinks')
+# gopher capable browsers that do not need gopher proxy
+gophers = ('lynx', 'firefox')
 
 def getlocals():
     '''Returns valid local addresses.'''
@@ -63,6 +65,10 @@ class browser(object):
         if self.weburl_re.match(url):
             self.conn = True
             url = urlregex.webschemecomplete(url)
+            if url.startswith('gopher://') and self.ui.app not in gophers:
+                # use gateway when browser is not gopher capable
+                url = url.replace('gopher://',
+                        'http://gopher.floodgap.com/gopher/gw?')
         elif not self.get_localre().match(url):
             url = self.mkfileurl(url)
         return url
