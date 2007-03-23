@@ -52,17 +52,19 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         k.kioskstore()
 
     def urlgo(self, mail=False):
-        url, cs, conn = self.items[0], [], True
+        url, cs, conn, cwd = self.items[0], [], True, None
         if mail:
             cs = [self.ui.configitem('messages', 'mailer')]
             conn = False
         elif self.ui.getdir:
             self.ui.getdir = savedir(self.ui.getdir)
             cs = ['wget', '-P', self.ui.getdir]
-        elif self.ui.ftpdir:
-            self.ui.ftpdir = savedir(self.ui.ftpdir)
-            wd = os.getcwdu()
-            os.chdir(self.ui.ftpdir)
+        elif self.ui.proto == 'ftp' or urlregex.ftpcheck(url):
+            if self.ui.ftpdir:
+                # otherwise eventual download to cwd
+                self.ui.ftpdir = savedir(self.ui.ftpdir)
+                cwd = os.getcwdu()
+                os.chdir(self.ui.ftpdir)
             cs = [self.ui.configitem('net', 'ftpclient')]
             # for ftp programs that have more of a browser interface
             # we assume a file if url has a file extension
@@ -82,8 +84,8 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
                 conny.goonline(self.ui)
             cs += [url]
             util.systemcall(cs)
-        if self.ui.ftpdir:
-            os.chdir(wd)
+        if cwd:
+            os.chdir(cwd)
 
     def urlsel(self):
         name = self.name

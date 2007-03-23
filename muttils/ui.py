@@ -76,15 +76,13 @@ class ui(object):
 
     def resolveopts(self, options):
         '''Adapts option sets.
-        Sets protocol to "web", if "getdir" or "ftpdir" is without
-        corresponding protocol scheme.
+        Sets protocol to "web", if "getdir" is without corresponding
+        protocol scheme.
         Sets protocol to "mid", if it encounters one of message_opts.
         And, finally, update ui's attributes with current options.'''
-        for o in ('getdir', 'ftpdir'):
-            if (options.has_key(o) and options[o]
-                    and options['proto'] not in web_schemes):
-                options['proto'] = 'web'
-                break
+        if (options.has_key('getdir') and options['getdir']
+                and options['proto'] not in web_schemes):
+            options['proto'] = 'web'
         if options['proto'] != 'mid':
             for o in message_opts:
                 if options[o]:
