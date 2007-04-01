@@ -12,7 +12,7 @@ serverchars = r'-.a-z0-9'
 
 reserved = r';/?:@&=+$,'
 unreserved = r"-_.!~*'()a-z0-9"
-escaped = r'(%(\d[a-f]){2})' # % 2 hex
+escaped = r'(%[0-9a-f]{2})' # % 2 hex
 # 1 or more unreserved|escaped + 0 or 1 reserved
 uric = r'([%s%s]+|%s+)' % (unreserved, reserved, escaped)
 
