@@ -47,7 +47,8 @@ def run():
     parser.add_option('-f', '--ftp', dest='ftpdir',
             help='use ftp client to download into directory FTPDIR')
     parser.add_option('-i', '--midrelax', action='store_true',
-            help='choose from undeclared message-ids (false positives probable)')
+            help='choose from undeclared message-ids '
+                '(false positives probable)')
     parser.add_option('-l', '--local', action='store_true',
             help='search for chosen message only locally')
     parser.add_option('-B', '--browse', action='store_true',
@@ -57,9 +58,11 @@ def run():
     parser.add_option('-m', '--mbox', dest='kiosk',
             help='append message chosen by id to mbox KIOSK')
     parser.add_option('-d', '--dirs', dest='mhiers',
-            help='search for message in directories MHIERS (colon-separated list, including mail spool)')
+            help='search for message in directories MHIERS '
+                '(colon-separated list, including mail spool)')
     parser.add_option('-D', '--specdirs',
-            help='search for message in directories SPECDIRS (colon-separated list, excluding mail spool)')
+            help='search for message in directories SPECDIRS '
+                '(colon-separated list, excluding mail spool)')
     parser.add_option('-M', '--mask',
             help='exclude mailboxes matching MASK from search')
 
