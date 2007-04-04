@@ -40,11 +40,15 @@ class tpager(object):
         notty = False # assume connection to terminal
         buf = 'abcd'  # string length 4
         for dev in (sys.stdout, sys.stdin):
-            fd = dev.fileno()
-            istty = os.isatty(fd)
-            if istty and buf == 'abcd':
-                buf = fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
-            elif not istty:
+            try:
+                fd = dev.fileno()
+                istty = os.isatty(fd)
+                if istty and buf == 'abcd':
+                    buf = fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
+                elif not istty:
+                    notty = True
+            except ValueError:
+                # eg: urlpager <file
                 notty = True
         if buf == 'abcd':
             raise util.DeadMan('could not get terminal size')
