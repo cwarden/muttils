@@ -44,7 +44,7 @@ def hostname(generic=False):
     # a sequence of domainlabels + top domain
     return r'(%s\.)+(%s)' % (domainlabel, '|'.join(tds))
 
-def weburlpats(proto='', uric=uric):
+def weburlpats(search, proto='', uric=uric):
     '''Creates 2 url patterns. The first according to protocol,
     The second may contain spaces but is enclosed in '<>'.
     If no protocol is given the pattern matches only
@@ -55,8 +55,11 @@ def weburlpats(proto='', uric=uric):
     This seems a reasonable compromise between the goal to find
     malformed urls too and false positives -- especially as we
     treat "www" as sort of inofficial scheme.'''
-    hostnumber = r'(\d+\.){3}\d+'
-    hostport = r'(%s|%s)(:\d+)?' % (hostname(generic=not proto), hostnumber)
+    if search:
+        hostport = r'%s(:\d+)?' % hostname(generic=not proto)
+    else:
+        hostnum = r'(\d+\.){3}\d+'
+        hostport = r'(%s|%s)(:\d+)?' % (hostname(generic=not proto), hostnum)
     dom = r'''
         \b                  # start at word boundary
         %(proto)s           # protocol or empty
@@ -220,13 +223,13 @@ class urlregex(object):
             protocol = eval(self.ui.proto)
         self.protocol = r'(url:\s?)?%s' % protocol
 
-    def getraw(self):
+    def getraw(self, search):
         '''Returns raw patterns according to protocol.'''
         self.setprotocol()
-        url, spurl = weburlpats(proto=self.protocol)
+        url, spurl = weburlpats(search, proto=self.protocol)
         if self.ui.decl:
             return r'(%s|%s)' % (spurl, url)
-        any_url, any_spurl = weburlpats(proto='')
+        any_url, any_spurl = weburlpats(search, proto='')
         return (r'(%s|%s|%s|%s|%s)' %
                     (mailpat(), spurl, any_spurl, url, any_url))
 
@@ -261,7 +264,7 @@ class urlregex(object):
             self.url_re = get_mailre()
             self.proto_re = re.compile(r'^mailto:')
         elif self.ui.proto != 'mid':
-            self.url_re = re.compile(self.getraw(), re.IGNORECASE|re.VERBOSE)
+            self.url_re = re.compile(self.getraw(search), re.IGNORECASE|re.VERBOSE)
             if search:
                 self.kill_re = re.compile(r'^url:\s?|\s+', re.IGNORECASE)
                 if not self.ui.decl:
