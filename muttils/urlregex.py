@@ -8,8 +8,6 @@ valid_protos = ['all', 'web',
         'mailto', 'mid']
 # finger, telnet, whois, wais?
 
-serverchars = r'-.a-z0-9'
-
 reserved = r';/?:@&=+$,'
 unreserved = r"-_.!~*'()a-z0-9"
 escaped = r'(%[0-9a-f]{2})' # % 2 hex
