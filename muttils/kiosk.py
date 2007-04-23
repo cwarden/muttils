@@ -111,11 +111,11 @@ class kiosk(html2text.html2text):
             else:
                 mhiers = getmhier()
         # create set of unique elements
-        self.ui.mhiers = set()
+        mhiers = set([util.absolutepath(e) for e in mhiers])
+        self.ui.mhiers = []
         for hier in mhiers:
-            abshier = util.absolutepath(hier)
-            if os.path.isdir(abshier):
-                self.ui.mhiers.add(abshier)
+            if os.path.isdir(hier):
+                self.ui.mhiers.append(hier)
             else:
                 self.ui.warn('%s: not a directory, skipping\n' % hier)
 
