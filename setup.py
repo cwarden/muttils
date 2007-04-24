@@ -15,5 +15,5 @@ setup(name='muttils',
         author='Christian Ebert',
         author_email='blacktrash@gmx.net',
         packages=['muttils'],
-        scripts=['sigpager', 'urlbatcher', 'urlpager', 'pybrowser'],
+        scripts=['sigpager', 'urlbatcher', 'urlpager', 'pybrowser', 'wrap'],
         )
