@@ -206,8 +206,7 @@ class wrap(object):
                     self.nowrap(lit)
                     skipheaders = False
                 if self.email:
-                    self.line = self.email.sub(lambda m: unmangle(m),
-                            self.line, 1)
+                    self.line = self.email.sub(unmangle, self.line, 1)
                 self.lineparser()
         except StopIteration:
             self.addholdspace()
