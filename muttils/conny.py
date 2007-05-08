@@ -1,6 +1,6 @@
 # $Id$
 
-import sys, time, util
+import os, sys, time, util
 
 connstat = '''tell application "Internet Connect"
     set visible of window 1 to false
@@ -33,26 +33,28 @@ def appleconnect(ui):
                     'AppleScript cannot handle this configuration\nresult: %s'
                     % st)
 
-    stat = cstat()
-    if stat > 0:
+    status = cstat()
+    if status > 0:
         return
 
     conname = util.pipeline(applescript + [connect])[:-1]
-    ui.write('connecting via %s ' % conname)
+    ui.write('connecting via %s .' % conname)
     try:
-        while stat < 1:
+        while status < 1:
+            time.sleep(1)
             ui.write('.')
             ui.flush()
-            time.sleep(1)
-            stat = cstat()
+            status = cstat()
     except KeyboardInterrupt:
+        ui.write('\n')
         pass
-    if stat > 0:
-        cs = ['/etc/ppp/ip-up']
-        ui.write('\nconnected via %s\n' % conname)
+    if status > 0:
+        ui.write(' done\n')
+        ipup = '/etc/ppp/ip-up'
+        if os.access(ipup, os.X_OK) and os.path.isfile(ipup):
+            util.systemcall([ipup])
     else:
-        cs = applescript + [disconnect]
-    util.systemcall(cs)
+        util.systemcall(applescript + [disconnect])
 
 def goonline(ui):
     '''Connects to internet if not yet connected.
