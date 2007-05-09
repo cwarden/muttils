@@ -41,7 +41,7 @@ class signature(tpager.tpager):
 
     def checkpattern(self, pat):
         try:
-            return re.compile(r'%s' % pat, re.IGNORECASE)
+            return re.compile(r'%s' % pat, re.UNICODE|re.IGNORECASE)
         except re.error, inst:
             self.ui.warn('%s in pattern %s\n' % (inst, pat))
             prompt = ('[choose from %d signatures], new pattern: '
