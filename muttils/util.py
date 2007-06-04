@@ -16,18 +16,25 @@ class DeadMan(Exception):
         return '%s: abort: %s' % (os.path.basename(sys.argv[0]), self.inst)
 
 
-def systemcall(cs, notty=False):
+def systemcall(cs, notty=False, screen=False):
     '''Calls command sequence cs in manner suiting
     terminal connectivity.'''
+    # check if connected to terminal
     notty = (notty
             or os.path.basename(cs[0]) not in term_progs
             and not os.isatty(sys.stdin.fileno()))
+    # are we inside a screen session
+    screen = screen or os.getenv('STY')
     try:
-        if notty: # not connected to terminal
+        if notty and not screen:
             tty = os.ctermid()
             cs += ['<', tty, '>', tty]
             r = subprocess.call(' '.join(cs), shell=True)
         else:
+            if notty: # and screen
+                cs = ['screen', '-X', 'screen'] + cs
+            elif screen:
+                cs.insert(0, 'screen')
             r = subprocess.call(cs)
         if r:
             raise DeadMan('%s returned %i' % (cs[0], r))

@@ -3,8 +3,8 @@
 import conny, ui, urlregex, util
 import os, re, socket, sys, webbrowser
 
-# textbrowsers that need redirection if not connected to term
-tbredir = ('lynx', 'links', 'elinks')
+# textbrowsers
+textbrowsers = ('w3m', 'lynx', 'links', 'elinks')
 # gopher capable browsers that do not need gopher proxy
 gophers = ('lynx', 'firefox')
 
@@ -80,10 +80,14 @@ class browser(object):
         self.items = [self.urlcomplete(url) for url in self.items]
         if self.conn:
             conny.goonline(self.ui)
-        if (os.path.basename(self.ui.app) in tbredir
-                and not os.isatty(sys.stdin.fileno())):
+        app = os.path.basename(self.ui.app)
+        notty = not os.isatty(sys.stdin.fileno())
+        screen = app in textbrowsers and os.getenv('STY') 
+        # w3m does not need to be connected to terminal
+        # but has to be connected if called into another screen instance
+        if screen or app in textbrowsers[1:] and notty:
             for url in self.items:
-                util.systemcall([self.ui.app, url], notty=True)
+                util.systemcall([self.ui.app, url], notty=notty, screen=screen)
         else:
             try:
                 if self.ui.app:
