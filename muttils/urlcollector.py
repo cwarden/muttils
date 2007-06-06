@@ -60,7 +60,13 @@ class urlcollector(urlregex.urlregex):
         else:
             self.headparser(msg, refheads)
         for part in email.Iterators.typed_subpart_iterator(msg):
-            sl.append(part.get_payload(decode=True))
+            # try getting quoted urls spanning more than 1 line
+            s = quote_re.sub('', part.get_payload(decode=True))
+            # handle DelSp (rfc 3675)
+            ct = part.get('content-type', '').lower()
+            if ct.find('delsp=yes') > -1:
+                s = s.replace(' \n', '')
+            sl.append(s)
         return sl
 
     def filedeconstructor(self, fp):
@@ -86,9 +92,7 @@ class urlcollector(urlregex.urlregex):
                 msg = mbox.next()
                 if msg:
                     sl = self.msgharvest(msg, strings=sl)
-        s = '\n'.join(sl)
-        # try getting quoted urls spanning more than 1 line
-        return quote_re.sub('', s)
+        return '\n'.join(sl)
 
     def urlcollect(self):
         '''Harvests urls from stdin or files.'''
