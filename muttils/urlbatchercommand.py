@@ -28,7 +28,7 @@ proginfo = 'Urlbatcher - search and retrieve urls'
 def run():
     '''Runs the urlbatcher script.'''
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
-            usage='%prog [option] [files]', description=__doc__,
+            usage='%prog [options] [files]', description=__doc__,
             version=version.version_(proginfo))
     parser.set_defaults(proto='web', pat=None, app='', getdir='',
             midrelax=False, local=False, browse=False, news=False,

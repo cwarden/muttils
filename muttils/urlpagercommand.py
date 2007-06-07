@@ -29,7 +29,7 @@ proginfo = 'Urlpager - search, choose and retrieve url'
 def run():
     '''Runs the urlpager script.'''
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
-            usage='%prog [option] [files]', description=__doc__,
+            usage='%prog [options] [files]', description=__doc__,
             version=version.version_(proginfo))
     parser.set_defaults(proto='all', pat=None, app='', getdir='', ftpdir='',
             midrelax=False, local=False, browse=False, news=False,
