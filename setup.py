@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # $Id$
 
+import sys
+if not hasattr(sys, 'version_info') or sys.version_info < (2, 4):
+    raise SystemExit, 'Muttils requires Python 2.4 or later'
+
 from distutils.core import setup
 import muttils.version
 
