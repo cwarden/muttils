@@ -105,11 +105,7 @@ class kiosk(html2text.html2text):
             # split colon-separated list from cmdline
             mhiers = mhiers.split(':')
         else:
-            mhiers = self.ui.configitem('messages', 'maildirs')
-            if mhiers is not None:
-                mhiers = [i.strip() for i in mhiers.split(',')]
-            else:
-                mhiers = getmhier()
+            mhiers = self.ui.configitem('messages', 'maildirs') or getmhier()
         # create set of unique elements
         mhiers = set([util.absolutepath(e) for e in mhiers])
         self.ui.mhiers = []

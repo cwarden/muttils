@@ -15,7 +15,7 @@ default_rcpath = [
 default_config = {
         'messages': [
             ('mailer', 'mutt'),
-            ('maildirs', None),
+            ('maildirs', ''),
             ('signature', ''),
             ('sigdir', ''),
             ('sigtail', ''),
