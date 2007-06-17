@@ -15,6 +15,11 @@ class DeadMan(Exception):
     def __str__(self):
         return '%s: abort: %s' % (os.path.basename(sys.argv[0]), self.inst)
 
+def termconnected():
+    '''Returns true if we are connected to a terminal.'''
+    if hasattr(sys.stdin, "fileno"):
+        return os.isatty(sys.stdin.fileno())
+    return False
 
 def systemcall(cs, notty=False, screen=False):
     '''Calls command sequence cs in manner suiting
@@ -22,7 +27,7 @@ def systemcall(cs, notty=False, screen=False):
     # check if connected to terminal
     notty = (notty
             or os.path.basename(cs[0]) not in term_progs
-            and not os.isatty(sys.stdin.fileno()))
+            and not termconnected())
     # are we inside a screen session
     screen = screen or os.getenv('STY')
     try:

@@ -81,7 +81,7 @@ class browser(object):
         if self.conn:
             conny.goonline(self.ui)
         app = os.path.basename(self.ui.app)
-        notty = not os.isatty(sys.stdin.fileno())
+        notty = not util.termconnected()
         screen = app in textbrowsers and os.getenv('STY') 
         # w3m does not need to be connected to terminal
         # but has to be connected if called into another screen instance
