@@ -10,10 +10,10 @@ term_progs = ('wget', 'w3m', 'osascript', 'ip-up')
 
 class DeadMan(Exception):
     '''Exception class for muttils package.'''
-    def __init__(self, inst=''):
+    def __init__(self, *inst):
         self.inst = inst
     def __str__(self):
-        return '%s: abort: %s' % (os.path.basename(sys.argv[0]), self.inst)
+        return 'abort: %s' % (''.join(self.inst))
 
 def termconnected():
     '''Returns true if we are connected to a terminal.'''
