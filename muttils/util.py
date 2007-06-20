@@ -49,7 +49,7 @@ def systemcall(cs, notty=False, screen=False):
 def pipeline(cs):
     '''Returns first line of result of command sequence cs.'''
     p = subprocess.Popen(cs, close_fds=True,
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                         stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     return p.stdout.readline()
 
 def absolutepath(path):

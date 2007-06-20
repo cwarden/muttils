@@ -18,10 +18,11 @@ proginfo = 'Pybrowser - python interface to system browsers'
 def run():
     '''Runs the pybrowser script.'''
     parser = optparse.OptionParser(usage='%prog [option] [urls]',
-            description=__doc__, version=version.version_(proginfo))
+                                   description=__doc__,
+                                   version=version.version_(proginfo))
     parser.set_defaults(app='')
     parser.add_option('-b', '--browser', dest='app',
-            help='prefer browser APP over $BROWSER environment')
+                      help='prefer browser APP over $BROWSER environment')
     options, args = parser.parse_args()
     
     try:

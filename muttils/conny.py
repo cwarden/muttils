@@ -29,9 +29,9 @@ def appleconnect(ui):
         try:
             return int(st)
         except ValueError:
-            raise util.DeadMan(
-                    'AppleScript cannot handle this configuration\nresult: %s'
-                    % st)
+            raise util.DeadMan('AppleScript ',
+                               'cannot handle this configuration\n',
+                               'result: %s' % st)
 
     status = cstat()
     if status > 0:

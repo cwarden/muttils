@@ -12,16 +12,16 @@ class tpager(object):
     '''
     Customizes interactive choice to current terminal.
     '''
-    def __init__(self, ui, items=None,
-            name='item', format='sf', ckey='', qfunc='quit', crit='pattern'):
+    def __init__(self, ui, items=None, name='item',
+                 format='sf', ckey='', qfunc='quit', crit='pattern'):
         self.ui = ui
         self.items = items or [] # (text) items to choose from
         self.name = name         # general name of an item
         if format in ('sf', 'bf'):
             self.format = format # sf: simple format, bf: bracket format
         else:
-            raise util.DeadMan(
-                    '%s: invalid format, use one of "sf", "bf"' % format)
+            raise util.DeadMan('%s: invalid format, use one of "sf", "bf"'
+                    % format)
         if not ckey or not ckey in 'qQ-':
             self.ckey = ckey     # key to customize pager
         else:
@@ -103,7 +103,7 @@ class tpager(object):
             # lines of item, taking overruns into account
             ilines = item.splitlines()
             ilines = reduce(lambda a, b: a+b,
-                    [len(line)/self.cols + 1 for line in ilines])
+                            [len(line)/self.cols + 1 for line in ilines])
             linecheck = lines + ilines
             if linecheck < self.rows:
                 buff += item
@@ -132,7 +132,7 @@ class tpager(object):
     def pagemenu(self):
         '''Lets user page through a list of items and make a choice.'''
         header = self.coltrunc('*%s*\n' % util.plural(self.ilen, self.name),
-                self.cols - 2)
+                               self.cols - 2)
         if not self.more:
             cs = ', ^C:cancel'
             if self.ckey:
@@ -160,8 +160,8 @@ class tpager(object):
                         bs = '-:%s, ' % pds[pdir*-1]
                     else:
                         pdir *= -1
-                    menu = 'page %d of %d [%s], ^C:cancel, %sq:%s' % (pn, plen,
-                            pds[pdir], bs, self.qfunc)
+                    menu = ('page %d of %d [%s], ^C:cancel, %sq:%s'
+                            % (pn, plen, pds[pdir], bs, self.qfunc))
                 else:
                     # items selected by self.crit might fit on 1 page
                     menu = '^C:cancel, q:%s' % self.qfunc

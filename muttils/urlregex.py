@@ -3,9 +3,7 @@
 import util
 import re
 
-valid_protos = ['all', 'web',
-        'http', 'ftp', 'gopher',
-        'mailto', 'mid']
+valid_protos = ['all', 'web', 'http', 'ftp', 'gopher', 'mailto', 'mid']
 # finger, telnet, whois, wais?
 
 reserved = r';/?:@&=+$,'
@@ -19,24 +17,20 @@ def hostname(generic=False):
     for all top level domains or just generic domains.'''
     domainlabel = r'[a-z0-9]+([-a-z0-9]+[a-z0-9])?'
     # generic domains
-    generics = [
-            'aero', 'arpa', 'biz', 'cat', 'com', 'coop',
-            'edu', 'gov', 'info', 'int', 'jobs', 'mil', 'mobi', 'museum',
-            'name', 'net', 'org', 'pro', 'root', 'travel'
-            ]
+    generics = ['aero', 'arpa', 'biz', 'cat', 'com', 'coop',
+                'edu', 'gov', 'info', 'int', 'jobs', 'mil', 'mobi', 'museum',
+                'name', 'net', 'org', 'pro', 'root', 'travel']
     # top level domains
-    tops = generics + [
-            'a[cdefgilmnoqrstuwz]', 'b[abdefghijmnorstvwyz]',
-            'c[acdfghiklmnoruvxyz]', 'd[ejkmoz]', 'e[ceghrstu]',
-            'f[ijkmor]', 'g[abdefghilmnpqrstuwy]',
-            'h[kmnrtu]', 'i[delnmoqrst]', 'j[emop]',
-            'k[eghimnprwyz]', 'l[abcikrstuvy]',
-            'm[acdeghklmnopqrstuvwxyz]', 'n[acefgilopruz]', 'om',
-            'p[aefghklmnrstwy]', 'qa', 'r[eosuw]',
-            's[abcdeghijklmnortuvyz]',
-            't[cdfghjkmnoprtvwz]', 'u[agkmsyz]',
-            'v[acegivu]', 'w[fs]', 'y[etu]', 'z[amw]'
-            ]
+    tops = generics + ['a[cdefgilmnoqrstuwz]', 'b[abdefghijmnorstvwyz]',
+                       'c[acdfghiklmnoruvxyz]', 'd[ejkmoz]', 'e[ceghrstu]',
+                       'f[ijkmor]', 'g[abdefghilmnpqrstuwy]',
+                       'h[kmnrtu]', 'i[delnmoqrst]', 'j[emop]',
+                       'k[eghimnprwyz]', 'l[abcikrstuvy]',
+                       'm[acdeghklmnopqrstuvwxyz]', 'n[acefgilopruz]', 'om',
+                       'p[aefghklmnrstwy]', 'qa', 'r[eosuw]',
+                       's[abcdeghijklmnortuvyz]',
+                       't[cdfghjkmnoprtvwz]', 'u[agkmsyz]',
+                       'v[acegivu]', 'w[fs]', 'y[etu]', 'z[amw]']
     if generic:
         tds = generics
     else:
@@ -131,12 +125,10 @@ def declmidpat():
 
 def wipepat():
     '''Creates pattern for useless headers in message _bodies_ (OLE!).'''
-    headers = (
-            'received', 'references', 'message-id', 'in-reply-to',
-            'delivered-to', 'list-id', 'path', 'return-path',
-            'newsgroups', 'nntp-posting-host',
-            'xref', 'x-id', 'x-abuse-info', 'x-trace', 'x-mime-autoconverted'
-            )
+    headers = ('received', 'references', 'message-id', 'in-reply-to',
+               'delivered-to', 'list-id', 'path', 'return-path',
+               'newsgroups', 'nntp-posting-host', 'xref', 'x-id',
+               'x-abuse-info', 'x-trace', 'x-mime-autoconverted')
     headers = r'(%s)' % '|'.join(headers)
     header = r'''
         (\n|^)          # newline or very start
@@ -230,8 +222,8 @@ class urlregex(object):
         if self.ui.decl:
             return r'(%s|%s)' % (spurl, url)
         any_url, any_spurl = weburlpats(search, proto='')
-        return (r'(%s|%s|%s|%s|%s)' %
-                    (mailpat(), spurl, any_spurl, url, any_url))
+        return (r'(%s|%s|%s|%s|%s)'
+                % (mailpat(), spurl, any_spurl, url, any_url))
 
     def unideluxe(self):
         '''remove duplicates deluxe:
@@ -257,9 +249,9 @@ class urlregex(object):
     def urlobject(self, search=True):
         '''Creates customized regex objects of url.'''
         if self.ui.proto not in valid_protos:
-            raise util.DeadMan(
-                    '%s: invalid protocol parameter, use one of:\n%s'
-                    % (self.ui.proto, ', '.join(valid_protos)))
+            raise util.DeadMan(self.ui.proto,
+                               ': invalid protocol parameter, use one of:\n',
+                               ', '.join(valid_protos))
         if self.ui.proto == 'mailto':# be pragmatic and list not only declared
             self.url_re = get_mailre()
             self.proto_re = re.compile(r'^mailto:')
@@ -269,14 +261,14 @@ class urlregex(object):
                 self.kill_re = re.compile(r'^url:\s?|\s+', re.IGNORECASE)
                 if not self.ui.decl:
                     self.proto_re = re.compile(r'^%s' % self.protocol,
-                            re.IGNORECASE)
+                                               re.IGNORECASE)
         elif self.ui.decl:
             self.url_re = re.compile(declmidpat(), re.IGNORECASE|re.VERBOSE)
             if search:
                 self.kill_re = re.compile(nntppat(), re.IGNORECASE|re.VERBOSE)
         else:
             self.url_re = re.compile(r'(\b%s\b)' % midpat(),
-                    re.IGNORECASE|re.VERBOSE)
+                                     re.IGNORECASE|re.VERBOSE)
 
     def findurls(self, text):
         '''Conducts a search for urls in text.

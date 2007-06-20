@@ -77,7 +77,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
                 cs = ['%sget' % cs[0]]
         if not cs:
             b = pybrowser.browser(parentui=self.ui,
-                    items=self.items, app=self.ui.app)
+                                  items=self.items, app=self.ui.app)
             b.urlvisit()
         else:
             if conn:

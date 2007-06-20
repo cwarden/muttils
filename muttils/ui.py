@@ -6,32 +6,24 @@
 import util
 import ConfigParser, os.path, sys
 
-default_rcpath = [
-        '/etc/muttils/muttilsrc',
-        '/usr/local/etc/muttilsrc',
-        os.path.expanduser('~/.muttilsrc'),
-        ]
+default_rcpath = ['/etc/muttils/muttilsrc',
+                  '/usr/local/etc/muttilsrc',
+                  os.path.expanduser('~/.muttilsrc'),]
 
-default_config = {
-        'messages': [
-            ('mailer', 'mutt'),
-            ('maildirs', ''),
-            ('signature', ''),
-            ('sigdir', ''),
-            ('sigtail', ''),
-            ],
-        'net': [
-            ('connect', ''),
-            ('homepage', ''),
-            ('ftpclient', 'ftp'),
-            ('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
-            ('ctan', 'ftp://ftp.ctan.org/tex-archive'),
-            ],
-        }
+default_config = {'messages': [('mailer', 'mutt'),
+                               ('maildirs', ''),
+                               ('signature', ''),
+                               ('sigdir', ''),
+                               ('sigtail', ''),],
+                  'net': [('connect', ''),
+                          ('homepage', ''),
+                          ('ftpclient', 'ftp'),
+                          ('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
+                          ('ctan', 'ftp://ftp.ctan.org/tex-archive'),],}
 
 web_schemes = ('web', 'http', 'ftp')
 message_opts = ('midrelax', 'news', 'local', 'browse',
-        'kiosk', 'mhiers', 'specdirs', 'mask')
+                'kiosk', 'mhiers', 'specdirs', 'mask')
 
 class ui(object):
     def __init__(self, rcpath=None):

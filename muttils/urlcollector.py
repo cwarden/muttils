@@ -7,17 +7,17 @@ import mailbox
 
 # header tuples (to be extended)
 searchheads = ['subject', 'organization',
-              'user-agent', 'x-mailer', 'x-mailer-info', 'x-newsreader',
-              'list-subscribe', 'list-unsubscribe',
-              'list-help', 'list-archive', 'list-url',
-              'mailing-list', 'x-habeas-swe-9']
+               'user-agent', 'x-mailer', 'x-mailer-info', 'x-newsreader',
+               'list-subscribe', 'list-unsubscribe',
+               'list-help', 'list-archive', 'list-url',
+               'mailing-list', 'x-habeas-swe-9']
 
 refheads = ['references', 'in-reply-to', 'message-id', 'original-message-id']
 
 addrheads = ['from', 'to', 'reply-to', 'cc',
-            'sender', 'x-sender', 'mail-followup-to',
-            'x-apparently-to',
-            'errors-to', 'x-complaints-to', 'x-beenthere']
+             'sender', 'x-sender', 'mail-followup-to',
+             'x-apparently-to',
+             'errors-to', 'x-complaints-to', 'x-beenthere']
 
 quote_re = re.compile(r'^([>|]\s*)+', re.MULTILINE)
 

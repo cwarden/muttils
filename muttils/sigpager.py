@@ -9,10 +9,10 @@ class signature(tpager.tpager):
     matched against a regular expression of your choice.
     '''
     def __init__(self, parentui=None,
-            dest=None, sig='', sdir='', sep='-- \n', tail=''):
+                 dest=None, sig='', sdir='', sep='-- \n', tail=''):
         self.ui = parentui or ui.ui()
-        tpager.tpager.__init__(self, self.ui,
-            name='sig', format='bf', qfunc='default sig', ckey='/')
+        tpager.tpager.__init__(self, self.ui, name='sig',
+                               format='bf', qfunc='default sig', ckey='/')
         self.ui.updateconfig()
         self.dest = dest        # input: list of files or string
         self.sig = (sig or self.ui.configitem('messages', 'signature')

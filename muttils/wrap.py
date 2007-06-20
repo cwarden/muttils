@@ -52,8 +52,8 @@ class wrap(object):
             setattr(self, k, opts[k])
         # wrap width falls back on width if neither respect nor ipar
         # are specified in that order, and finally to 78
-        self.defwidth = self.width = (
-                self.respect or self.ipar or self.width or 78)
+        self.defwidth = self.width = (self.respect or self.ipar or
+                                      self.width or 78)
         if self.excl:
             self.excl = mrex(self.excl)
         if self.qmail:

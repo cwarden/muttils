@@ -11,10 +11,10 @@ urlfailmsg = 'reason of url retrieval failure: '
 urlerrmsg = 'url retrieval error code: '
 changedsrcview = 'source view format changed at Google'
 muttone = ["-e", "'set pager_index_lines=0'",
-          "-e", "'set quit=yes'", "-e", "'bind pager q quit'",
-          "-e", "'push <return>'", "-f"]
+           "-e", "'set quit=yes'", "-e", "'bind pager q quit'",
+           "-e", "'push <return>'", "-f"]
 mutti = ["-e", "'set uncollapse_jump'",
-        "-e" "'push <search>~i\ \'%s\'<return>'", "-f"]
+         "-e" "'push <search>~i\ \'%s\'<return>'", "-f"]
 
 def getmspool():
     '''Tries to return a sensible default for user's mail spool.'''
@@ -118,7 +118,7 @@ class kiosk(html2text.html2text):
     def makequery(self, mid):
         '''Reformats Message-ID to google query.'''
         query = ({'selm': mid, 'dmode': 'source'},
-                {'selm': mid})[self.ui.browse]
+                 {'selm': mid})[self.ui.browse]
         return '%s?%s' % (ggroups,  urllib.urlencode(query))
 
     def goobrowse(self):
@@ -162,7 +162,7 @@ class kiosk(html2text.html2text):
     def gogoogle(self):
         '''Gets messages from Google Groups.'''
         self.ui.note('note: google masks all email addresses\n',
-                'going google ...\n')
+                     'going google ...\n')
         conny.goonline(self.ui)
         opener = urllib2.build_opener()
         opener.addheaders = [useragent]
@@ -280,7 +280,7 @@ class kiosk(html2text.html2text):
             self.mspool = getmspool()
             if self.mspool:
                 self.boxparser(self.mspool,
-                        os.path.isdir(self.mspool), isspool=True)
+                               os.path.isdir(self.mspool), isspool=True)
         self.mdmask = re.compile(r'%s' % self.mdmask)
         for mhier in self.ui.mhiers:
             self.walkmhier(mhier)

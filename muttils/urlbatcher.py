@@ -32,7 +32,7 @@ class urlbatcher(urlcollector.urlcollector):
             util.systemcall(['wget', '-P', self.ui.getdir] + self.items)
         else:
             b = pybrowser.browser(parentui=self.ui,
-                    items=self.items, app=self.ui.app)
+                                  items=self.items, app=self.ui.app)
             b.urlvisit()
                     
     def urlsearch(self):
@@ -41,14 +41,14 @@ class urlbatcher(urlcollector.urlcollector):
             it = iterm.iterm()
             it.terminit()
         if self.items:
-            yorn = '%s\nretrieve the above %s? yes, [No] ' \
-                    % ('\n'.join(self.items),
-                       util.plural(len(self.items),
-                           ('url', 'message-id')[self.ui.proto=='mid']))
+            ulist = '\n'.join(self.items)
+            uspec = util.plural(len(self.items),
+                                ('url', 'message-id')[self.ui.proto=='mid'])
+            yorn = '%s\nretrieve the above %s? yes, [No] ' % (ulist, uspec)
             answer = raw_input(yorn).lower()
         else:
             msg = 'no %ss found. [ok] ' % ('url',
-                    'message-id')[self.ui.proto=='mid']
+                                           'message-id')[self.ui.proto=='mid']
             raw_input(msg)
             answer = ''
         if not self.files:

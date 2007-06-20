@@ -9,8 +9,9 @@ import os, time
 unknown_version = 'unknown'
 
 def version_(proginfo):
-    return '\n\n'.join(['%s (version %s)' % (proginfo, getversion()),
-            'Copyright (C) 2007 Christian Ebert <blacktrash@gmx.net>'])
+    info = ('%s (version %s)' % (proginfo, getversion()),
+            'Copyright (C) 2007 Christian Ebert <blacktrash@gmx.net>')
+    return '\n\n'.join(info)
 
 def getversion(doreload=False):
     try:
