@@ -14,11 +14,10 @@ version = ''
 muttils.version.rememberversion(version)
 
 setup(name='muttils',
-        version=muttils.version.getversion(),
-        description='Python utilities for console mail clients (eg. mutt)',
-        author='Christian Ebert',
-        author_email='blacktrash@gmx.net',
-        url='http://www.blacktrash.org/hg/muttils/',
-        packages=['muttils'],
-        scripts=['sigpager', 'urlbatcher', 'urlpager', 'pybrowser', 'wrap'],
-        )
+      version=muttils.version.getversion(),
+      description='Python utilities for console mail clients (eg. mutt)',
+      author='Christian Ebert',
+      author_email='blacktrash@gmx.net',
+      url='http://www.blacktrash.org/hg/muttils/',
+      packages=['muttils'],
+      scripts=['sigpager', 'urlbatcher', 'urlpager', 'pybrowser', 'wrap'])
