@@ -7,5 +7,7 @@ syntax: glob
 *.orig
 *.rej
 
-build
 muttils/__version__.py*
+
+build
+MANIFEST
