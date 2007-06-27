@@ -1,0 +1,5 @@
+# $Id$
+
+exclude muttils/__version__.py
+
+include doc/example-mail.vim doc/example-muttilsrc doc/example-muttrc
