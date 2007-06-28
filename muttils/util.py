@@ -6,7 +6,7 @@
 import os, subprocess, sys
 
 # programs that can be launched without terminal connection
-term_progs = ('wget', 'w3m', 'osascript', 'ip-up')
+term_progs = ('w3m', 'wget', 'osascript', 'ip-up')
 
 class DeadMan(Exception):
     '''Exception class for muttils package.'''
@@ -25,11 +25,10 @@ def systemcall(cs, notty=False, screen=False):
     '''Calls command sequence cs in manner suiting
     terminal connectivity.'''
     # check if connected to terminal
-    notty = (notty
-             or os.path.basename(cs[0]) not in term_progs
-             and not termconnected())
+    prog = os.path.basename(cs[0])
+    notty = notty or prog not in term_progs and not termconnected()
     # are we inside a screen session
-    screen = screen or os.getenv('STY')
+    screen = screen or prog not in term_progs[1:] and 'STY' in os.environ
     try:
         if notty and not screen:
             tty = os.ctermid()
