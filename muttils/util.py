@@ -26,8 +26,8 @@ def systemcall(cs, notty=False, screen=False):
     terminal connectivity.'''
     # check if connected to terminal
     notty = (notty
-            or os.path.basename(cs[0]) not in term_progs
-            and not termconnected())
+             or os.path.basename(cs[0]) not in term_progs
+             and not termconnected())
     # are we inside a screen session
     screen = screen or os.getenv('STY')
     try:
