@@ -1,7 +1,7 @@
 # $Id$
 
 import conny, ui, urlregex, util
-import os, re, socket, sys, webbrowser
+import os, re, socket, webbrowser
 
 # textbrowsers
 textbrowsers = ('w3m', 'lynx', 'links', 'elinks')
