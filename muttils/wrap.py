@@ -91,8 +91,8 @@ class wrap(object):
     def addholdspace(self):
         '''Ships out and resets holdspace.'''
         if self.holdspace:
-            self._outfunc(self.qindent + self.indent
-                    + ' '.join(self.holdspace) + '\n')
+            self._outfunc(self.qindent + self.indent +
+                          ' '.join(self.holdspace) + '\n')
             self.holdspace = []
 
     def addoversize(self):
@@ -130,11 +130,10 @@ class wrap(object):
 
     def breakline(self):
         self.words = self.line.split()
-        if (self.hyph
-                and self.holdspace
-                and self.words[0] not in ('und', 'oder', 'bzw.')
-                and tail_re.search(self.holdspace[-1], -2)):
-            self.words[0] = self.holdspace.pop()+self.words[0]
+        if (self.hyph and self.holdspace
+            and self.words[0] not in ('und', 'oder', 'bzw.')
+            and tail_re.search(self.holdspace[-1], -2)):
+            self.words[0] = self.holdspace.pop() + self.words[0]
         while self.words:
             self.hslen = len(' '.join(self.holdspace))
             word = self.words[0]
@@ -170,7 +169,7 @@ class wrap(object):
         # mark: this way, if you have '>' as quote and exclude '|'
         # a line starting with '> |' will be left intact
         if (empty_re.match(self.line)
-                or self.excl and self.excl.match(self.line)):
+            or self.excl and self.excl.match(self.line)):
             self.addholdspace()
             self._outfunc(self.qindent + self.line)
             self.indent = ''
@@ -182,8 +181,8 @@ class wrap(object):
             if indchange and self.ipar or self.respect:
                 self.addholdspace()
             if indchange:
-                self.width = (self.defwidth - len(self.qindent)
-                        - len(indent.replace('\t', ' ' * self.tabwidth)))
+                self.width = (self.defwidth - len(self.qindent) -
+                              len(indent.replace('\t', ' ' * self.tabwidth)))
                 self.indent = indent
             self.breakline() # and wrap
 
