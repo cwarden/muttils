@@ -155,6 +155,9 @@ class wrap(object):
         return indent.group(0)
 
     def lineparser(self):
+        # unmangle From
+        if self.email:
+            self.line = self.email.sub(unmangle, self.line, 1)
         # look for quote string
         if self.quote:    # and set quote indent
             qindent = self.getindent(self.quote)
@@ -204,8 +207,6 @@ class wrap(object):
                         self.addholdspace()
                     self.nowrap(lit)
                     skipheaders = False
-                if self.email:
-                    self.line = self.email.sub(unmangle, self.line, 1)
                 self.lineparser()
         except StopIteration:
             self.addholdspace()
