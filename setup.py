@@ -9,7 +9,7 @@ from distutils.core import setup
 import muttils.version
 
 # specify version, Mercurial version otherwise
-version = ''
+version = '1.0'
 
 muttils.version.rememberversion(version)
 
