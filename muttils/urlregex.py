@@ -6,13 +6,10 @@ import re
 valid_protos = ['all', 'web', 'http', 'ftp', 'gopher', 'mailto', 'mid']
 # finger, telnet, whois, wais?
 
-reserved = r';/?:@&=+$,'
-unreserved = r"-_.!~*'()a-z0-9"
-escaped = r'(%[0-9a-f]{2})' # % 2 hex
-# 1 or more unreserved|escaped + 0 or 1 reserved
-uric = r'([%s%s]+|%s+)' % (unreserved, reserved, escaped)
+# regexes on demand
+_web_re = _mail_re = _ftp_re = None
 
-def hostname(generic=False):
+def _hostname(generic=False):
     '''Returns hostname pattern
     for all top level domains or just generic domains.'''
     domainlabel = r'[a-z0-9]+([-a-z0-9]+[a-z0-9])?'
@@ -38,58 +35,10 @@ def hostname(generic=False):
     # a sequence of domainlabels + top domain
     return r'(%s\.)+(%s)' % (domainlabel, '|'.join(tds))
 
-def weburlpats(search, proto='', uric=uric):
-    '''Creates 2 url patterns. The first according to protocol,
-    The second may contain spaces but is enclosed in '<>'.
-    If no protocol is given the pattern matches only
-    generic top level domains:
-        gmx.net:    counts as url
-        gmx.de:     does not as url
-        www.gmx.de: counts as url
-    This seems a reasonable compromise between the goal to find
-    malformed urls too and false positives -- especially as we
-    treat "www" as sort of inofficial scheme.'''
-    if search:
-        hostport = r'%s(:\d+)?' % hostname(generic=not proto)
-    else:
-        hostnum = r'(\d+\.){3}\d+'
-        hostport = r'(%s|%s)(:\d+)?' % (hostname(generic=not proto), hostnum)
-    dom = r'''
-        \b                  # start at word boundary
-        %(proto)s           # protocol or empty
-        %(hostport)s        # host and optional port (no login [yet])
-        (                   # 0 or 1 group
-          /                 #   slash
-          %(uric)s +        #   1 or more uri chars
-          (                 #   0 or 1 group
-            \#              #     fragment separator
-            %(uric)s +      #     1 or more uri chars
-          ) ?
-        ) ?
-        (/|\b)              # slash or word boundary
-        ''' % vars()
-    spdom = r'''
-        (?<=<)                # look behind for '<'
-        %(proto)s             # protocol or empty
-        %(hostport)s          # host and optional port (no login [yet])
-        (                     # 0 or 1 group
-          /                   #   slash
-          (                   #   0 or 1 group
-            (%(uric)s|\s) *   #   0 or more uri chars or space
-            (                 #   0 or 1 group
-              \#              #     fragment separator
-              (%(uric)s|\s) + #     1 or more uri chars or space
-            ) ?
-          ) ?
-        ) ?
-        (?=>)                 # lookahead for '>'
-        ''' % vars()
-    return dom, spdom
-
-def mailpat():
+def _mailpat():
     '''Creates pattern for email addresses,
     grabbing those containing a subject first.'''
-    address = '[-_.a-z0-9]+@%s' % hostname()
+    address = '[-_.a-z0-9]+@%s' % _hostname()
     return r'''
         \b(                 # word boundary and group open
           mailto:           #  mandatory mailto
@@ -102,7 +51,7 @@ def mailpat():
         )\b                 # close group and word boundary
         ''' % { 'address': address }
 
-def nntppat():
+def _nntppat():
     '''Creates pattern for either nntp protocol or
     attributions with message-ids.'''
     return r'''
@@ -115,71 +64,45 @@ def nntppat():
         <{,2}                                          # 0--2 '<'
         '''
 
-def midpat():
+def _midpat():
     '''Creates pattern for message ids.'''
-    return r'[-_.a-z0-9#~?+=&%%!$[\]]+@%s' % hostname()
+    return r'[-_.a-z0-9#~?+=&%%!$[\]]+@%s' % _hostname()
 
-def declmidpat():
+def _declmidpat():
     '''Returns pattern for message id, prefixed with "attribution".'''
-    return r'(\b%s%s\b)' % (nntppat(), midpat())
+    return r'(\b%s%s\b)' % (_nntppat(), _midpat())
 
-def wipepat():
-    '''Creates pattern for useless headers in message _bodies_ (OLE!).'''
-    headers = ('received', 'references', 'message-id', 'in-reply-to',
-               'delivered-to', 'list-id', 'path', 'return-path',
-               'newsgroups', 'nntp-posting-host', 'xref', 'x-id',
-               'x-abuse-info', 'x-trace', 'x-mime-autoconverted')
-    headers = r'(%s)' % '|'.join(headers)
-    header = r'''
-        (\n|^)          # newline or very start
-        %s:             # header followed by colon &
-        .+              # greedy anything (but newline)
-        (               # 0 or more group
-          \n            #  newline followed by
-          [ \t]+        #  greedy spacetabs
-          .+            #  greedy anything
-        ) *?
-        ''' % headers
-    return r'%s|%s' % (header, declmidpat())
-
-# regexes on demand
-web_re = mail_re = ftp_re = None
-
-def get_mailre():
+def _get_mailre():
     '''Returns email address pattern on demand.'''
-    global mail_re
-    if not mail_re:
-        mail_re = re.compile(r'(%s)' % mailpat(), re.IGNORECASE|re.VERBOSE)
-    return mail_re
+    global _mail_re
+    _mail_re = (_mail_re or
+                re.compile(r'(%s)' % _mailpat(), re.IGNORECASE|re.VERBOSE))
+    return _mail_re
+
 
 def webschemecomplete(url):
-    '''Returns url with protocol scheme prepended if needed.'''
-    global web_re
-    if not web_re:
-        web_re = re.compile(r'(https?|s?ftp|gopher)://', re.IGNORECASE)
-    if web_re.match(url):
+    '''Returns url with protocol scheme prepended if needed.
+    Used by pybrowser.'''
+    global _web_re
+    _web_re = _web_re or re.compile(r'(https?|s?ftp|gopher)://', re.IGNORECASE)
+    if _web_re.match(url):
         return url
     for scheme in ('ftp', 'gopher'):
         if url.startswith('%s.' % scheme):
             return '%s://%s' % (scheme, url)
     return 'http://%s' % url
 
-def webcheck(url):
-    '''Returns True if url is not email address.'''
-    return not get_mailre().match(url)
-
 def ftpcheck(url):
-    '''Returns True if url is ftp location.'''
-    global ftp_re
-    if not ftp_re:
-        ftp_re = re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
-    return ftp_re.match(url)
+    '''Returns True if url is ftp location.
+    Used by urlpager.'''
+    global _ftp_re
+    _ftp_re = _ftp_re or re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
+    return _ftp_re.match(url)
 
 def mailcheck(url):
-    '''Returns True if url is email address.'''
-    return get_mailre().match(url)
-
-filterdict = { 'web':    webcheck, 'mailto': mailcheck }
+    '''Returns True if url is email address.
+    Used by urlpager.'''
+    return _get_mailre().match(url)
 
 
 class urlregex(object):
@@ -189,15 +112,15 @@ class urlregex(object):
     Detects also www-urls that don't start with a protocol and
     urls spanning more than 1 line if they are enclosed in '<>'.
     '''
+    url_re = None       # that's what it's all about
+    kill_re = None      # customized pattern to find non url chars
+    protocol = ''       # pragmatic proto (may include www., ftp., gopher.)
+    proto_re = None
+    items = []
+
     def __init__(self, ui, uniq=True):
         self.ui = ui             # proto, decl
         self.uniq = uniq         # list only unique urls
-        self.url_re = None       # that's what it's all about
-        self.kill_re = None      # customized pattern to find non url chars
-        self.protocol = ''       # pragmatic proto
-                                 # (may include www., ftp., gopher.)
-        self.proto_re = None
-        self.items = []
 
     def setprotocol(self):
         mailto = 'mailto:\s?' # needed for proto=='all'
@@ -217,13 +140,68 @@ class urlregex(object):
 
     def getraw(self, search):
         '''Returns raw patterns according to protocol.'''
+
+        def weburlpats(search, proto=''):
+            '''Creates 2 url patterns. The first according to protocol,
+            The second may contain spaces but is enclosed in '<>'.
+            If no protocol is given the pattern matches only
+            generic top level domains:
+                gmx.net:    counts as url
+                gmx.de:     does not as url
+                www.gmx.de: counts as url
+            This seems a reasonable compromise between the goal to find
+            malformed urls too and false positives -- especially as we
+            treat "www" as sort of inofficial scheme.'''
+            reserved = r';/?:@&=+$,'
+            unreserved = r"-_.!~*'()a-z0-9"
+            escaped = r'(%[0-9a-f]{2})' # % 2 hex
+            # 1 or more unreserved|escaped + 0 or 1 reserved
+            uric = r'([%s%s]+|%s+)' % (unreserved, reserved, escaped)
+            if search:
+                hostport = r'%s(:\d+)?' % _hostname(generic=not proto)
+            else:
+                hostnum = r'(\d+\.){3}\d+'
+                hostport = r'(%s|%s)(:\d+)?' % (_hostname(generic=not proto),
+                                                hostnum)
+            dom = r'''
+                \b                  # start at word boundary
+                %(proto)s           # protocol or empty
+                %(hostport)s        # host and optional port (no login [yet])
+                (                   # 0 or 1 group
+                  /                 #   slash
+                  %(uric)s +        #   1 or more uri chars
+                  (                 #   0 or 1 group
+                    \#              #     fragment separator
+                    %(uric)s +      #     1 or more uri chars
+                  ) ?
+                ) ?
+                (/|\b)              # slash or word boundary
+                ''' % vars()
+            spdom = r'''
+                (?<=<)                # look behind for '<'
+                %(proto)s             # protocol or empty
+                %(hostport)s          # host and optional port (no login [yet])
+                (                     # 0 or 1 group
+                  /                   #   slash
+                  (                   #   0 or 1 group
+                    (%(uric)s|\s) *   #   0 or more uri chars or space
+                    (                 #   0 or 1 group
+                      \#              #     fragment separator
+                      (%(uric)s|\s) + #     1 or more uri chars or space
+                    ) ?
+                  ) ?
+                ) ?
+                (?=>)                 # lookahead for '>'
+                ''' % vars()
+            return dom, spdom
+
         self.setprotocol()
         url, spurl = weburlpats(search, proto=self.protocol)
         if self.ui.decl:
             return r'(%s|%s)' % (spurl, url)
-        any_url, any_spurl = weburlpats(search, proto='')
+        any_url, any_spurl = weburlpats(search)
         return (r'(%s|%s|%s|%s|%s)'
-                % (mailpat(), spurl, any_spurl, url, any_url))
+                % (_mailpat(), spurl, any_spurl, url, any_url))
 
     def unideluxe(self):
         '''remove duplicates deluxe:
@@ -239,8 +217,13 @@ class urlregex(object):
         self.items = deluxurls
 
     def urlfilter(self):
-        if not self.ui.decl and self.ui.proto in filterdict:
-            self.items = [i for i in self.items if filterdict[self.ui.proto](i)]
+        def _webcheck(url):
+            return not _get_mailre().match(url)
+
+        filterdict = {'web': _webcheck, 'mailto': mailcheck}
+        if not self.ui.decl and self.ui.proto in filterdict.keys():
+            self.items = [i for i in self.items
+                          if filterdict[self.ui.proto](i)]
         if self.uniq:
             self.items = list(set(self.items))
             if self.ui.proto != 'mid' and not self.ui.decl:
@@ -253,30 +236,49 @@ class urlregex(object):
                                ': invalid protocol parameter, use one of:\n',
                                ', '.join(valid_protos))
         if self.ui.proto == 'mailto':# be pragmatic and list not only declared
-            self.url_re = get_mailre()
+            self.url_re = _get_mailre()
             self.proto_re = re.compile(r'^mailto:')
         elif self.ui.proto != 'mid':
-            self.url_re = re.compile(self.getraw(search), re.IGNORECASE|re.VERBOSE)
+            self.url_re = re.compile(self.getraw(search),
+                                     re.IGNORECASE|re.VERBOSE)
             if search:
                 self.kill_re = re.compile(r'^url:\s?|\s+', re.IGNORECASE)
                 if not self.ui.decl:
                     self.proto_re = re.compile(r'^%s' % self.protocol,
                                                re.IGNORECASE)
         elif self.ui.decl:
-            self.url_re = re.compile(declmidpat(), re.IGNORECASE|re.VERBOSE)
+            self.url_re = re.compile(_declmidpat(), re.IGNORECASE|re.VERBOSE)
             if search:
-                self.kill_re = re.compile(nntppat(), re.IGNORECASE|re.VERBOSE)
+                self.kill_re = re.compile(_nntppat(), re.IGNORECASE|re.VERBOSE)
         else:
-            self.url_re = re.compile(r'(\b%s\b)' % midpat(),
+            self.url_re = re.compile(r'(\b%s\b)' % _midpat(),
                                      re.IGNORECASE|re.VERBOSE)
 
     def findurls(self, text):
         '''Conducts a search for urls in text.
         Data is supposed to be text but tested whether
         it's a message/Mailbox (then passed to urlparser).'''
+        def _wipepat():
+            headers = ('received', 'references', 'message-id', 'in-reply-to',
+                       'delivered-to', 'list-id', 'path', 'return-path',
+                       'newsgroups', 'nntp-posting-host', 'xref', 'x-id',
+                       'x-abuse-info', 'x-trace', 'x-mime-autoconverted')
+            headers = r'(%s)' % '|'.join(headers)
+            header = r'''
+                (\n|^)          # newline or very start
+                %s:             # header followed by colon &
+                .+              # greedy anything (but newline)
+                (               # 0 or more group
+                  \n            #  newline followed by
+                  [ \t]+        #  greedy spacetabs
+                  .+            #  greedy anything
+                ) *?
+                ''' % headers
+            return r'%s|%s' % (header, _declmidpat())
+
         self.urlobject() # compile url_re
         if self.ui.proto != 'mid':
-            wipe_re = re.compile(wipepat(), re.IGNORECASE|re.VERBOSE)
+            wipe_re = re.compile(_wipepat(), re.IGNORECASE|re.VERBOSE)
             text = wipe_re.sub('', text)
             cpan = self.ui.configitem('net', 'cpan')
             ctan = self.ui.configitem('net', 'ctan')
