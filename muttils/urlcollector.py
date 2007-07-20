@@ -5,35 +5,14 @@ import cStringIO, re, sys
 import email, email.Iterators, email.Utils, email.Errors
 import mailbox
 
-# header tuples (to be extended)
-searchheads = ['subject', 'organization',
-               'user-agent', 'x-mailer', 'x-mailer-info', 'x-newsreader',
-               'list-subscribe', 'list-unsubscribe',
-               'list-help', 'list-archive', 'list-url',
-               'mailing-list', 'x-habeas-swe-9']
-
-refheads = ['references', 'in-reply-to', 'message-id', 'original-message-id']
-
-addrheads = ['from', 'to', 'reply-to', 'cc',
-             'sender', 'x-sender', 'mail-followup-to',
-             'x-apparently-to',
-             'errors-to', 'x-complaints-to', 'x-beenthere']
-
-quote_re = re.compile(r'^([>|]\s*)+', re.MULTILINE)
-
-def msgfactory(fp):
-    try:
-        fp.seek(0)
-        return email.message_from_file(fp)
-    except email.Errors.MessageParseError:
-        return None
-
 
 class urlcollector(urlregex.urlregex):
     '''
     Provides function to retrieve urls
     from files or input stream.
     '''
+    quote_re = re.compile(r'^([>|]\s*)+', re.MULTILINE)
+
     def __init__(self, ui, files=None):
         urlregex.urlregex.__init__(self, ui)
         # ^ items
@@ -51,17 +30,26 @@ class urlcollector(urlregex.urlregex):
     def msgharvest(self, msg, strings=None):
         sl = strings or []
         if self.ui.proto != 'mid':
+            searchheads = ['subject', 'organization', 'user-agent', 'x-mailer',
+                           'x-mailer-info', 'x-newsreader', 'list-subscribe',
+                           'list-unsubscribe', 'list-help', 'list-archive',
+                           'list-url', 'mailing-list', 'x-habeas-swe-9']
             if self.ui.proto in ('all', 'mailto'):
+                addrheads = ['from', 'to', 'reply-to', 'cc', 'sender',
+                             'x-sender', 'mail-followup-to', 'x-apparently-to',
+                             'errors-to', 'x-complaints-to', 'x-beenthere']
                 self.headparser(msg, addrheads)
             for skey in searchheads:
                 vals = msg.get_all(skey)
                 if vals:
                     sl += vals
         else:
+            refheads = ['references', 'in-reply-to', 'message-id',
+                        'original-message-id']
             self.headparser(msg, refheads)
         for part in email.Iterators.typed_subpart_iterator(msg):
             # try getting quoted urls spanning more than 1 line
-            s = quote_re.sub('', part.get_payload(decode=True))
+            s = self.quote_re.sub('', part.get_payload(decode=True))
             # handle DelSp (rfc 3675)
             ct = part.get('content-type', '').lower()
             if ct.find('delsp=yes') > -1:
@@ -74,6 +62,13 @@ class urlcollector(urlregex.urlregex):
         If no, returns text contents of file or empty string if file is binary.
         Parses message/mailbox for relevant headers adding urls to list of items
         and returns text parts for further searching.'''
+        def msgfactory(fp):
+            try:
+                fp.seek(0)
+                return email.message_from_file(fp)
+            except email.Errors.MessageParseError:
+                return None
+
         # binary check from mercurial.util
         s = fp.read(4096)
         if '\0' in s:

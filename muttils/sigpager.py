@@ -8,6 +8,8 @@ class signature(tpager.tpager):
     Provides functions to interactively choose a mail signature
     matched against a regular expression of your choice.
     '''
+    sigs = [] # complete list of signature strings
+
     def __init__(self, parentui=None,
                  dest=None, sig='', sdir='', sep='-- \n', tail=''):
         self.ui = parentui or ui.ui()
@@ -16,11 +18,10 @@ class signature(tpager.tpager):
         self.ui.updateconfig()
         self.dest = dest        # input: list of files or string
         self.sig = (sig or self.ui.configitem('messages', 'signature')
-                or os.getenv('SIGNATURE') or '~/.signature')
+                    or os.getenv('SIGNATURE') or '~/.signature')
         self.sdir = sdir or self.ui.configitem('messages', 'sigdir')
         self.tail = tail or self.ui.configitem('messages', 'sigtail')
         self.sep = sep          # signature separator
-        self.sigs = []          # complete list of signature strings
 
     def getstring(self, fn):
         fn = os.path.join(self.sdir, fn)

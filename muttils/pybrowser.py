@@ -3,46 +3,42 @@
 import conny, ui, urlregex, util
 import os, re, socket, webbrowser
 
-# textbrowsers
-textbrowsers = ('w3m', 'lynx', 'links', 'elinks')
-# gopher capable browsers that do not need gopher proxy
-gophers = ('lynx', 'firefox')
-
-def getlocals():
-    '''Returns valid local addresses.'''
-    l = socket.gethostbyaddr(socket.gethostname())
-    localaddresses = ['127.0.0.1']
-    for i in l:
-        if isinstance(i, str):
-            i = [i]
-        localaddresses += i
-    return localaddresses
-
-def weburlregex(ui):
-    '''Returns regex matching web url.'''
-    u = urlregex.urlregex(ui, uniq=False)
-    u.urlobject(search=False)
-    return u.url_re
-
-
 class browser(object):
     '''
     Visits items with default or given browser.
     '''
+    conn = False              # try to connect to net
+    local_re = None           # check local protocol scheme
+    file_re = None            # strip file url
+    weburl_re = None          # url protocol scheme regex
+
     def __init__(self, parentui=None, items=None, app=''):
         self.ui = parentui or ui.ui()
         self.ui.updateconfig()
         self.items = items             # urls
         if app:
             self.ui.app = app          # browser app
+
+        def weburlregex():
+            '''Returns regex matching web url.'''
+            u = urlregex.urlregex(self.ui, uniq=False)
+            u.urlobject(search=False)
+            return u.url_re
+
         self.ui.proto = 'web'
-        self.weburl_re = weburlregex(self.ui) # check remote url protocol scheme
-        self.conn = False              # try to connect to net
-        self.local_re = None           # check local protocol scheme
-        self.file_re = None            # strip file url
+        self.weburl_re = weburlregex() # check remote url protocol scheme
 
     def get_localre(self):
         '''Compiles local_re on demand and returns it.'''
+        def getlocals():
+            l = socket.gethostbyaddr(socket.gethostname())
+            localaddresses = ['127.0.0.1']
+            for i in l:
+                if isinstance(i, str):
+                    i = [i]
+                localaddresses += i
+            return localaddresses
+
         if not self.local_re:
             self.local_re = re.compile('http://(%s)'
                     % '|'.join(re.escape(a) for a in getlocals()),
@@ -65,6 +61,7 @@ class browser(object):
         if self.weburl_re.match(url):
             self.conn = True
             url = urlregex.webschemecomplete(url)
+            gophers = ('lynx', 'firefox')
             if url.startswith('gopher://') and self.ui.app not in gophers:
                 # use gateway when browser is not gopher capable
                 url = url.replace('gopher://',
@@ -75,6 +72,7 @@ class browser(object):
 
     def urlvisit(self):
         '''Visit url(s).'''
+        textbrowsers = ('w3m', 'lynx', 'links', 'elinks')
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
         self.items = [self.urlcomplete(url) for url in self.items]

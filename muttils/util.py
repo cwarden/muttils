@@ -5,9 +5,6 @@
 
 import os, subprocess, sys
 
-# programs that can be launched without terminal connection
-term_progs = ('w3m', 'wget', 'osascript', 'ip-up')
-
 class DeadMan(Exception):
     '''Exception class for muttils package.'''
     def __init__(self, *inst):
@@ -24,6 +21,8 @@ def termconnected():
 def systemcall(cs, notty=False, screen=False):
     '''Calls command sequence cs in manner suiting
     terminal connectivity.'''
+    # programs that can be launched without terminal connection
+    term_progs = ('w3m', 'wget', 'osascript', 'ip-up')
     # check if connected to terminal
     prog = os.path.basename(cs[0])
     notty = notty or prog not in term_progs and not termconnected()

@@ -3,24 +3,6 @@
 import util
 import re, sys
 
-empty_re = re.compile(r'\s+$', re.MULTILINE)
-ind_re = re.compile(r'\s+', re.MULTILINE)
-wbreak_re = re.compile(r'\b[-/]+\b')
-tail_re = re.compile(r'\w[-/([{&^]$')
-
-def mrex(pat):
-    '''Checks and returns MULTILINE regex of pat.'''
-    try:
-        return re.compile(r'%s' % pat, re.MULTILINE)
-    except re.error, inst:
-        raise util.DeadMan("error in pattern `%s': %s" % (pat, inst))
-
-def unmangle(mobj):
-    '''Returns line with >[fF]rom unmangled, taking quotes into account.'''
-    if mobj.group(1):
-        return '%s%s' % (mobj.group(1), mobj.group(2)[1:])
-    return mobj.group(2)[1:]
-
 class wrap(object):
     '''
     Provides customized line breaking.
@@ -35,21 +17,42 @@ class wrap(object):
     wraps email style quoted lines
     but leaves lines starting with '|' untouched.
     '''
+    empty_re = re.compile(r'\s+$', re.MULTILINE)
+    ind_re = re.compile(r'\s+', re.MULTILINE)
+    tail_re = re.compile(r'\w[-/([{&^]$')
+    # attribs governed by options:
+    width = 0           # default wrap width
+    ipar = 0            # wrap width,
+                             # starting new par with each indent change
+    respect = 0         # wrap width respecting line breaks
+    tabwidth = 8        # width of a tab in spaces
+    excl = ''           # exclude lines matching pattern excl from wrapping
+    quote = ''          # treat lines starting with chars quote as quoted
+    hyph = False        # break words at hyphens
+    qmail = False       # treat as email, ">" (additional quote char)
+    email = False       # treat as email: skip headers, unmangle >From
+    _outfunc = False    # output as stream
+    # attribs for internal use:
+    olines = []         # output lines
+    line = ''           # current line
+    words = []          # current list of words to fill line
+    holdspace = []      # current list of words in line
+    hslen = 0           # len of current words as string
+    indent = ''         # current indent
+    qindent = ''        # current quote indent
+
     def __init__(self, inp=None, opts={}):
         self.input = inp or None # will be treated according to type
-        self.width = 0           # default wrap width
-        self.ipar = 0            # wrap width,
-                                 # starting new par with each indent change
-        self.respect = 0         # wrap width respecting line breaks
-        self.tabwidth = 8        # width of a tab in spaces
-        self.excl = ''           # exclude lines matching pattern excl from wrapping
-        self.quote = ''          # treat lines starting with chars quote as quoted
-        self.hyph = False        # break words at hyphens
-        self.qmail = False       # treat as email, ">" (additional quote char)
-        self.email = False       # treat as email: skip headers, unmangle >From
-        self._outfunc = False    # output as stream
         for k in opts.iterkeys():
             setattr(self, k, opts[k])
+
+        def mrex(pat):
+            '''Checks and returns MULTILINE regex of pat.'''
+            try:
+                return re.compile(r'%s' % pat, re.MULTILINE)
+            except re.error, inst:
+                raise util.DeadMan("error in pattern `%s': %s" % (pat, inst))
+
         # wrap width falls back on width if neither respect nor ipar
         # are specified in that order, and finally to 78
         self.defwidth = self.width = (self.respect or self.ipar or
@@ -67,18 +70,12 @@ class wrap(object):
             self.email = mrex('([>%s] ?)*(>[fF]rom)' % self.quote)
         if self.quote:
             self.quote = mrex('([%s] ?)+' % self.quote)
+        if self.hyph:
+            self.hyph = re.compile(r'\b[-/]+\b')
         if self._outfunc:
             self._outfunc = self.streamout
         else:
             self._outfunc = self.collectout
-        # attribs for internal use:
-        self.olines = []         # output lines
-        self.line = ''           # current line
-        self.words = []          # current list of words to fill line
-        self.holdspace = []      # current list of words in line
-        self.hslen = 0           # len of current words as string
-        self.indent = ''         # current indent
-        self.qindent = ''        # current quote indent
 
     def streamout(self, line):
         '''Immediate print of wrapped line.'''
@@ -103,13 +100,13 @@ class wrap(object):
     def breakword(self, word, wlen):
         '''Tries to break word at hyphen(s).'''
         # what.a//bull-shit!
-        frags = wbreak_re.split(word)
+        frags = self.hyph.split(word)
         # ['what','a','bull','shit!']
         fraglen = len(frags)
         if fraglen == 1 and wlen >= self.width:
             self.addoversize()
         elif fraglen > 1:
-            fragtails = wbreak_re.findall(word) + ['']
+            fragtails = self.hyph.findall(word) + ['']
             # -> ['.','//','-','']
             frags = [ft[0] + ft[1] for ft in zip(frags, fragtails)]
             # -> ['what.','a//','bull-','shit!']
@@ -132,7 +129,7 @@ class wrap(object):
         self.words = self.line.split()
         if (self.hyph and self.holdspace
             and self.words[0] not in ('und', 'oder', 'bzw.')
-            and tail_re.search(self.holdspace[-1], -2)):
+            and self.tail_re.search(self.holdspace[-1], -2)):
             self.words[0] = self.holdspace.pop() + self.words[0]
         while self.words:
             self.hslen = len(' '.join(self.holdspace))
@@ -155,6 +152,11 @@ class wrap(object):
         return indent.group(0)
 
     def lineparser(self):
+        def unmangle(mobj):
+            if mobj.group(1):
+                return '%s%s' % (mobj.group(1), mobj.group(2)[1:])
+            return mobj.group(2)[1:]
+
         # unmangle From
         if self.email:
             self.line = self.email.sub(unmangle, self.line, 1)
@@ -171,14 +173,14 @@ class wrap(object):
         # check if line must go intact
         # mark: this way, if you have '>' as quote and exclude '|'
         # a line starting with '> |' will be left intact
-        if (empty_re.match(self.line)
+        if (self.empty_re.match(self.line)
             or self.excl and self.excl.match(self.line)):
             self.addholdspace()
             self._outfunc(self.qindent + self.line)
             self.indent = ''
             self.width = self.defwidth - len(self.qindent)
         else:
-            indent = self.getindent(ind_re)
+            indent = self.getindent(self.ind_re)
             # hanging indent? (indent > self.indent)
             indchange = indent != self.indent
             if indchange and self.ipar or self.respect:

@@ -16,6 +16,13 @@ class tpager(object):
     '''
     Customizes interactive choice to current terminal.
     '''
+    pages =  {}         # dictionary of pages
+    rows = 0            # terminal $LINES
+    cols = 0            # terminal $COLUMNS
+    itemsdict = {}      # dictionary of items to choose
+    ilen = 0            # length of items' list
+    more = False        # more than 1 page
+
     def __init__(self, ui, items=None, name='item',
                  format='sf', ckey='', qfunc='quit', crit='pattern'):
         self.ui = ui
@@ -32,12 +39,6 @@ class tpager(object):
             raise util.DeadMan("the `%s' key is internally reserved." % ckey)
         self.qfunc = qfunc       # name of exit function
         self.crit = crit         # name of criterion for customizing
-        self.pages =  {}         # dictionary of pages
-        self.rows = 0            # terminal $LINES
-        self.cols = 0            # terminal $COLUMNS
-        self.itemsdict = {}      # dictionary of items to choose
-        self.ilen = 0            # length of items' list
-        self.more = False        # more than 1 page
 
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''

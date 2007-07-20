@@ -10,11 +10,12 @@ class html2text(htmllib.HTMLParser):
     '''
     Provides methods for very simple html to text conversion.
     '''
+    fp = None
+    formatter = None
+
     def __init__(self, strict=False):
         '''Initializes parser and opens file object.'''
         self.strict = strict
-        self.fp = None
-        self.formatter = None
         htmllib.HTMLParser.__init__(self, formatter=self.formatter)
 
     def open(self):
