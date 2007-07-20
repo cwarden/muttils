@@ -1,7 +1,11 @@
 # $Id$
 
 import iterm, util
-import fcntl, os, struct, sys, termios
+try:
+    # termios only available for unix
+    import fcntl, os, struct, sys, termios
+except ImportError:
+    pass
 
 def valclamp(x, low, high):
     '''Clamps x between low and high.'''
@@ -37,26 +41,41 @@ class tpager(object):
 
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''
+        def gettyenv(v):
+            if v in os.environ:
+                try:
+                    return int(os.environ[v])
+                except TypeError:
+                    return 0
+            return 0
+
+        self.rows = gettyenv('LINES')
+        self.cols = gettyenv('COLUMNS')
+        missing = not self.rows or not self.cols
         notty = False # assume connection to terminal
         buf = 'abcd'  # string length 4
-        for dev in (sys.stdout, sys.stdin):
-            try:
+        try:
+            for dev in (sys.stdout, sys.stdin):
                 fd = dev.fileno()
-                istty = os.isatty(fd)
-                if istty and buf == 'abcd':
+                notty = not os.isatty(fd)
+                if missing and not notty and buf == 'abcd':
                     buf = fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
-                elif not istty:
-                    notty = True
-            except ValueError:
-                # eg: urlpager <file
-                notty = True
-        if buf == 'abcd':
-            raise util.DeadMan('could not get terminal size')
-        t_rows, t_cols = struct.unpack('hh', buf) # 'hh': 2 signed short
+        except ValueError:
+            # eg: urlpager <file
+            notty = True
+        except NameError:
+            pass
+        if missing and buf != 'abcd':
+            # 'hh': 2 signed short
+            rows, cols = struct.unpack('hh', buf)
+            self.rows = self.rows or rows
+            self.cols = self.cols or cols
+            if not self.rows or not self.cols:
+                raise util.DeadMan('could not get terminal size')
         # rows: retain 1 line for header + 1 for menu
         # cols need 1 extra when lines are broken
-        self.rows = t_rows-1
-        self.cols = t_cols+1
+        self.rows -= 1
+        self.cols += 1
         return notty
 
     def addpage(self, buff, lines, pn):
