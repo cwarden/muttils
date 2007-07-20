@@ -65,7 +65,8 @@ class kiosk(html2text.html2text):
             mhiers = mhiers.split(':')
         else:
             mhiers = self.ui.configitem('messages', 'maildirs').split(',')
-            mhiers = [e.strip() for e in mhiers] or getmhier()
+            mhiers = [e.strip() for e in mhiers]
+            mhiers = mhiers or getmhier()
         # create set of unique elements
         mhiers = set([util.absolutepath(e) for e in mhiers])
         self.ui.mhiers = []
