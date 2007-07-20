@@ -4,70 +4,21 @@ import conny, html2text, pybrowser, util
 import email, email.Generator, email.Parser, email.Errors
 import mailbox, os, re, tempfile, time, urllib, urllib2
 
-gmsgend = r'^[A-Z]([a-zA-Z -]+\[\d+\]){3,}'
-ggroups = 'http://groups.google.com/groups'
-useragent = ('User-Agent', 'w3m')
-urlfailmsg = 'reason of url retrieval failure: '
-urlerrmsg = 'url retrieval error code: '
-changedsrcview = 'source view format changed at Google'
-muttone = ["-e", "'set pager_index_lines=0'",
-           "-e", "'set quit=yes'", "-e", "'bind pager q quit'",
-           "-e", "'push <return>'", "-f"]
-mutti = ["-e", "'set uncollapse_jump'",
-         "-e" "'push <search>~i\ \'%s\'<return>'", "-f"]
-
-def getmspool():
-    '''Tries to return a sensible default for user's mail spool.'''
-    mailspool = os.getenv('MAIL', '')
-    if not mailspool:
-        ms = os.path.join('var', 'mail', os.environ['USER'])
-        if os.path.isfile(ms):
-            return ms
-    elif mailspool.endswith(os.sep):
-        return mailspool[:-1] # ~/Maildir/-INBOX[/]
-    return mailspool
-
-def getmhier():
-    '''Returns either ~/Maildir or ~/Mail
-    as first item of a list if they are directories,
-    an empty list otherwise.'''
-    castle = os.environ['HOME']
-    for md in ('Maildir', 'Mail'):
-        d = os.path.join(castle, md)
-        if os.path.isdir(d):
-            return [d]
-    return []
-
-def msgfactory(fp):
-    try:
-        p = email.Parser.HeaderParser()
-        return p.parse(fp, headersonly=True)
-    except email.Errors.HeaderParseError:
-        return ''
-
-def mkunixfrom(msg):
-    '''Tries to create an improved unixfrom.'''
-    if msg['return-path']:
-        ufrom = msg['return-path'][1:-1]
-    else:
-        ufrom = email.Utils.parseaddr(msg.get('from', 'nobody'))[1]
-    msg.set_unixfrom('From %s  %s' % (ufrom, time.asctime()))
-    return msg
-
 
 class kiosk(html2text.html2text):
     '''
     Provides methods to search for and retrieve
     messages via their Message-ID.
     '''
+    mspool = ''         # path to local mail spool
+    msgs = []           # list of retrieved message objects
+    muttone = True      # configure mutt for display of 1 msg only
+    mdmask = '^(cur|new|tmp)$'
+
     def __init__(self, ui, items=None):
         html2text.html2text.__init__(self, strict=False)
         self.ui = ui
         self.items = items or []
-        self.mspool = ''         # path to local mail spool
-        self.msgs = []           # list of retrieved message objects
-        self.muttone = True      # configure mutt for display of 1 msg only
-        self.mdmask = '^(cur|new|tmp)$'
 
     def kiosktest(self):
         '''Provides the path to an mbox file to store retrieved messages.'''
@@ -99,13 +50,22 @@ class kiosk(html2text.html2text):
     def getmhiers(self):
         '''Checks whether given directories exist and
         creates mhiers set (unique elems) with absolute paths.'''
+        def getmhier():
+            castle = os.environ['HOME']
+            for md in ('Maildir', 'Mail'):
+                d = os.path.join(castle, md)
+                if os.path.isdir(d):
+                    return [d]
+            return []
+
         if self.ui.mhiers or self.ui.specdirs: # cmdline priority
             # specdirs have priority
             mhiers = self.ui.specdirs or self.ui.mhiers
             # split colon-separated list from cmdline
             mhiers = mhiers.split(':')
         else:
-            mhiers = self.ui.configitem('messages', 'maildirs') or getmhier()
+            mhiers = self.ui.configitem('messages', 'maildirs').split(',')
+            mhiers = [e.strip() for e in mhiers] or getmhier()
         # create set of unique elements
         mhiers = set([util.absolutepath(e) for e in mhiers])
         self.ui.mhiers = []
@@ -117,6 +77,7 @@ class kiosk(html2text.html2text):
 
     def makequery(self, mid):
         '''Reformats Message-ID to google query.'''
+        ggroups = 'http://groups.google.com/groups'
         query = ({'selm': mid, 'dmode': 'source'},
                  {'selm': mid})[self.ui.browse]
         return '%s?%s' % (ggroups,  urllib.urlencode(query))
@@ -135,8 +96,10 @@ class kiosk(html2text.html2text):
             liniter = iter(self.htreadlines(nl=False))
         except urllib2.URLError, inst:
             if hasattr(inst, 'reason'):
+                urlfailmsg = 'reason of url retrieval failure: '
                 raise util.DeadMan(urlfailmsg + inst)
             if hasattr(inst, 'code'):
+                urlerrmsg = 'url retrieval error code: '
                 raise util.DeadMan(urlerrmsg + inst)
         line = ''
         try:
@@ -153,7 +116,7 @@ class kiosk(html2text.html2text):
                     lines.append(line)
             except StopIteration:
                 self.ui.warn('\n'.join(lines) + '\n')
-                raise util.DeadMan(changedsrcview)
+                raise util.DeadMan('source view format changed at Google')
             msg = '\n'.join(lines[:-1])
             msg = email.message_from_string(msg)
             found.append(mid)
@@ -161,13 +124,15 @@ class kiosk(html2text.html2text):
 
     def gogoogle(self):
         '''Gets messages from Google Groups.'''
+        rawmsgterminator = r'^[A-Z]([a-zA-Z -]+\[\d+\]){3,}'
+        useragent = ('User-Agent', 'w3m')
         self.ui.note('note: google masks all email addresses\n',
                      'going google ...\n')
         conny.goonline(self.ui)
         opener = urllib2.build_opener()
         opener.addheaders = [useragent]
         header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
-        bottom_re = re.compile(gmsgend, re.MULTILINE)
+        bottom_re = re.compile(rawmsgterminator, re.MULTILINE)
         found = []
         self.open()
         try:
@@ -213,6 +178,13 @@ class kiosk(html2text.html2text):
                     % util.plural(len(self.items), 'message'))
 
     def boxparser(self, path, maildir=False, isspool=False):
+        def msgfactory(fp):
+            try:
+                p = email.Parser.HeaderParser()
+                return p.parse(fp, headersonly=True)
+            except email.Errors.HeaderParseError:
+                return ''
+
         if (not isspool and path == self.mspool
                 or self.ui.mask and self.ui.mask.search(path) is not None):
             return
@@ -275,6 +247,17 @@ class kiosk(html2text.html2text):
     def mailsearch(self):
         '''Announces search of mailboxes, searches spool,
         and passes mail hierarchies to walkmhier.'''
+        def getmspool():
+            '''Tries to return a sensible default for user's mail spool.'''
+            mailspool = os.getenv('MAIL', '')
+            if not mailspool:
+                ms = os.path.join('var', 'mail', os.environ['USER'])
+                if os.path.isfile(ms):
+                    return ms
+            elif mailspool.endswith(os.sep):
+                return mailspool[:-1] # ~/Maildir/-INBOX[/]
+            return mailspool
+
         self.ui.note('Searching local mailboxes ...\n')
         if not self.ui.specdirs: # include mspool
             self.mspool = getmspool()
@@ -293,6 +276,14 @@ class kiosk(html2text.html2text):
 
     def openkiosk(self, firstid):
         '''Opens mutt on kiosk mailbox.'''
+        def mkunixfrom(msg):
+            if msg['return-path']:
+                ufrom = msg['return-path'][1:-1]
+            else:
+                ufrom = email.Utils.parseaddr(msg.get('from', 'nobody'))[1]
+            msg.set_unixfrom('From %s  %s' % (ufrom, time.asctime()))
+            return msg
+
         fp = open(self.ui.kiosk, 'ab')
         try:
             g = email.Generator.Generator(fp, maxheaderlen=0)
@@ -307,13 +298,15 @@ class kiosk(html2text.html2text):
             fp.close()
         mailer = self.ui.configitem('messages', 'mailer')
         cs = [mailer]
-        if  mailer[:4] != 'mutt':
-            cs = [mailer, '-f', self.ui.kiosk]
-        elif len(self.msgs) == 1 and self.muttone:
-            cs += muttone + [self.ui.kiosk]
-        else:
-            mutti[-2] = mutti[-2] % firstid
-            cs += mutti + [self.ui.kiosk] 
+        if mailer[:4] == 'mutt':
+            if len(self.msgs) == 1 and self.muttone:
+                cs += ["-e", "'set pager_index_lines=0'",
+                       "-e", "'set quit=yes'", "-e", "'bind pager q quit'",
+                       "-e", "'push <return>'"]
+            else:
+                cs += ["-e", "'set uncollapse_jump'",
+                       "-e" "'push <search>~i\ \'%s\'<return>'" % firstid]
+        cs += ['-f', self.ui.kiosk]
         util.systemcall(cs)
 
     def plainkiosk(self):
