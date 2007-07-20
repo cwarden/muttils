@@ -26,24 +26,25 @@ message_opts = ('midrelax', 'news', 'local', 'browse',
                 'kiosk', 'mhiers', 'specdirs', 'mask')
 
 class ui(object):
+    config = ConfigParser.SafeConfigParser(default_config)
+    updated = False # is config already up to date?
+    # ui attributes that are governed by options
+    proto = 'all'   # url protocol scheme
+    decl = False    # only care about urls prefixed with scheme
+    pat = None      # pattern to match urls against
+    kiosk = ''      # path to mbox to append retrieved messages
+    browse = False  # browse Google for messages?
+    local = False   # search messages only locally?
+    news = False    # search local mailboxes?
+    mhiers = ''     # colon separated list of mail hierarchies
+    specdirs = ''   # colon separated list of specified mail hierarchies
+    mask = None     # file mask for mail hierarchies
+    app = ''        # browser program
+    ftpdir = ''     # download directory for ftp
+    getdir = ''     # download directory for wget
+
     def __init__(self, rcpath=None):
         self.rcpath = rcpath or default_rcpath
-        self.config = ConfigParser.SafeConfigParser(default_config)
-        self.updated = False # is config already up to date?
-        # ui attributes that are governed by options
-        self.proto = 'all'   # url protocol scheme
-        self.decl = False    # only care about urls prefixed with scheme
-        self.pat = None      # pattern to match urls against
-        self.kiosk = ''      # path to mbox to append retrieved messages
-        self.browse = False  # browse Google for messages?
-        self.local = False   # search messages only locally?
-        self.news = False    # search local mailboxes?
-        self.mhiers = ''     # colon separated list of mail hierarchies
-        self.specdirs = ''   # colon separated list of specified mail hierarchies
-        self.mask = None     # file mask for mail hierarchies
-        self.app = ''        # browser program
-        self.ftpdir = ''     # download directory for ftp
-        self.getdir = ''     # download directory for wget
 
     def updateconfig(self):
         if self.updated:
@@ -98,8 +99,11 @@ class ui(object):
         self.write(*msg)
 
     def warn(self, *args):
-        if not sys.stdout.closed:
-            sys.stdout.flush()
+        try:
+            if not sys.stdout.closed:
+                sys.stdout.flush()
+        except AttributeError:
+            pass
         sys.stderr.write('%s: ' % os.path.basename(sys.argv[0]))
         sys.stderr.flush()
         for a in args:
