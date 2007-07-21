@@ -67,12 +67,20 @@ class kiosk(html2text.html2text):
             mhiers = self.ui.configlist('messages', 'maildirs') or getmhier()
         # create set of unique elements
         mhiers = set([util.absolutepath(e) for e in mhiers])
+        mhiers = list(mhiers)
+        mhiers.sort()
         self.ui.mhiers = []
+        previtem = ''
         for hier in mhiers:
-            if os.path.isdir(hier):
-                self.ui.mhiers.append(hier)
-            else:
+            if not os.path.isdir(hier):
                 self.ui.warn('%s: not a directory, skipping\n' % hier)
+                continue
+            if previtem and hier.startswith(previtem):
+                self.ui.warn('%s: subdirectory of %s, skipping\n'
+                             % (hier, previtem))
+                continue
+            self.ui.mhiers.append(hier)
+            previtem = hier
 
     def makequery(self, mid):
         '''Reformats Message-ID to google query.'''
