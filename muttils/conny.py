@@ -59,7 +59,7 @@ def appleconnect(ui):
 def goonline(ui):
     '''Connects to internet if not yet connected.
     Note: only MacOS supported atm.'''
-    if ui.configitem('net', 'connect').lower() != 'true':
+    if not ui.configbool('net', 'connect'):
         return
     plat = sys.platform
     if plat == 'darwin':

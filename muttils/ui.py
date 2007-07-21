@@ -6,27 +6,8 @@
 import util
 import ConfigParser, os.path, sys
 
-default_rcpath = ['/etc/muttils/muttilsrc',
-                  '/usr/local/etc/muttilsrc',
-                  os.path.expanduser('~/.muttilsrc'),]
-
-default_config = {'messages': [('mailer', 'mutt'),
-                               ('maildirs', ''),
-                               ('signature', ''),
-                               ('sigdir', ''),
-                               ('sigtail', ''),],
-                  'net': [('connect', ''),
-                          ('homepage', ''),
-                          ('ftpclient', 'ftp'),
-                          ('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
-                          ('ctan', 'ftp://ftp.ctan.org/tex-archive'),],}
-
-web_schemes = ('web', 'http', 'ftp')
-message_opts = ('midrelax', 'news', 'local', 'browse',
-                'kiosk', 'mhiers', 'specdirs', 'mask')
-
 class ui(object):
-    config = ConfigParser.SafeConfigParser(default_config)
+    config = None
     updated = False # is config already up to date?
     # ui attributes that are governed by options
     proto = 'all'   # url protocol scheme
@@ -43,8 +24,24 @@ class ui(object):
     ftpdir = ''     # download directory for ftp
     getdir = ''     # download directory for wget
 
+    defrcpath = ['/etc/muttils/muttilsrc',
+                 '/usr/local/etc/muttilsrc',
+                 os.path.expanduser('~/.muttilsrc'),]
+
+    defconfig = {'messages': [('mailer', 'mutt'),
+                              ('maildirs', None),
+                              ('signature', ''),
+                              ('sigdir', ''),
+                              ('sigtail', ''),],
+                 'net': [('connect', False),
+                         ('homepage', ''),
+                         ('ftpclient', 'ftp'),
+                         ('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
+                         ('ctan', 'ftp://ftp.ctan.org/tex-archive'),],}
+
     def __init__(self, rcpath=None):
-        self.rcpath = rcpath or default_rcpath
+        self.rcpath = rcpath or self.defrcpath
+        self.config = ConfigParser.SafeConfigParser(self.defconfig)
 
     def updateconfig(self):
         if self.updated:
@@ -67,17 +64,30 @@ class ui(object):
         '''Returns value of name of section of config.'''
         return self.config.get(section, name)
 
+    def configbool(self, section, name):
+        return self.config.getboolean(section, name)
+
+    def configlist(self, section, name):
+        '''Returns value of name of section of config as list.'''
+        cfg = self.configitem(section, name)
+        if isinstance(cfg, basestring):
+            return cfg.replace(',', ' ').split()
+        return cfg
+
     def resolveopts(self, options):
         '''Adapts option sets.
         Sets protocol to "web", if "getdir" is without corresponding
         protocol scheme.
-        Sets protocol to "mid", if it encounters one of message_opts.
+        Sets protocol to "mid", if it encounters one of messageopts.
         And, finally, update ui's attributes with current options.'''
+        webschemes = ('web', 'http', 'ftp')
+        messageopts = ('midrelax', 'news', 'local', 'browse',
+                        'kiosk', 'mhiers', 'specdirs', 'mask')
         if (options.has_key('getdir') and options['getdir']
-                and options['proto'] not in web_schemes):
+                and options['proto'] not in webschemes):
             options['proto'] = 'web'
         if options['proto'] != 'mid':
-            for o in message_opts:
+            for o in messageopts:
                 if options[o]:
                     options['proto'] = 'mid'
                     options['decl'] = not options['midrelax']
