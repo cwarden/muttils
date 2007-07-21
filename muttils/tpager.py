@@ -1,9 +1,10 @@
 # $Id$
 
 import iterm, util
+import os, sys
 try:
     # termios only available for unix
-    import fcntl, os, struct, sys, termios
+    import termios, fcntl, struct
 except ImportError:
     pass
 
@@ -42,7 +43,7 @@ class tpager(object):
 
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''
-        def gettyenv(v):
+        def _gettyenv(v):
             if v in os.environ:
                 try:
                     return int(os.environ[v])
@@ -50,29 +51,35 @@ class tpager(object):
                     return 0
             return 0
 
-        self.rows = gettyenv('LINES')
-        self.cols = gettyenv('COLUMNS')
-        missing = not self.rows or not self.cols
+        def _missing():
+            return (not self.rows or not self.cols)
+
+        self.rows = _gettyenv('LINES')
+        self.cols = _gettyenv('COLUMNS')
         notty = False # assume connection to terminal
         buf = 'abcd'  # string length 4
-        try:
-            for dev in (sys.stdout, sys.stdin):
+        for dev in (sys.stdout, sys.stdin):
+            try:
                 fd = dev.fileno()
-                notty = not os.isatty(fd)
-                if missing and not notty and buf == 'abcd':
+                istty =  os.isatty(fd)
+                if _missing() and istty and buf == 'abcd':
                     buf = fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
-        except ValueError:
-            # eg: urlpager <file
-            notty = True
-        except NameError:
-            pass
-        if missing and buf != 'abcd':
+                elif not istty:
+                    notty = True
+            except ValueError:
+                # I/O operation on closed file
+                notty = True
+            except NameError:
+                pass
+        if _missing() and buf != 'abcd':
             # 'hh': 2 signed short
             rows, cols = struct.unpack('hh', buf)
+            # still prefer env
             self.rows = self.rows or rows
             self.cols = self.cols or cols
-            if not self.rows or not self.cols:
-                raise util.DeadMan('could not get terminal size')
+        if _missing():
+            raise util.DeadMan('could not obtain terminal size\n'
+                               'try setting $LINES and $COLUMNS environment')
         # rows: retain 1 line for header + 1 for menu
         # cols need 1 extra when lines are broken
         self.rows -= 1
