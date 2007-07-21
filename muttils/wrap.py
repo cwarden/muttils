@@ -22,8 +22,7 @@ class wrap(object):
     tail_re = None
     # attribs governed by options:
     width = 0           # default wrap width
-    ipar = 0            # wrap width,
-                             # starting new par with each indent change
+    ipar = 0            # wrap width, starting new par with each indent change
     respect = 0         # wrap width respecting line breaks
     tabwidth = 8        # width of a tab in spaces
     excl = ''           # exclude lines matching pattern excl from wrapping
