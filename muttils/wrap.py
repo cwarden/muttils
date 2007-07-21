@@ -19,7 +19,7 @@ class wrap(object):
     '''
     empty_re = re.compile(r'\s+$', re.MULTILINE)
     ind_re = re.compile(r'\s+', re.MULTILINE)
-    tail_re = re.compile(r'\w[-/([{&^]$')
+    tail_re = None
     # attribs governed by options:
     width = 0           # default wrap width
     ipar = 0            # wrap width,
@@ -72,6 +72,7 @@ class wrap(object):
             self.quote = mrex('([%s] ?)+' % self.quote)
         if self.hyph:
             self.hyph = re.compile(r'\b[-/]+\b')
+            self.tail_re = re.compile(r'\w[-/([{&^]$')
         if self._outfunc:
             self._outfunc = self.streamout
         else:
