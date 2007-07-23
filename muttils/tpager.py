@@ -4,7 +4,7 @@ import iterm, util
 import os, sys
 try:
     # termios only available for unix
-    import termios, fcntl, struct
+    import termios, array, fcntl
 except ImportError:
     pass
 
@@ -56,14 +56,15 @@ class tpager(object):
 
         self.rows = _gettyenv('LINES')
         self.cols = _gettyenv('COLUMNS')
+        rows = cols = 0
         notty = False # assume connection to terminal
-        buf = 'abcd'  # string length 4
         for dev in (sys.stdout, sys.stdin):
             try:
                 fd = dev.fileno()
                 istty =  os.isatty(fd)
-                if _missing() and istty and buf == 'abcd':
-                    buf = fcntl.ioctl(fd, termios.TIOCGWINSZ, buf)
+                if _missing() and istty:
+                    arrini = fcntl.ioctl(fd, termios.TIOCGWINSZ, '\0' * 8)
+                    rows, cols = array.array('h', arrini)[:2]
                 elif not istty:
                     notty = True
             except ValueError:
@@ -71,15 +72,14 @@ class tpager(object):
                 notty = True
             except NameError:
                 pass
-        if _missing() and buf != 'abcd':
-            # 'hh': 2 signed short
-            rows, cols = struct.unpack('hh', buf)
+        if _missing():
             # still prefer env
             self.rows = self.rows or rows
             self.cols = self.cols or cols
-        if _missing():
-            raise util.DeadMan('could not obtain terminal size\n'
-                               'try setting $LINES and $COLUMNS environment')
+            if _missing():
+                msg = ('could not obtain terminal size\n'
+                       'try setting $LINES and $COLUMNS environment')
+                raise util.DeadMan(msg)
         # rows: retain 1 line for header + 1 for menu
         # cols need 1 extra when lines are broken
         self.rows -= 1
