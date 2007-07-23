@@ -4,7 +4,7 @@ import iterm, util
 import os, sys
 try:
     # termios only available for unix
-    import termios, array, fcntl
+    import termios, array, fcntl, signal
 except ImportError:
     pass
 
@@ -18,6 +18,8 @@ class tpager(object):
     Customizes interactive choice to current terminal.
     '''
     pages =  {}         # dictionary of pages
+    resize = False      # do we resize?
+    fd = None
     rows = 0            # terminal $LINES
     cols = 0            # terminal $COLUMNS
     itemsdict = {}      # dictionary of items to choose
@@ -41,6 +43,14 @@ class tpager(object):
         self.qfunc = qfunc       # name of exit function
         self.crit = crit         # name of criterion for customizing
 
+    def resizehandler(self, signalnum, frame):
+        arrini = fcntl.ioctl(self.fd, termios.TIOCGWINSZ, '\0' * 8)
+        self.rows, self.cols = array.array('h', arrini)[:2]
+        # rows: retain 1 line for header + 1 for menu
+        # cols need 1 extra when lines are broken
+        self.rows -= 1
+        self.cols += 1
+
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''
         def _gettyenv(v):
@@ -51,39 +61,26 @@ class tpager(object):
                     return 0
             return 0
 
-        def _missing():
-            return (not self.rows or not self.cols)
-
-        self.rows = _gettyenv('LINES')
-        self.cols = _gettyenv('COLUMNS')
-        rows = cols = 0
         notty = False # assume connection to terminal
         for dev in (sys.stdout, sys.stdin):
             try:
                 fd = dev.fileno()
                 istty =  os.isatty(fd)
-                if _missing() and istty:
-                    arrini = fcntl.ioctl(fd, termios.TIOCGWINSZ, '\0' * 8)
-                    rows, cols = array.array('h', arrini)[:2]
-                elif not istty:
+                if not istty:
                     notty = True
+                elif not self.resize:
+                    self.fd = fd
+                    self.resizehandler(None, None)
+                    signal.signal(signal.SIGWINCH, self.resizehandler)
+                    self.resize = True
             except ValueError:
                 # I/O operation on closed file
                 notty = True
             except NameError:
                 pass
-        if _missing():
-            # still prefer env
-            self.rows = self.rows or rows
-            self.cols = self.cols or cols
-            if _missing():
-                msg = ('could not obtain terminal size\n'
-                       'try setting $LINES and $COLUMNS environment')
-                raise util.DeadMan(msg)
-        # rows: retain 1 line for header + 1 for menu
-        # cols need 1 extra when lines are broken
-        self.rows -= 1
-        self.cols += 1
+        if not self.resize:
+            self.rows = (_gettyenv('LINES') or 24) - 1
+            self.cols = (_gettyenv('COLUMNS') or 80) + 1
         return notty
 
     def addpage(self, buff, lines, pn):
@@ -224,4 +221,6 @@ class tpager(object):
             retval, self.items = '', None
         if notty:
             it.reinit()
+        if self.resize:
+            signal.signal(signal.SIGWINCH, signal.SIG_DFL)
         return retval
