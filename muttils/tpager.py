@@ -72,19 +72,19 @@ class tpager(object):
             except ValueError:
                 # I/O operation on closed file
                 notty = True
+        if self.fd is not None:
+            try:
+                if not notty:
+                    self.resizehandler(None, None)
+                    signal.signal(signal.SIGWINCH, self.resizehandler)
+                else:
+                    self.ttysize()
+                    if notty:
+                        self.fd = None
             except NameError:
-                pass
-        try:
-            if self.fd and not notty:
-                self.resizehandler(None, None)
-                signal.signal(signal.SIGWINCH, self.resizehandler)
-            else:
-                self.ttysize()
-        except NameError:
-            self.rows = (_gettyenv('LINES') or 24) - 1
-            self.cols = (_gettyenv('COLUMNS') or 80) + 1
-        if notty:
-            self.fd = None
+                self.fd = None
+        self.rows = self.rows or (_gettyenv('LINES') or 24) - 1
+        self.cols = self.cols or (_gettyenv('COLUMNS') or 80) + 1
         return notty
 
     def formatitems(self):
@@ -221,6 +221,6 @@ class tpager(object):
             retval, self.items = '', None
         if notty:
             it.reinit()
-        if self.fd:
+        if self.fd is not None:
             signal.signal(signal.SIGWINCH, signal.SIG_DFL)
         return retval
