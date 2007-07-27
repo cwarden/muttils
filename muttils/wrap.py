@@ -218,16 +218,16 @@ class wrap(object):
         for i in self.defwidth, self.tabwidth:
             if not isinstance(i, int):
                 raise util.DeadMan('integer expected, got "%s"' % i)
-        if isinstance(self.input, list): # list of files
+        try:
+            if self.input is None:
+                lit = sys.stdin
+            else:
+                lit = iter(self.input.splitlines(True))
+            self.literator(lit)
+        except AttributeError: # list of files
             for f in self.input:
                 lit = open(f)
                 try:
                     self.literator(lit)
                 finally:
                     lit.close()
-        else:
-            if self.input is None:
-                lit = sys.stdin
-            else:
-                lit = iter(self.input.splitlines(True))
-            self.literator(lit)
