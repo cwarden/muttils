@@ -54,7 +54,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
     def urlgo(self, mail=False):
         url, cs, conn, cwd = self.items[0], [], True, None
         if mail:
-            cs = [self.ui.configitem('messages', 'mailer')]
+            cs = [self.ui.configitem('messages', 'mailer', default='mutt')]
             conn = False
         elif self.ui.getdir:
             self.ui.getdir = savedir(self.ui.getdir)
@@ -65,7 +65,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
                 self.ui.ftpdir = savedir(self.ui.ftpdir)
                 cwd = os.getcwdu()
                 os.chdir(self.ui.ftpdir)
-            cs = [self.ui.configitem('net', 'ftpclient')]
+            cs = [self.ui.configitem('net', 'ftpclient', default='ftp')]
             # for ftp programs that have more of a browser interface
             # we assume a file if url has a file extension
             assumefile = os.path.splitext(url)[1]

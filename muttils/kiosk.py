@@ -64,7 +64,8 @@ class kiosk(html2text.html2text):
             # split colon-separated list from cmdline
             mhiers = mhiers.split(':')
         else:
-            mhiers = self.ui.configlist('messages', 'maildirs') or getmhier()
+            mhiers = self.ui.configlist('messages', 'maildirs',
+                                        default=getmhier())
         # create set of unique elements
         mhiers = set([util.absolutepath(e) for e in mhiers])
         mhiers = list(mhiers)
@@ -303,7 +304,7 @@ class kiosk(html2text.html2text):
                 g.flatten(msg, unixfrom=True)
         finally:
             fp.close()
-        mailer = self.ui.configitem('messages', 'mailer')
+        mailer = self.ui.configitem('messages', 'mailer', default='mutt')
         cs = [mailer]
         if mailer[:4] == 'mutt':
             if len(self.msgs) == 1 and self.muttone:

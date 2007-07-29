@@ -280,8 +280,10 @@ class urlregex(object):
         if self.ui.proto != 'mid':
             wipe_re = re.compile(_wipepat(), re.IGNORECASE|re.VERBOSE)
             text = wipe_re.sub('', text)
-            cpan = self.ui.configitem('net', 'cpan')
-            ctan = self.ui.configitem('net', 'ctan')
+            cpan = self.ui.configitem('net', 'cpan',
+                                      default='ftp://ftp.cpan.org/pub/CPAN')
+            ctan = self.ui.configitem('net', 'ctan',
+                                      default='ftp://ftp.ctan.org/tex-archive')
             rawcan = r'C%sAN:\s*/?([a-zA-Z]+?)'
             for can in [(cpan, 'P'), (ctan, 'T')]:
                 if can[0]:

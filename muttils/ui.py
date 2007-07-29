@@ -28,48 +28,36 @@ class ui(object):
                  '/usr/local/etc/muttilsrc',
                  os.path.expanduser('~/.muttilsrc'),]
 
-    defconfig = {'messages': [('mailer', 'mutt'),
-                              ('maildirs', None),
-                              ('signature', ''),
-                              ('sigdir', ''),
-                              ('sigtail', ''),],
-                 'net': [('connect', False),
-                         ('homepage', ''),
-                         ('ftpclient', 'ftp'),
-                         ('cpan', 'ftp://ftp.cpan.org/pub/CPAN'),
-                         ('ctan', 'ftp://ftp.ctan.org/tex-archive'),],}
-
     def __init__(self, rcpath=None):
         self.rcpath = rcpath or self.defrcpath
-        self.config = ConfigParser.SafeConfigParser(self.defconfig)
+        self.config = ConfigParser.SafeConfigParser()
 
     def updateconfig(self):
         if self.updated:
             return
-        defaults = self.config.defaults()
-        sections = defaults.keys()
         try:
             self.config.read(self.rcpath)
         except ConfigParser.ParsingError, inst:
             raise util.DeadMan(inst)
-        for section in sections:
-            if not self.config.has_section(section):
-                self.config.add_section(section)
-            for name, value in defaults[section]:
-                if not self.config.has_option(section, name):
-                    self.config.set(section, name, value)
         self.updated = True
 
-    def configitem(self, section, name):
+    def configitem(self, section, name, default=None):
         '''Returns value of name of section of config.'''
-        return self.config.get(section, name)
+        if self.config.has_option(section, name):
+            return self.config.get(section, name)
+        return default
 
-    def configbool(self, section, name):
-        return self.config.getboolean(section, name)
+    def configbool(self, section, name, default=False):
+        '''Returns boolean value of name of section of config.'''
+        if self.config.has_option(section, name):
+            return self.config.getboolean(section, name)
+        return default
 
-    def configlist(self, section, name):
+    def configlist(self, section, name, default=None):
         '''Returns value of name of section of config as list.'''
         cfg = self.configitem(section, name)
+        if cfg is None:
+            return default or []
         if isinstance(cfg, basestring):
             return cfg.replace(',', ' ').split()
         return cfg
@@ -82,7 +70,7 @@ class ui(object):
         And, finally, update ui's attributes with current options.'''
         webschemes = ('web', 'http', 'ftp')
         messageopts = ('midrelax', 'news', 'local', 'browse',
-                        'kiosk', 'mhiers', 'specdirs', 'mask')
+                       'kiosk', 'mhiers', 'specdirs', 'mask')
         if (options.has_key('getdir') and options['getdir']
                 and options['proto'] not in webschemes):
             options['proto'] = 'web'
