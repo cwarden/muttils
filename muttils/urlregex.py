@@ -255,9 +255,7 @@ class urlregex(object):
                                      re.IGNORECASE|re.VERBOSE)
 
     def findurls(self, text):
-        '''Conducts a search for urls in text.
-        Data is supposed to be text but tested whether
-        it's a message/Mailbox (then passed to urlparser).'''
+        '''Conducts a search for urls in text.'''
         def _wipepat():
             headers = ('received', 'references', 'message-id', 'in-reply-to',
                        'delivered-to', 'list-id', 'path', 'return-path',
