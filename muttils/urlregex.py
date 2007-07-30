@@ -265,7 +265,7 @@ class urlregex(object):
                        'x-abuse-info', 'x-trace', 'x-mime-autoconverted')
             headers = r'(%s)' % '|'.join(headers)
             header = r'''
-                (\n|^)          # newline or very start
+                ^               # start of line
                 %s:             # header followed by colon &
                 .+              # greedy anything (but newline)
                 (               # 0 or more group
@@ -278,7 +278,8 @@ class urlregex(object):
 
         self.urlobject() # compile url_re
         if self.ui.proto != 'mid':
-            wipe_re = re.compile(_wipepat(), re.IGNORECASE|re.VERBOSE)
+            wipe_re = re.compile(_wipepat(),
+                                 re.IGNORECASE|re.MULTILINE|re.VERBOSE)
             text = wipe_re.sub('', text)
             cpan = self.ui.configitem('net', 'cpan',
                                       default='ftp://ftp.cpan.org/pub/CPAN')
