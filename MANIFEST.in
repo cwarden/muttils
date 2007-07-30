@@ -2,5 +2,5 @@
 
 exclude muttils/__version__.py
 
-include COPYING
+include COPYING MANIFEST.in
 include doc/example-mail.vim doc/example-muttilsrc doc/example-muttrc
