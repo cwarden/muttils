@@ -198,22 +198,8 @@ class urlregex(object):
         return (r'(%s|%s|%s|%s|%s)'
                 % (_mailpat(), spurl, any_spurl, url, any_url))
 
-    def unideluxe(self):
-        '''remove duplicates deluxe:
-        of http://www.blacktrash.org, www.blacktrash.org
-        keep only the first, declared version.'''
-        proto_re = re.compile(r'^((https?|s?ftp|gopher)://|mailto:)',
-                              re.IGNORECASE)
-        truncs = [proto_re.sub('', u, 1) for u in self.items]
-        deluxurls = []
-        for i in xrange(len(self.items)):
-            url = self.items[i]
-            trunc = truncs[i]
-            if truncs.count(trunc) == 1 or len(url) > len(trunc):
-                deluxurls.append(url)
-        self.items = deluxurls
-
     def urlfilter(self):
+        '''Filters out urls not in given scheme and duplicates.'''
         def _webcheck(url):
             return not _get_mailre().match(url)
 
@@ -223,8 +209,17 @@ class urlregex(object):
                           if filterdict[self.ui.proto](i)]
         if self.uniq:
             self.items = list(set(self.items))
-            if self.ui.proto != 'mid' and not self.ui.decl:
-                self.unideluxe()
+            if self.ui.proto != 'mid':
+                proto_re = re.compile(r'^((https?|s?ftp|gopher)://|mailto:)',
+                                      re.IGNORECASE)
+                truncs = [proto_re.sub('', u, 1) for u in self.items]
+                uniqurls = []
+                for i in xrange(len(self.items)):
+                    url = self.items[i]
+                    trunc = truncs[i]
+                    if truncs.count(trunc) == 1 or len(url) > len(trunc):
+                        uniqurls.append(url)
+                self.items = uniqurls
 
     def urlobject(self, search=True):
         '''Creates customized regex objects of url.'''
