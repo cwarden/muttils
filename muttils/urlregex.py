@@ -120,25 +120,25 @@ class urlregex(object):
         self.ui = ui             # proto, decl
         self.uniq = uniq         # list only unique urls
 
-    def setprotocol(self):
-        mailto = 'mailto:\s?' # needed for proto=='all'
-        http = r'(https?://|www\.)'
-        ftp = r'(s?ftp://|ftp\.)'
-        gopher = r'gopher(://|\.)'
-        # finger, telnet, whois, wais?
-        if self.ui.proto in ('all', 'web'):
-            protocols = [http, ftp, gopher]
-            if self.ui.proto == 'all':
-                protocols.append(mailto)
-            return r'(%s)' % '|'.join(protocols)
-        self.ui.decl = True
-        protocol = eval(self.ui.proto)
-        return r'(url:\s?)?%s' % protocol
-
     def getraw(self, search):
         '''Returns raw patterns according to protocol.'''
 
-        def weburlpats(search, proto=''):
+        def _setprotocol():
+            mailto = 'mailto:\s?' # needed for proto=='all'
+            http = r'(https?://|www\.)'
+            ftp = r'(s?ftp://|ftp\.)'
+            gopher = r'gopher(://|\.)'
+            # finger, telnet, whois, wais?
+            if self.ui.proto in ('all', 'web'):
+                protocols = [http, ftp, gopher]
+                if self.ui.proto == 'all':
+                    protocols.append(mailto)
+                return r'(%s)' % '|'.join(protocols)
+            self.ui.decl = True
+            protocol = eval(self.ui.proto)
+            return r'(url:\s?)?%s' % protocol
+
+        def _weburlpats(search, proto=''):
             '''Creates 2 url patterns. The first according to protocol,
             The second may contain spaces but is enclosed in '<>'.
             If no protocol is given the pattern matches only
@@ -192,10 +192,10 @@ class urlregex(object):
                 ''' % vars()
             return dom, spdom
 
-        url, spurl = weburlpats(search, proto=self.setprotocol())
+        url, spurl = _weburlpats(search, proto=_setprotocol())
         if self.ui.decl:
             return r'(%s|%s)' % (spurl, url)
-        any_url, any_spurl = weburlpats(search)
+        any_url, any_spurl = _weburlpats(search)
         return (r'(%s|%s|%s|%s|%s)'
                 % (_mailpat(), spurl, any_spurl, url, any_url))
 
