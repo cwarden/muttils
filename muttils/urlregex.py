@@ -112,8 +112,7 @@ class urlregex(object):
     Detects also www-urls that don't start with a protocol and
     urls spanning more than 1 line if they are enclosed in '<>'.
     '''
-    url_re = None       # that's what it's all about
-    kill_re = None      # customized pattern to find non url chars
+    url_re = None
     items = []
 
     def __init__(self, ui, uniq=True):
@@ -229,6 +228,7 @@ class urlregex(object):
 
     def urlobject(self, search=True):
         '''Creates customized regex objects of url.'''
+        kill_re = None
         if self.ui.proto not in valid_protos:
             raise util.DeadMan(self.ui.proto,
                                ': invalid protocol parameter, use one of:\n',
@@ -239,14 +239,15 @@ class urlregex(object):
             self.url_re = re.compile(self.getraw(search),
                                      re.IGNORECASE|re.VERBOSE)
             if search:
-                self.kill_re = re.compile(r'^url:\s?|\s+', re.IGNORECASE)
+                kill_re = re.compile(r'^url:\s?|\s+', re.IGNORECASE)
         elif self.ui.decl:
             self.url_re = re.compile(_declmidpat(), re.IGNORECASE|re.VERBOSE)
             if search:
-                self.kill_re = re.compile(_nntppat(), re.IGNORECASE|re.VERBOSE)
+                kill_re = re.compile(_nntppat(), re.IGNORECASE|re.VERBOSE)
         else:
             self.url_re = re.compile(r'(\b%s\b)' % _midpat(),
                                      re.IGNORECASE|re.VERBOSE)
+        return kill_re
 
     def findurls(self, text):
         '''Conducts a search for urls in text.'''
@@ -268,7 +269,7 @@ class urlregex(object):
                 ''' % headers
             return r'%s|%s' % (header, _declmidpat())
 
-        self.urlobject() # compile url_re
+        kill_re = self.urlobject() # compile url_re
         if self.ui.proto != 'mid':
             wipe_re = re.compile(_wipepat(),
                                  re.IGNORECASE|re.MULTILINE|re.VERBOSE)
@@ -283,8 +284,8 @@ class urlregex(object):
                     cansub = r'%s/\1' % can[0].rstrip('/')
                     text = re.sub(rawcan % can[1], cansub, text)
         urls = [u[0] for u in self.url_re.findall(text)]
-        if self.kill_re:
-            urls = [self.kill_re.sub('', u) for u in urls]
+        if kill_re:
+            urls = [kill_re.sub('', u) for u in urls]
         self.items += urls
         self.urlfilter()
         self.items.sort()
