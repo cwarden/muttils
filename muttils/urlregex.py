@@ -115,7 +115,6 @@ class urlregex(object):
     url_re = None       # that's what it's all about
     kill_re = None      # customized pattern to find non url chars
     protocol = ''       # pragmatic proto (may include www., ftp., gopher.)
-    proto_re = None
     items = []
 
     def __init__(self, ui, uniq=True):
@@ -207,7 +206,9 @@ class urlregex(object):
         '''remove duplicates deluxe:
         of http://www.blacktrash.org, www.blacktrash.org
         keep only the first, declared version.'''
-        truncs = [self.proto_re.sub('', u) for u in self.items]
+        proto_re = re.compile(r'^((https?|s?ftp|gopher)://|mailto:)',
+                              re.IGNORECASE)
+        truncs = [proto_re.sub('', u, 1) for u in self.items]
         deluxurls = []
         for i in xrange(len(self.items)):
             url = self.items[i]
@@ -237,15 +238,11 @@ class urlregex(object):
                                ', '.join(valid_protos))
         if self.ui.proto == 'mailto':# be pragmatic and list not only declared
             self.url_re = _get_mailre()
-            self.proto_re = re.compile(r'^mailto:')
         elif self.ui.proto != 'mid':
             self.url_re = re.compile(self.getraw(search),
                                      re.IGNORECASE|re.VERBOSE)
             if search:
                 self.kill_re = re.compile(r'^url:\s?|\s+', re.IGNORECASE)
-                if not self.ui.decl:
-                    self.proto_re = re.compile(r'^%s' % self.protocol,
-                                               re.IGNORECASE)
         elif self.ui.decl:
             self.url_re = re.compile(_declmidpat(), re.IGNORECASE|re.VERBOSE)
             if search:
