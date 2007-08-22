@@ -114,7 +114,6 @@ class urlregex(object):
     '''
     url_re = None       # that's what it's all about
     kill_re = None      # customized pattern to find non url chars
-    protocol = ''       # pragmatic proto (may include www., ftp., gopher.)
     items = []
 
     def __init__(self, ui, uniq=True):
@@ -131,11 +130,10 @@ class urlregex(object):
             protocols = [http, ftp, gopher]
             if self.ui.proto == 'all':
                 protocols.append(mailto)
-            protocol = r'(%s)' % '|'.join(protocols)
-        else:
-            self.ui.decl = True
-            protocol = eval(self.ui.proto)
-        self.protocol = r'(url:\s?)?%s' % protocol
+            return r'(%s)' % '|'.join(protocols)
+        self.ui.decl = True
+        protocol = eval(self.ui.proto)
+        return r'(url:\s?)?%s' % protocol
 
     def getraw(self, search):
         '''Returns raw patterns according to protocol.'''
@@ -194,8 +192,7 @@ class urlregex(object):
                 ''' % vars()
             return dom, spdom
 
-        self.setprotocol()
-        url, spurl = weburlpats(search, proto=self.protocol)
+        url, spurl = weburlpats(search, proto=self.setprotocol())
         if self.ui.decl:
             return r'(%s|%s)' % (spurl, url)
         any_url, any_spurl = weburlpats(search)
