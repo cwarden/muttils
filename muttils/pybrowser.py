@@ -1,7 +1,7 @@
 # $Id$
 
 import conny, ui, urlregex, util
-import os, re, socket, webbrowser
+import os, webbrowser
 
 class browser(object):
     '''
@@ -28,34 +28,6 @@ class browser(object):
         self.ui.proto = 'web'
         self.weburl_re = weburlregex() # check remote url protocol scheme
 
-    def get_localre(self):
-        '''Compiles local_re on demand and returns it.'''
-        def getlocals():
-            l = socket.gethostbyaddr(socket.gethostname())
-            localaddresses = ['127.0.0.1']
-            for i in l:
-                if isinstance(i, str):
-                    i = [i]
-                localaddresses += i
-            return localaddresses
-
-        if not self.local_re:
-            self.local_re = re.compile('http://(%s)'
-                    % '|'.join(re.escape(a) for a in getlocals()),
-                    re.IGNORECASE)
-        return self.local_re
-
-    def mkfileurl(self, url):
-        '''Compiles file_re on demand and returns it.'''
-        if not self.file_re:
-            self.file_re = re.compile(r'file:/+', re.IGNORECASE)
-        # strip url to pure pathname
-        url = self.file_re.sub('/', url, 1)
-        url = util.absolutepath(url)
-        if not os.path.exists(url):
-            raise util.DeadMan('%s: file not found' % url)
-        return 'file://%s' % url
-
     def urlcomplete(self, url):
         '''Adapts possibly short url to pass as browser argument.'''
         if self.weburl_re.match(url):
@@ -66,8 +38,18 @@ class browser(object):
                 # use gateway when browser is not gopher capable
                 url = url.replace('gopher://',
                         'http://gopher.floodgap.com/gopher/gw?')
-        elif not self.get_localre().match(url):
-            url = self.mkfileurl(url)
+        else: # local
+            if url.startswith('file:'):
+                # drop scheme in favour of local path
+                url = url[5:]
+                if url.startswith('//'):
+                    url = url[2:]
+                    if not url.startswith('/'):
+                        # remove local hostname
+                        url = '/' + url.split('/', 1)[1]
+            url = util.absolutepath(url)
+            if not os.path.exists(url):
+                raise util.DeadMan('%s: not found' % url)
         return url
 
     def urlvisit(self):
