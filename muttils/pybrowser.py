@@ -47,9 +47,10 @@ class browser(object):
                     if not url.startswith('/'):
                         # remove local hostname
                         url = '/' + url.split('/', 1)[1]
-            url = util.absolutepath(url)
-            if not os.path.exists(url):
-                raise util.DeadMan('%s: not found' % url)
+            if not url.startswith('http://'):
+                url = util.absolutepath(url)
+                if not os.path.exists(url):
+                    raise util.DeadMan('%s: not found' % url)
         return url
 
     def urlvisit(self):
