@@ -31,8 +31,7 @@ class urlbatcher(urlcollector.urlcollector):
             conny.goonline(self.ui)
             util.systemcall(['wget', '-P', self.ui.getdir] + self.items)
         else:
-            b = pybrowser.browser(parentui=self.ui,
-                                  items=self.items, app=self.ui.app)
+            b = pybrowser.browser(parentui=self.ui, items=self.items)
             b.urlvisit()
                     
     def urlsearch(self):

@@ -17,7 +17,7 @@ class browser(object):
         self.ui.updateconfig()
         self.items = items             # urls
         if app:
-            self.ui.app = app          # browser app
+            self.ui.app = app          # browser app from command-line
 
         def weburlregex():
             '''Returns regex matching web url.'''
