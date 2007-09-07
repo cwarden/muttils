@@ -37,7 +37,7 @@ class browser(object):
             if url.startswith('gopher://') and self.ui.app not in gophers:
                 # use gateway when browser is not gopher capable
                 url = url.replace('gopher://',
-                        'http://gopher.floodgap.com/gopher/gw?')
+                                  'http://gopher.floodgap.com/gopher/gw?')
         else: # local
             if url.startswith('file:'):
                 # drop scheme in favour of local path
