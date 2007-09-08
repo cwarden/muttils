@@ -8,8 +8,6 @@ class browser(object):
     Visits items with default or given browser.
     '''
     conn = False              # try to connect to net
-    local_re = None           # check local protocol scheme
-    file_re = None            # strip file url
     weburl_re = None          # url protocol scheme regex
 
     def __init__(self, parentui=None, items=None, app=''):
@@ -19,16 +17,16 @@ class browser(object):
         if app:
             self.ui.app = app          # browser app from command-line
 
-        def weburlregex():
+        def _weburlregex():
             '''Returns regex matching web url.'''
+            self.ui.proto = 'web'
             u = urlregex.urlregex(self.ui, uniq=False)
             u.urlobject(search=False)
             return u.url_re
 
-        self.ui.proto = 'web'
-        self.weburl_re = weburlregex() # check remote url protocol scheme
+        self.weburl_re = _weburlregex() # check remote url protocol scheme
 
-    def urlcomplete(self, url):
+    def fixurl(self, url):
         '''Adapts possibly short url to pass as browser argument.'''
         if self.weburl_re.match(url):
             self.conn = True
@@ -41,11 +39,12 @@ class browser(object):
         else: # local
             if url.startswith('file:'):
                 # drop scheme in favour of local path
+                # as some browser don't handle file scheme gracefully
                 url = url[5:]
                 if url.startswith('//'):
                     url = url[2:]
                     if not url.startswith('/'):
-                        # remove local hostname
+                        # drop host part (validity of path checked below)
                         url = '/' + url.split('/', 1)[1]
             if not url.startswith('http://'):
                 url = util.absolutepath(url)
@@ -58,7 +57,7 @@ class browser(object):
         textbrowsers = ('w3m', 'lynx', 'links', 'elinks')
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
-        self.items = [self.urlcomplete(url) for url in self.items]
+        self.items = [self.fixurl(url) for url in self.items]
         if self.conn:
             conny.goonline(self.ui)
         app = os.path.basename(self.ui.app)
