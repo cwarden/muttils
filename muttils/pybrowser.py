@@ -10,7 +10,7 @@ class browser(object):
     conn = False              # try to connect to net
     weburl_re = None          # url protocol scheme regex
 
-    def __init__(self, parentui=None, items=None, app=''):
+    def __init__(self, parentui=None, items=None, app='', evalurl=False):
         self.ui = parentui or ui.ui()
         self.ui.updateconfig()
         self.items = items             # urls
@@ -24,11 +24,12 @@ class browser(object):
             u.urlobject(search=False)
             return u.url_re
 
-        self.weburl_re = _weburlregex() # check remote url protocol scheme
+        if evalurl: # check remote url protocol scheme
+            self.weburl_re = _weburlregex()
 
     def fixurl(self, url):
         '''Adapts possibly short url to pass as browser argument.'''
-        if self.weburl_re.match(url):
+        if not self.weburl_re or self.weburl_re.match(url):
             self.conn = True
             url = urlregex.webschemecomplete(url)
             gophers = ('lynx', 'firefox')

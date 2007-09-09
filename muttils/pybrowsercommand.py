@@ -26,7 +26,7 @@ def run():
     options, args = parser.parse_args()
     
     try:
-        b = pybrowser.browser(items=args, app=options.app)
+        b = pybrowser.browser(items=args, app=options.app, evalurl=True)
         parser.destroy()
         b.urlvisit()
     except util.DeadMan, inst:
