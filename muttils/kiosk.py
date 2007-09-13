@@ -23,7 +23,7 @@ class kiosk(html2text.html2text):
     def kiosktest(self):
         '''Provides the path to an mbox file to store retrieved messages.'''
         if not self.ui.kiosk:
-            self.ui.kiosk = tempfile.mkstemp('.kiosk')[1]
+            self.ui.kiosk = tempfile.mkstemp('', 'kiosk.')[1]
             return
         self.ui.kiosk = util.absolutepath(self.ui.kiosk)
         if (not os.path.exists(self.ui.kiosk)
