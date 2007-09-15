@@ -32,7 +32,7 @@ mailer = mutt
 # defaults to false
 #connect = true
 
-# homepage: fallback url if pybrowser is launche w/o arguments
+# homepage: fallback url if pybrowser is launched w/o arguments
 # default: empty
 ## homepage = http://localhost
 
