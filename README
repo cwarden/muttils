@@ -22,6 +22,9 @@ Can be used as general browser call; kind of browser,
 platform preference, x11-browser, text browser, may be
 chosen via option.
 
+viewhtmlmsg:
+Display html message in browser.
+
 Installation:
 -------------
 # systemwide
