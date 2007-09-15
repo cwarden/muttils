@@ -20,4 +20,5 @@ setup(name='muttils',
       author_email='blacktrash@gmx.net',
       url='http://www.blacktrash.org/hg/muttils/',
       packages=['muttils'],
-      scripts=['sigpager', 'urlbatcher', 'urlpager', 'pybrowser', 'wrap'])
+      scripts=['sigpager', 'urlbatcher', 'urlpager',
+               'pybrowser', 'wrap', 'viewhtmlmsg'])

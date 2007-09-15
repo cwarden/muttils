@@ -1,0 +1,37 @@
+# $Id$
+
+'''Displays html message read from stdin.
+
+$BROWSER environment may be overridden with option "-b".
+'''
+
+import viewhtmlmsg
+import util
+import version
+import optparse
+import sys
+
+proginfo = 'Viewhtmlmsg - view html message in browser'
+
+def run():
+    '''Runs the viewhtmlmsg script.'''
+    parser = optparse.OptionParser(usage='%prog [options]',
+                                   description=__doc__,
+                                   version=version.version_(proginfo))
+    parser.set_defaults(safe=False, keep=None, app='')
+    parser.add_option('-s', '--safe', action='store_true',
+                      help='view html w/o loading remote files')
+    parser.add_option('-k', '--keep', type='int',
+                      help='remove temporary files after KEEP seconds '
+                           '(0 for keeping files)')
+    parser.add_option('-b', '--browser', dest='app',
+                      help='prefer browser APP over $BROWSER environment')
+    
+    options, args = parser.parse_args()
+    v = viewhtmlmsg.viewhtml(inp=args, safe=options.safe,
+                             keep=options.keep, app=options.app)
+    parser.destroy()
+    try:
+        v.view()
+    except (util.DeadMan, IOError, KeyboardInterrupt), inst:
+        sys.exit(inst)
