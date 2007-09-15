@@ -45,4 +45,17 @@ macro pager ,r "\
 <enter-command> set display_filter=''<enter>\
 " "Wrap65 respecting line breaks"
 
+# call viewhtmlmsg from macro
+macro index,pager <F7> "\
+<enter-command> set my_wait_key=\$wait_key wait_key=no<enter>\
+<pipe-message>viewhtmlmsg<enter>\
+<enter-command> set wait_key=\$my_wait_key &my_wait_key<enter>\
+" "view HTML in browser"
+
+macro index,pager <F8> "\
+<enter-command> set my_wait_key=\$wait_key wait_key=no<enter>\
+<pipe-message>viewhtmlmsg -s<enter>\
+<enter-command> set wait_key=\$my_wait_key &my_wait_key<enter>\
+" "view HTML (safe) in browser"
+
 # EOF vim:ft=muttrc
