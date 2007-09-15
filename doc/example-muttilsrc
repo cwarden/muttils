@@ -44,3 +44,12 @@ mailer = mutt
 
 # ctan: CTAN mirror
 # ctan = ftp://ftp.ctan.org/tex-archive
+
+[html]
+# safe: view html message w/o loading remote files
+# default: false
+## safe = true
+
+# keep: seconds to keep temporary files (browser may take time to launch)
+# default: 3 (0 to not remove files)
+## keep = 7
