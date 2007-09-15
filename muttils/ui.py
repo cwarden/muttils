@@ -62,6 +62,15 @@ class ui(object):
             return cfg.replace(',', ' ').split()
         return cfg
 
+    def configint(self, section, name, default=0):
+        cfg = self.configitem(section, name)
+        if cfg is None:
+            return default
+        try:
+            return int(cfg)
+        except ValueError, inst:
+            raise util.DeadMan(inst)
+
     def resolveopts(self, options):
         '''Adapts option sets.
         Sets protocol to "web", if "getdir" is without corresponding
