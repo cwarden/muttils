@@ -18,9 +18,9 @@ urlbatcher:
 Retrieve urls contained in input.
 
 pybrowser:
-Can be used as general browser call; kind of browser,
-platform preference, x11-browser, text browser, may be
-chosen via option.
+Can be used as general browser call.
+Application to override platform default can be specified via -b
+option.
 
 viewhtmlmsg:
 Display html message in browser.
