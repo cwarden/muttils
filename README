@@ -25,6 +25,10 @@ option.
 viewhtmlmsg:
 Display html message in browser.
 
+wrap:
+Word wrap text input.
+With support for messages (recognition of quote chars etc.).
+
 Installation:
 -------------
 # systemwide
