@@ -43,8 +43,8 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     def mailcondition(self):
         '''Return True if mail client should be called.'''
-        return (self.ui.proto == 'mailto'
-                or self.ui.proto == 'all' and urlregex.mailcheck(self.items[0]))
+        return (self.ui.proto == 'mailto' or
+                self.ui.proto == 'all' and urlregex.mailcheck(self.items[0]))
 
     def msgretrieval(self):
         '''Passes message-id and relevant options to kiosk.'''
