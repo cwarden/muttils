@@ -1,7 +1,11 @@
 # $Id$
 
 import tpager, util, ui
-import os, random, re, readline
+import os, random, re
+try:
+    import readline
+except ImportError:
+    pass
 
 class signature(tpager.tpager):
     '''

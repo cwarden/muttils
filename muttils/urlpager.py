@@ -2,15 +2,19 @@
 
 import urlcollector, urlregex
 import conny, iterm, kiosk, pybrowser, tpager, ui, util
-import os.path, readline
+import os.path
 
-readline_prompt = '''
+try:
+    import readline
+    loaded_readline = True
+    confirm_prompt = '''
 press <UP> or <C-P> to edit %(name)s,
 <C-C> to cancel, <RET> to visit %(name)s:
 %(url)s
 '''
-
-edit_prompt = '''
+except ImportError:
+    loaded_readline = False
+    confirm_prompt = '''
 press <RET> to visit %(name)s, <C-C> to cancel,
 or enter %(name)s manually:
 %(url)s
@@ -33,12 +37,13 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     def urlconfirm(self):
         expando = {'name': self.name, 'url': self.items[0]}
-        if not self.files:
-            url = raw_input(edit_prompt % expando)
-        else:
+        if loaded_readline:
+            readline.clear_history()
             readline.add_history(self.items[0])
-            url = raw_input(readline_prompt % expando)
+        url = raw_input(confirm_prompt % expando)
         if url:
+            if loaded_readline:
+                readline.clear_history()
             self.items = [url]
 
     def mailcondition(self):

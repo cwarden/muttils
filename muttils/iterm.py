@@ -8,26 +8,28 @@ class termplus(object):
     for an interactive terminal device.
     '''
     def __init__(self):
-        self.dev = os.ctermid()
+        cterm = os.ctermid()
+        self.stdin = open(cterm, 'rb')
+        self.stdout = open(cterm, 'wb')
 
-    def write(self, o):
-        f = open(self.dev, 'wb')
+    def write(self, s):
         try:
-            f.write(o)
+            self.stdout.write(s)
         finally:
-            f.close()
-    
+            self.close()
+
     def readline(self, size=-1):
-        s = ''
-        f = open(self.dev, 'rb')
         try:
-            s = f.readline(size)
+            return self.stdin.readline(size)
         finally:
-            f.close()
-        return s
+            self.close()
 
     def flush(self):
-        pass
+        self.stdout.flush()
+
+    def close(self):
+        self.stdin.close()
+        self.stdout.close()
 
 
 class iterm(termplus):
@@ -40,7 +42,7 @@ class iterm(termplus):
 
     def terminit(self):
         self.iostack.append((sys.stdin, sys.stdout))
-        sys.stdin, sys.stdout = self, self
+        sys.stdin, sys.stdout = self.stdin, self.stdout
 
     def reinit(self):
         '''Switches back to previous term.'''
