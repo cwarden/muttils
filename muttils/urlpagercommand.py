@@ -72,6 +72,6 @@ def run():
     try:
         u = urlpager.urlpager(files=args, opts=options.__dict__)
         parser.destroy()
-        u.urlsearch()
+        u.urlselect()
     except (util.DeadMan, IOError, KeyboardInterrupt), inst:
         sys.exit(inst)

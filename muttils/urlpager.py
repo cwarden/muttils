@@ -65,7 +65,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             k = kiosk.kiosk(self.ui, items=self.items)
             k.kioskstore()
 
-    def urlgo(self, mail):
+    def urlretrieval(self, mail):
         url, cs, conn, cwd = self.items[0], [], True, ''
         if mail:
             cs = [self.mailer]
@@ -100,7 +100,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         if cwd:
             os.chdir(cwd)
 
-    def urlsearch(self):
+    def urlselect(self):
         if self.ui.proto == 'mid':
             self.name = 'message-id'
         elif self.ui.proto != 'all':
@@ -124,10 +124,10 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
                 self.msgretrieval()
             elif mail and self.mailer != 'mail':
                 # mail client allows editing of address
-                self.urlgo(mail)
+                self.urlretrieval(mail)
             else:
                 self.urlconfirm()
                 if self.items:
-                    self.urlgo(mail)
+                    self.urlretrieval(mail)
         except KeyboardInterrupt:
             pass
