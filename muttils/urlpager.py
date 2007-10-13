@@ -32,34 +32,43 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         self.ui = parentui or ui.ui()
         self.ui.updateconfig()
         self.ui.resolveopts(opts)
+        self.mailer = self.ui.configitem('messages', 'mailer', default='mutt')
         urlcollector.urlcollector.__init__(self, self.ui, files=files)
         tpager.tpager.__init__(self, self.ui, name='url')
+
+    def raw_input(self, prompt):
+        '''Wraps raw_input in interactive terminal if needed.'''
+        if not self.files:
+            it = iterm.iterm()
+            it.terminit()
+        answer = raw_input(prompt)
+        if not self.files:
+            it.reinit()
+        return answer
 
     def urlconfirm(self):
         expando = {'name': self.name, 'url': self.items[0]}
         if loaded_readline:
             readline.clear_history()
             readline.add_history(self.items[0])
-        url = raw_input(confirm_prompt % expando)
+        url = self.raw_input(confirm_prompt % expando)
         if url:
             if loaded_readline:
                 readline.clear_history()
             self.items = [url]
 
-    def mailcondition(self):
-        '''Return True if mail client should be called.'''
-        return (self.ui.proto == 'mailto' or
-                self.ui.proto == 'all' and urlregex.mailcheck(self.items[0]))
-
     def msgretrieval(self):
         '''Passes message-id and relevant options to kiosk.'''
-        k = kiosk.kiosk(self.ui, items=self.items)
-        k.kioskstore()
+        yorn = self.raw_input('retrieve message-id <%s>? yes [No] '
+                              % self.items[0])
+        if yorn.lower() in ('y', 'yes'):
+            k = kiosk.kiosk(self.ui, items=self.items)
+            k.kioskstore()
 
-    def urlgo(self, mail=False):
-        url, cs, conn, cwd = self.items[0], [], True, None
+    def urlgo(self, mail):
+        url, cs, conn, cwd = self.items[0], [], True, ''
         if mail:
-            cs = [self.ui.configitem('messages', 'mailer', default='mutt')]
+            cs = [self.mailer]
             conn = False
         elif self.ui.getdir:
             self.ui.getdir = savedir(self.ui.getdir)
@@ -91,62 +100,34 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         if cwd:
             os.chdir(cwd)
 
-    def urlsel(self):
-        name = self.name
-        self.name = 'unique %s' % name
-        # as there is no ckey, interact() returns always 0
-        self.interact()
-        if not self.items:
-            return
-        if self.ui.proto == 'mid':
-            self.msgretrieval()
-        elif self.mailcondition():
-            # mail client allows editing of address
-            self.urlgo(mail=True)
-        else:
-            self.name = name
-            try:
-                if not self.files:
-                    it = iterm.iterm()
-                    it.terminit()
-                self.urlconfirm()
-                if not self.files:
-                    it.reinit()
-                self.urlgo()
-            except KeyboardInterrupt:
-                pass
-
-    def midyorn(self):
-        yorn = raw_input('retrieve message-id <%s>? yes [No] ' % self.items[0])
-        if yorn.lower() in ('y', 'yes'):
-            self.msgretrieval()
-        self.items = None
-
     def urlsearch(self):
         if self.ui.proto == 'mid':
             self.name = 'message-id'
         elif self.ui.proto != 'all':
             self.name = '%s %s' % (self.ui.proto, self.name)
         self.urlcollect()
+        if not self.items:
+            self.raw_input('no %ss found [ok] ' % self.name)
+            return
         if len(self.items) > 1:
-            self.urlsel()
-        elif self.items and self.mailcondition():
-            # mail client allows editing of address
-            self.urlgo(mail=True)
-        else:
-            try:
-                if not self.files:
-                    it = iterm.iterm()
-                    it.terminit()
-                if self.items and self.ui.proto != 'mid':
-                    self.urlconfirm()
-                elif self.items: # proto == 'mid'
-                    self.midyorn()
-                else:
-                    raw_input('no %ss found [ok] ' % self.name)
-                if not self.files:
-                    it.reinit()
+            name = self.name
+            self.name = 'unique %s' % name
+            # as there is no ckey, interact() returns always 0
+            self.interact()
+            self.name = name
+        if not self.items:
+            return
+        mail = (self.ui.proto == 'mailto' or
+                self.ui.proto == 'all' and urlregex.mailcheck(self.items[0]))
+        try:
+            if self.ui.proto == 'mid':
+                self.msgretrieval()
+            elif mail and self.mailer != 'mail':
+                # mail client allows editing of address
+                self.urlgo(mail)
+            else:
+                self.urlconfirm()
                 if self.items:
-                    self.urlgo()
-            except KeyboardInterrupt:
-                pass
+                    self.urlgo(mail)
+        except KeyboardInterrupt:
+            pass
