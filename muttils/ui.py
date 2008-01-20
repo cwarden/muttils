@@ -80,8 +80,7 @@ class ui(object):
         webschemes = ('web', 'http', 'ftp')
         messageopts = ('midrelax', 'news', 'local', 'browse',
                        'kiosk', 'mhiers', 'specdirs', 'mask')
-        if (options.has_key('getdir') and options['getdir']
-                and options['proto'] not in webschemes):
+        if options.get('getdir', '') and options['proto'] not in webschemes:
             options['proto'] = 'web'
         if options['proto'] != 'mid':
             for o in messageopts:
