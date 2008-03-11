@@ -6,6 +6,7 @@ syntax: glob
 *.swp
 *.orig
 *.rej
+.DS_Store
 
 muttils/__version__.py*
 
