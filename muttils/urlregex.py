@@ -6,8 +6,8 @@ import re
 valid_protos = ['all', 'web', 'http', 'ftp', 'gopher', 'mailto', 'mid']
 # finger, telnet, whois, wais?
 
-# regexes on demand
-_web_re = _mail_re = _ftp_re = None
+# regexes on demand (web, mail, ftp)
+demand_re = {}
 
 def _hostname(generic=False):
     '''Returns hostname pattern
@@ -74,18 +74,23 @@ def _declmidpat():
 
 def _get_mailre():
     '''Returns email address pattern on demand.'''
-    global _mail_re
-    _mail_re = (_mail_re or
-                re.compile(r'(%s)' % _mailpat(), re.IGNORECASE|re.VERBOSE))
-    return _mail_re
+    try:
+        mailre = demand_re['mail']
+    except KeyError:
+        mailre = demand_re['mail'] = re.compile(r'(%s)' % _mailpat(),
+                                                re.IGNORECASE|re.VERBOSE)
+    return mailre
 
 
 def webschemecomplete(url):
     '''Returns url with protocol scheme prepended if needed.
     Used by pybrowser.'''
-    global _web_re
-    _web_re = _web_re or re.compile(r'(https?|s?ftp|gopher)://', re.IGNORECASE)
-    if _web_re.match(url):
+    try:
+        webre = demand_re['web']
+    except KeyError:
+        webre = demand_re['web'] = re.compile(r'(https?|s?ftp|gopher)://',
+                                              re.IGNORECASE)
+    if webre.match(url):
         return url
     for scheme in ('ftp', 'gopher'):
         if url.startswith('%s.' % scheme):
@@ -95,9 +100,12 @@ def webschemecomplete(url):
 def ftpcheck(url):
     '''Returns True if url is ftp location.
     Used by urlpager.'''
-    global _ftp_re
-    _ftp_re = _ftp_re or re.compile(r'(s?ftp://|ftp\.)', re.IGNORECASE)
-    return _ftp_re.match(url)
+    try:
+        ftpre = demand_re['ftp']
+    except KeyError:
+        ftpre = demand_re['ftp'] = re.compile(r'(s?ftp://|ftp\.)',
+                                              re.IGNORECASE) 
+    return ftpre.match(url)
 
 def mailcheck(url):
     '''Returns True if url is email address.
