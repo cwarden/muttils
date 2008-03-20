@@ -45,6 +45,13 @@ mailer = mutt
 # ctan: CTAN mirror
 # ctan = ftp://ftp.ctan.org/tex-archive
 
+# newsservers
+# default: empty
+# note: muttils use ~/.netrc settings to authenticate to news servers
+#       you do not have to set news.gmane.org as mail2news gateway
+#       is already queried in mail context
+## newsservers = news.cis.dfn.de, news.albasani.net
+
 [html]
 # safe: view html message w/o loading remote files
 # default: false
