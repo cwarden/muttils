@@ -10,7 +10,7 @@ unknown_version = 'unknown'
 
 def version_(proginfo):
     return ('%s (version %s)\n\n'
-            'Copyright (C) 2007 Christian Ebert <blacktrash@gmx.net>\n'
+            'Copyright (C) 2007-2008 Christian Ebert <blacktrash@gmx.net>\n'
             'This is free software. See the source for copying conditions.\n'
             'The Muttils package comes with ABSOLUTELY NO WARRANTY.'
             % (proginfo, getversion()))
