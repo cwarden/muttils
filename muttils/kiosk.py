@@ -5,7 +5,7 @@ import email, email.Generator, email.Parser, email.Errors
 import mailbox, nntplib, os, re, tempfile, time, urllib, urllib2
 
 
-class kiosk(html2text.html2text):
+class kiosk(object):
     '''
     Provides methods to search for and retrieve
     messages via their Message-ID.
@@ -16,7 +16,6 @@ class kiosk(html2text.html2text):
     mdmask = '^(cur|new|tmp)$'
 
     def __init__(self, ui, items=None):
-        html2text.html2text.__init__(self, strict=False)
         self.ui = ui
         self.items = items or []
 
@@ -96,12 +95,12 @@ class kiosk(html2text.html2text):
         b = pybrowser.browser(parentui=self.ui, items=items)
         b.urlvisit()
 
-    def gooretrieve(self, mid, found, opener, header_re, bottom_re):
+    def gooretrieve(self, ht, mid, found, opener, header_re, bottom_re):
         try:
             fp = opener.open(self.makequery(mid))
-            self.htwrite(ht=fp.read(), append=False)
+            ht.htwrite(ht=fp.read(), append=False)
             fp.close()
-            liniter = iter(self.htreadlines(nl=False))
+            liniter = iter(ht.htreadlines(nl=False))
         except urllib2.URLError, inst:
             if hasattr(inst, 'reason'):
                 urlfailmsg = 'reason of url retrieval failure: '
@@ -142,12 +141,13 @@ class kiosk(html2text.html2text):
         header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
         bottom_re = re.compile(rawmsgterminator, re.MULTILINE)
         found = []
-        self.open()
+        ht = html2text.html2text(strict=False)
+        ht.open()
         try:
             for mid in self.items:
-                self.gooretrieve(mid, found, opener, header_re, bottom_re)
+                self.gooretrieve(ht, mid, found, opener, header_re, bottom_re)
         finally:
-            self.close()
+            ht.close()
         self.items = [mid for mid in self.items if mid not in found]
 
     def newssearch(self, sname, netrc=True):
