@@ -113,7 +113,7 @@ class kiosk(object):
             while not header_re.match(line):
                 line = liniter.next()
         except StopIteration:
-            self.ui.warn('%s: not at google\n' % mid)
+            self.ui.warn('%s: not even at google\n' % mid)
             time.sleep(5)
         else:
             lines = [line]
@@ -150,11 +150,13 @@ class kiosk(object):
             ht.close()
         self.items = [mid for mid in self.items if mid not in found]
 
-    def newssearch(self, sname, netrc=True):
+    def newssearch(self, sname):
         '''Retrieves messages from local newsserver.'''
         self.ui.note('searching news server %s\n' % sname)
         try:
-            nserv = nntplib.NNTP(sname, readermode=True, usenetrc=netrc)
+            nserv = nntplib.NNTP(sname, readermode=True, usenetrc=True)
+        except nntplib.NNTPPermanentError:
+            nserv = nntplib.NNTP(sname, readermode=True, usenetrc=False)
         except Exception, (errno, inst):
             self.ui.warn(inst + '\n')
             return
@@ -308,17 +310,26 @@ class kiosk(object):
     def plainkiosk(self):
         self.kiosktest()
         itemscopy = self.items[:]
-        self.newssearch(os.environ.get('NNTPSERVER') or 'localhost', False)
+        # news search is very fast, so always try it first
+        self.newssearch(os.environ.get('NNTPSERVER') or 'localhost')
         if self.items and not self.ui.news:
-            self.getmhiers()
-            if self.ui.mask:
-                self.maskompile()
-            self.mailsearch()
+            if not self.ui.local:
+                # try mail2news gateway
+                self.newssearch('news.gmane.org')
             if self.items:
-                self.ui.note('%s not in specified local mailboxes\n' %
-                             util.plural(len(self.items), 'message'))
+                self.getmhiers()
+                if self.ui.mask:
+                    self.maskompile()
+                self.mailsearch()
+                if self.items:
+                    self.ui.note('%s not in specified local mailboxes\n' %
+                                 util.plural(len(self.items), 'message'))
         if self.items and not self.ui.local:
-            self.gogoogle()
+            conny.goonline(self.ui)
+            for nserv in self.ui.configlist('net', 'newsservers'):
+                self.newssearch(nserv)
+            if self.items:
+                self.gogoogle()
         elif self.items:
             time.sleep(3)
         if self.msgs:
