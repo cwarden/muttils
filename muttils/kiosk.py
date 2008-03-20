@@ -2,7 +2,7 @@
 
 import conny, html2text, pybrowser, util
 import email, email.Generator, email.Parser, email.Errors
-import mailbox, os, re, tempfile, time, urllib, urllib2
+import mailbox, nntplib, os, re, tempfile, time, urllib, urllib2
 
 
 class kiosk(html2text.html2text):
@@ -150,40 +150,28 @@ class kiosk(html2text.html2text):
             self.close()
         self.items = [mid for mid in self.items if mid not in found]
 
-    def leafsearch(self):
-        '''Tries searching a local news spool.
-        Works only with leafnode <= 1.5 at the moment.'''
-        r = None
+    def newssearch(self, sname, netrc=True):
+        '''Retrieves messages from local newsserver.'''
+        self.ui.note('searching news server %s\n' % sname)
         try:
-            r = util.pipeline(['newsq'])
-            # eg.:
-            # 'Contents of queue in directory /var/spool/news/out.going:\n'
-        except OSError:
-            pass
-        if not r:
-            self.ui.warn('no leafnode news spool detected\n')
+            nserv = nntplib.NNTP(sname, readermode=True, usenetrc=netrc)
+        except Exception, (errno, inst):
+            self.ui.warn(inst + '\n')
             return
-        newsout = r.split(':')[0].split()[-1]
-        iddir = os.path.join(os.path.dirname(newsout), 'message.id')
-        anglist = ['<%s>' % i for i in self.items]
-        self.ui.note('Searching local newsserver ...\n')
-        for root, dirs, files in os.walk(iddir):
-            for fn in files:
-                if fn in anglist:
-                    self.ui.note('retrieving Message-ID %s\n' % fn)
-                    try:
-                        f = open(os.path.join(root, fn), 'rb')
-                        try:
-                            msg = email.message_from_file(f)
-                        finally:
-                            f.close()
-                    except email.Errors.MessageParseError, inst:
-                        raise util.DeadMan(inst)
-                    self.msgs.append(msg)
-                    self.items.remove(fn[1:-1])
+        found = []
+        for mid in self.items:
+            try:
+                art = nserv.article('<%s>' % mid)
+                art = '\n'.join(art[-1]) + '\n'
+                self.msgs.append(email.message_from_string(art))
+                found.append(mid)
+            except nntplib.NNTPTemporaryError:
+                pass
+        nserv.quit()
+        self.items = [mid for mid in self.items if mid not in found]
         if self.items:
-            self.ui.note('%s not on local server\n'
-                    % util.plural(len(self.items), 'message'))
+            self.ui.note('%s not on server %s\n' %
+                         (util.plural(len(self.items), 'message'), sname))
 
     def boxparser(self, path, maildir=False, isspool=False):
         def msgfactory(fp):
@@ -320,7 +308,7 @@ class kiosk(html2text.html2text):
     def plainkiosk(self):
         self.kiosktest()
         itemscopy = self.items[:]
-        self.leafsearch()
+        self.newssearch(os.environ.get('NNTPSERVER') or 'localhost', False)
         if self.items and not self.ui.news:
             self.getmhiers()
             if self.ui.mask:
