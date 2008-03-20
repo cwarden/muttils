@@ -26,8 +26,8 @@ class kiosk(html2text.html2text):
             self.ui.kiosk = tempfile.mkstemp('', 'kiosk.')[1]
             return
         self.ui.kiosk = util.absolutepath(self.ui.kiosk)
-        if (not os.path.exists(self.ui.kiosk)
-                or not os.path.getsize(self.ui.kiosk)):
+        if (not os.path.exists(self.ui.kiosk) or
+            not os.path.getsize(self.ui.kiosk)):
             # non existant or empty is fine
             return
         if not os.path.isfile(self.ui.kiosk):
@@ -181,8 +181,8 @@ class kiosk(html2text.html2text):
             except email.Errors.HeaderParseError:
                 return ''
 
-        if (not isspool and path == self.mspool
-                or self.ui.mask and self.ui.mask.search(path) is not None):
+        if (not isspool and path == self.mspool or
+            self.ui.mask and self.ui.mask.search(path) is not None):
             return
         if maildir:
             try:
@@ -315,8 +315,8 @@ class kiosk(html2text.html2text):
                 self.maskompile()
             self.mailsearch()
             if self.items:
-                self.ui.note('%s not in specified local mailboxes\n'
-                        % util.plural(len(self.items), 'message'))
+                self.ui.note('%s not in specified local mailboxes\n' %
+                             util.plural(len(self.items), 'message'))
         if self.items and not self.ui.local:
             self.gogoogle()
         elif self.items:
