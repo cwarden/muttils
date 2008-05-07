@@ -28,10 +28,11 @@ def run():
                       help='prefer browser APP over $BROWSER environment')
     
     options, args = parser.parse_args()
-    v = viewhtmlmsg.viewhtml(inp=args, safe=options.safe,
-                             keep=options.keep, app=options.app)
-    parser.destroy()
+    del parser
+
     try:
+        v = viewhtmlmsg.viewhtml(inp=args, safe=options.safe,
+                                 keep=options.keep, app=options.app)
         v.view()
     except (util.DeadMan, IOError, KeyboardInterrupt), inst:
         sys.exit(inst)

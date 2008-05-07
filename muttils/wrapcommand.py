@@ -55,10 +55,10 @@ def run():
                       help='stream output immediately')
 
     options, args = parser.parse_args()
+    del parser
 
     try:
         w = wrap.wrap(inp=args, opts=options.__dict__)
-        parser.destroy()
         w.formwrap()
         sys.stdout.writelines(w.olines)
     except (util.DeadMan, IOError, KeyboardInterrupt), inst:

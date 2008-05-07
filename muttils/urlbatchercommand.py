@@ -65,10 +65,10 @@ def run():
                       help='exclude mailboxes matching MASK from search')
 
     options, args = parser.parse_args()
+    del parser
 
     try:
         u = urlbatcher.urlbatcher(files=args, opts=options.__dict__)
-        parser.destroy()
         u.urlsearch()
     except (util.DeadMan, IOError, KeyboardInterrupt), inst:
         sys.exit(inst)

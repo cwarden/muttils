@@ -30,12 +30,12 @@ def run():
                       help='suppress prepending of signature separator')
 
     options, args = parser.parse_args()
+    del parser
 
     try:
         s = sigpager.signature(dest=args,
                                sig=options.defsig, sdir=options.sigdir,
                                tail=options.tail, sep=options.sigsep)
-        parser.destroy()
         s.sign()
     except (util.DeadMan, IOError, OSError), inst:
         sys.exit(inst)

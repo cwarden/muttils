@@ -24,10 +24,10 @@ def run():
     parser.add_option('-b', '--browser', dest='app',
                       help='prefer browser APP over $BROWSER environment')
     options, args = parser.parse_args()
+    del parser
     
     try:
         b = pybrowser.browser(items=args, app=options.app, evalurl=True)
-        parser.destroy()
         b.urlvisit()
     except util.DeadMan, inst:
         sys.exit(inst)
