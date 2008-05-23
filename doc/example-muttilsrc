@@ -27,11 +27,6 @@ mailer = mutt
 ## sigtail = .sig
 
 [net]
-# connect: try to connect to internet when needed
-# note: only MacOS supported ATM
-# defaults to false
-#connect = true
-
 # homepage: fallback url if pybrowser is launched w/o arguments
 # default: empty
 ## homepage = http://localhost
