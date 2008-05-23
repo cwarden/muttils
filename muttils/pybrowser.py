@@ -1,13 +1,12 @@
 # $Id$
 
-import conny, ui, urlregex, util
+import ui, urlregex, util
 import os, webbrowser
 
 class browser(object):
     '''
     Visits items with default or given browser.
     '''
-    conn = False              # try to connect to net
     weburl_re = None          # url protocol scheme regex
 
     def __init__(self, parentui=None, items=None, app='', evalurl=False):
@@ -30,7 +29,6 @@ class browser(object):
     def fixurl(self, url):
         '''Adapts possibly short url to pass as browser argument.'''
         if not self.weburl_re or self.weburl_re.match(url):
-            self.conn = True
             url = urlregex.webschemecomplete(url)
             gophers = ('lynx', 'firefox')
             if url.startswith('gopher://') and self.ui.app not in gophers:
@@ -59,8 +57,6 @@ class browser(object):
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
         self.items = [self.fixurl(url) for url in self.items]
-        if self.conn:
-            conny.goonline(self.ui)
         app = os.path.basename(self.ui.app)
         screen = app in textbrowsers and 'STY' in os.environ
         notty = not util.termconnected()

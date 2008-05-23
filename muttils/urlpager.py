@@ -1,7 +1,7 @@
 # $Id$
 
 import urlcollector, urlregex
-import conny, iterm, kiosk, pybrowser, tpager, ui, util
+import iterm, kiosk, pybrowser, tpager, ui, util
 import os.path
 
 try:
@@ -66,10 +66,9 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             k.kioskstore()
 
     def urlretrieval(self, mail):
-        url, cs, conn, cwd = self.items[0], [], True, ''
+        url, cs, cwd = self.items[0], [], ''
         if mail:
             cs = [self.mailer]
-            conn = False
         elif self.ui.getdir:
             self.ui.getdir = savedir(self.ui.getdir)
             cs = ['wget', '-P', self.ui.getdir]
@@ -93,8 +92,6 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             b = pybrowser.browser(parentui=self.ui, items=self.items)
             b.urlvisit()
         else:
-            if conn:
-                conny.goonline(self.ui)
             cs += [url]
             util.systemcall(cs)
         if cwd:

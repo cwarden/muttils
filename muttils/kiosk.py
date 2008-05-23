@@ -1,6 +1,6 @@
 # $Id$'
 
-import conny, html2text, pybrowser, util
+import html2text, pybrowser, util
 import email, email.Generator, email.Parser, email.Errors
 import mailbox, nntplib, os, re, tempfile, time, urllib, urllib2
 
@@ -135,7 +135,6 @@ class kiosk(object):
         useragent = ('User-Agent', 'w3m')
         self.ui.note('note: google masks all email addresses\n',
                      'going google ...\n')
-        conny.goonline(self.ui)
         opener = urllib2.build_opener()
         opener.addheaders = [useragent]
         header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
@@ -325,7 +324,6 @@ class kiosk(object):
                     self.ui.note('%s not in specified local mailboxes\n' %
                                  util.plural(len(self.items), 'message'))
         if self.items and not self.ui.local:
-            conny.goonline(self.ui)
             for nserv in self.ui.configlist('net', 'newsservers'):
                 self.newssearch(nserv)
             if self.items:

@@ -9,7 +9,7 @@
 # input is checked anew for each file.
 ###
 
-import conny, iterm, kiosk, pybrowser, ui, urlcollector, util
+import iterm, kiosk, pybrowser, ui, urlcollector, util
 
 class urlbatcher(urlcollector.urlcollector):
     '''
@@ -28,7 +28,6 @@ class urlbatcher(urlcollector.urlcollector):
             k = kiosk.kiosk(self.ui, items=self.items)
             k.kioskstore()
         elif self.ui.getdir:
-            conny.goonline(self.ui)
             util.systemcall(['wget', '-P', self.ui.getdir] + self.items)
         else:
             b = pybrowser.browser(parentui=self.ui, items=self.items)
