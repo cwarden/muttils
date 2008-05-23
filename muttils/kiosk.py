@@ -1,4 +1,4 @@
-# $Id$'
+# $Id$
 
 import html2text, pybrowser, util
 import email, email.Generator, email.Parser, email.Errors
