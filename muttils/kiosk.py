@@ -1,9 +1,14 @@
 # $Id$
 
-import html2text, pybrowser, util
+import pybrowser, util
 import email, email.Generator, email.Parser, email.Errors
 import mailbox, nntplib, os, re, tempfile, time, urllib, urllib2
 
+def _makequery(mid):
+    '''Reformats Message-ID to google query.'''
+    ggroups = 'http://groups.google.com/groups'
+    query = {'selm': mid}
+    return '%s?%s' % (ggroups,  urllib.urlencode(query))
 
 class kiosk(object):
     '''
@@ -82,25 +87,21 @@ class kiosk(object):
             self.ui.mhiers.append(hier)
             previtem = hier
 
-    def makequery(self, mid):
-        '''Reformats Message-ID to google query.'''
-        ggroups = 'http://groups.google.com/groups'
-        query = ({'selm': mid, 'dmode': 'source'},
-                 {'selm': mid})[self.ui.browse]
-        return '%s?%s' % (ggroups,  urllib.urlencode(query))
-
     def goobrowse(self):
         '''Visits given urls with browser and exits.'''
-        items = [self.makequery(mid) for mid in self.items]
+        items = map(_makequery, self.items)
         b = pybrowser.browser(parentui=self.ui, items=items)
         b.urlvisit()
 
-    def gooretrieve(self, ht, mid, found, opener, header_re, bottom_re):
+    def gooretrieve(self, mid, found, opener):
+        msg = ''
         try:
-            fp = opener.open(self.makequery(mid))
-            ht.htwrite(ht=fp.read(), append=False)
+            fp = opener.open(_makequery(mid))
+            msgurl = fp.geturl()
             fp.close()
-            liniter = iter(ht.htreadlines(nl=False))
+            fp = opener.open('%s?dmode=source&output=gplain' % msgurl)
+            msg = fp.read().lstrip()
+            fp.close()
         except urllib2.URLError, inst:
             if hasattr(inst, 'reason'):
                 urlfailmsg = 'reason of url retrieval failure: '
@@ -108,45 +109,22 @@ class kiosk(object):
             if hasattr(inst, 'code'):
                 urlerrmsg = 'url retrieval error code: '
                 raise util.DeadMan(urlerrmsg + inst)
-        line = ''
-        try:
-            while not header_re.match(line):
-                line = liniter.next()
-        except StopIteration:
-            self.ui.warn('%s: not even at google\n' % mid)
-            time.sleep(5)
-        else:
-            lines = [line]
-            try:
-                while not bottom_re.match(line):
-                    line = liniter.next()
-                    lines.append(line)
-            except StopIteration:
-                self.ui.warn('\n'.join(lines) + '\n')
-                raise util.DeadMan('source view format changed at Google')
-            msg = '\n'.join(lines[:-1])
+        if msg and msg.split('\n', 1)[0].find('DOCTYPE html') == -1:
             msg = email.message_from_string(msg)
             found.append(mid)
             self.msgs.append(msg)
+        else:
+            self.ui.warn('%s: not found at google\n' % mid)
 
     def gogoogle(self):
         '''Gets messages from Google Groups.'''
-        rawmsgterminator = r'^[A-Z]([a-zA-Z -]+\[\d+\]){3,}'
-        useragent = ('User-Agent', 'w3m')
         self.ui.note('note: google masks all email addresses\n',
                      'going google ...\n')
         opener = urllib2.build_opener()
-        opener.addheaders = [useragent]
-        header_re = re.compile(r'[A-Z][-a-zA-Z]+: ')
-        bottom_re = re.compile(rawmsgterminator, re.MULTILINE)
+        opener.addheaders = [('User-Agent', 'w3m')]
         found = []
-        ht = html2text.html2text(strict=False)
-        ht.open()
-        try:
-            for mid in self.items:
-                self.gooretrieve(ht, mid, found, opener, header_re, bottom_re)
-        finally:
-            ht.close()
+        for mid in self.items:
+            self.gooretrieve(mid, found, opener)
         self.items = [mid for mid in self.items if mid not in found]
 
     def newssearch(self, sname):
