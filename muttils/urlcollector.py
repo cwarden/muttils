@@ -47,6 +47,11 @@ class urlcollector(urlregex.urlregex):
             refheads = ['references', 'in-reply-to', 'message-id',
                         'original-message-id']
             self.headparser(msg, refheads)
+        # revert resent messages to previous content-type
+        oldct = msg['old-content-type']
+        if oldct:
+            del msg['content-type']
+            msg['Content-Type'] = oldct
         for part in email.Iterators.typed_subpart_iterator(msg):
             # try getting quoted urls spanning more than 1 line
             s = self.quote_re.sub('', part.get_payload(decode=True))
