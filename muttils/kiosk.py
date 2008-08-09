@@ -301,9 +301,10 @@ class kiosk(object):
                 if self.items:
                     self.ui.note('%s not in specified local mailboxes\n' %
                                  util.plural(len(self.items), 'message'))
-        if self.items and not self.ui.local:
+        if not self.ui.local:
             for nserv in self.ui.configlist('net', 'newsservers'):
-                self.newssearch(nserv)
+                if self.items:
+                    self.newssearch(nserv)
             if self.items:
                 self.gogoogle()
         elif self.items:
