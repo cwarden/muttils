@@ -2,5 +2,5 @@
 
 exclude muttils/__version__.py
 
-include COPYING MANIFEST.in
+include COPYING MANIFEST.in Makefile
 include doc/example-mail.vim doc/example-muttilsrc doc/example-muttrc
