@@ -32,9 +32,19 @@ With support for messages (recognition of quote chars etc.).
 Installation:
 -------------
 # systemwide
-$ python setup.py install
+$ make && sudo make install
 
 # at $HOME
-$ python setup.py install --home=~
-# adapt $PYTHONPATH if needed, bash example:
+$ make install-home
+
+# adapt $PYTHONPATH if needed; simple bash example:
 $ export PYTHONPATH=~/lib/python
+
+# and then, eg.
+$ urlpager --version
+
+# also have a look at
+$ make help
+# and
+$ python setup.py --help
+# for fine tuning and further options
