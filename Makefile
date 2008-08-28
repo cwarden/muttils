@@ -49,8 +49,8 @@ install-home: build
 	$(PYTHON) setup.py --description --version
 
 MANIFEST:
+	$(PYTHON) setup.py --version
 	$(PYTHON) setup.py sdist --manifest-only
-	$(PYTHON) setup.py --version >> MANIFEST
 
 dist:
 	$(PYTHON) setup.py sdist
