@@ -15,16 +15,11 @@ class browser(object):
         self.items = items             # urls
         if app:
             self.ui.app = app          # browser app from command-line
-
-        def _weburlregex():
-            '''Returns regex matching web url.'''
+        if evalurl: # check remote url protocol scheme
             self.ui.proto = 'web'
             u = urlregex.urlregex(self.ui, uniq=False)
             u.urlobject(search=False)
-            return u.url_re
-
-        if evalurl: # check remote url protocol scheme
-            self.weburl_re = _weburlregex()
+            self.weburl_re = u.url_re
 
     def fixurl(self, url):
         '''Adapts possibly short url to pass as browser argument.'''

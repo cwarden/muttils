@@ -51,7 +51,7 @@ class tpager(object):
 
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''
-        def _gettyenv(v):
+        def gettyenv(v):
             if v in os.environ:
                 try:
                     return int(os.environ[v])
@@ -83,21 +83,21 @@ class tpager(object):
                         self.fd = None
             except NameError:
                 self.fd = None
-        self.rows = self.rows or (_gettyenv('LINES') or 24) - 1
-        self.cols = self.cols or (_gettyenv('COLUMNS') or 80) + 1
+        self.rows = self.rows or (gettyenv('LINES') or 24) - 1
+        self.cols = self.cols or (gettyenv('COLUMNS') or 80) + 1
         return notty
 
     def formatitems(self):
         '''Formats items of itemsdict to numbered list.'''
-        def _simpleformat(key):
+        def simpleformat(key):
             return '%s) %s\n' % (key.rjust(maxl), self.itemsdict[key])
 
-        def _bracketformat(key):
+        def bracketformat(key):
             return '[%s]\n%s\n' % (key, self.itemsdict[key])
 
         if not self.items:
             return []
-        formfunc = (_simpleformat, _bracketformat)[self.format=='bf']
+        formfunc = (simpleformat, bracketformat)[self.format=='bf']
         self.ilen = len(self.items)
         ikeys = [str(i) for i in xrange(1, self.ilen+1)]
         self.itemsdict = dict(zip(ikeys, self.items))
@@ -107,7 +107,7 @@ class tpager(object):
     def pagesdict(self):
         '''Creates dictionary of pages to display in terminal window.
         Keys are integers as string starting from "1".'''
-        def _addpage(buff, lines, pn):
+        def addpage(buff, lines, pn):
             pn += 1
             if self.more:
                 # fill page with newlines
@@ -130,9 +130,9 @@ class tpager(object):
                 lines = linecheck
             else:
                 self.more = True
-                pn = _addpage(buff, lines, pn)
+                pn = addpage(buff, lines, pn)
                 buff, lines = item, ilines
-        pn = _addpage(buff, lines, pn)
+        pn = addpage(buff, lines, pn)
         self.plen = len(self.pages)
 
     def coltrunc(self, s, cols=0):
@@ -152,9 +152,6 @@ class tpager(object):
 
     def pagemenu(self):
         '''Lets user page through a list of items and make a choice.'''
-        def _valclamp(x, low, high):
-            return max(low, min(x, high))
-
         header = self.coltrunc('*%s*\n' % util.plural(self.ilen, self.name),
                                self.cols - 2)
         if not self.more:
@@ -173,6 +170,9 @@ class tpager(object):
                 reply = self.pagemenu() # display same page
         else: # more than 1 page
             # switch paging command according to paging direction
+            def valclamp(x, low, high):
+                return max(low, min(x, high))
+
             pds = {-1: 'back', 1: 'forward'}
             pn = 1 # start at first page
             pdir = -1 # initial paging direction reversed
@@ -193,10 +193,10 @@ class tpager(object):
                 menu += ', number '
                 reply = self.pagedisplay(header, menu, pn)
                 if not reply:
-                    pn = _valclamp(pn+pdir, 1, self.plen)
+                    pn = valclamp(pn+pdir, 1, self.plen)
                 elif bs and reply == '-':
                     pdir *= -1
-                    pn = _valclamp(pn+pdir, 1, self.plen)
+                    pn = valclamp(pn+pdir, 1, self.plen)
                 elif reply in self.itemsdict:
                     self.items = [self.itemsdict[reply]]
                     break

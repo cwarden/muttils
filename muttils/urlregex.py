@@ -130,7 +130,7 @@ class urlregex(object):
     def getraw(self, search):
         '''Returns raw patterns according to protocol.'''
 
-        def _setprotocol():
+        def setprotocol():
             mailto = 'mailto:\s?' # needed for proto=='all'
             http = r'(https?://|www\.)'
             ftp = r'(s?ftp://|ftp\.)'
@@ -145,7 +145,7 @@ class urlregex(object):
             protocol = eval(self.ui.proto)
             return r'(url:\s?)?%s' % protocol
 
-        def _weburlpats(search, proto=''):
+        def weburlpats(search, proto=''):
             '''Creates 2 url patterns. The first according to protocol,
             The second may contain spaces but is enclosed in '<>'.
             If no protocol is given the pattern matches only
@@ -199,19 +199,19 @@ class urlregex(object):
                 ''' % vars()
             return dom, spdom
 
-        url, spurl = _weburlpats(search, proto=_setprotocol())
+        url, spurl = weburlpats(search, proto=setprotocol())
         if self.ui.decl:
             return r'(%s|%s)' % (spurl, url)
-        any_url, any_spurl = _weburlpats(search)
+        any_url, any_spurl = weburlpats(search)
         return (r'(%s|%s|%s|%s|%s)'
                 % (_mailpat(), spurl, any_spurl, url, any_url))
 
     def urlfilter(self):
         '''Filters out urls not in given scheme and duplicates.'''
-        def _webcheck(url):
+        def webcheck(url):
             return not _get_mailre().match(url)
 
-        filterdict = {'web': _webcheck, 'mailto': mailcheck}
+        filterdict = {'web': webcheck, 'mailto': mailcheck}
         if not self.ui.decl and self.ui.proto in filterdict.keys():
             self.items = [i for i in self.items
                           if filterdict[self.ui.proto](i)]
@@ -254,27 +254,28 @@ class urlregex(object):
 
     def findurls(self, text):
         '''Conducts a search for urls in text.'''
-        def _wipepat():
-            headers = ('received', 'references', 'message-id', 'in-reply-to',
-                       'delivered-to', 'list-id', 'path', 'return-path',
-                       'newsgroups', 'nntp-posting-host', 'xref', 'x-id',
-                       'x-abuse-info', 'x-trace', 'x-mime-autoconverted')
-            headers = r'(%s)' % '|'.join(headers)
-            header = r'''
-                ^               # start of line
-                %s:             # header followed by colon &
-                .+              # greedy anything (but newline)
-                (               # 0 or more group
-                  \n            #  newline followed by
-                  [ \t]+        #  greedy spacetabs
-                  .+            #  greedy anything
-                ) *?
-                ''' % headers
-            return r'%s|%s' % (header, _declmidpat())
-
         kill_re = self.urlobject() # compile url_re
         if self.ui.proto != 'mid':
-            wipe_re = re.compile(_wipepat(),
+            def wipepat():
+                headers = ('received', 'references', 'message-id',
+                           'in-reply-to', 'delivered-to', 'list-id', 'path',
+                           'return-path', 'newsgroups', 'nntp-posting-host',
+                           'xref', 'x-id', 'x-abuse-info', 'x-trace',
+                           'x-mime-autoconverted')
+                headers = r'(%s)' % '|'.join(headers)
+                header = r'''
+                    ^               # start of line
+                    %s:             # header followed by colon &
+                    .+              # greedy anything (but newline)
+                    (               # 0 or more group
+                      \n            #  newline followed by
+                      [ \t]+        #  greedy spacetabs
+                      .+            #  greedy anything
+                    ) *?
+                    ''' % headers
+                return r'%s|%s' % (header, _declmidpat())
+
+            wipe_re = re.compile(wipepat(),
                                  re.IGNORECASE|re.MULTILINE|re.VERBOSE)
             text = wipe_re.sub('', text)
             cpan = self.ui.configitem('net', 'cpan',
