@@ -52,12 +52,10 @@ class tpager(object):
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''
         def gettyenv(v):
-            if v in os.environ:
-                try:
-                    return int(os.environ[v])
-                except TypeError:
-                    return 0
-            return 0
+            try:
+                return int(os.environ[v])
+            except (KeyError, ValueError):
+                return 0
 
         notty = False  # assume connection to terminal
         self.fd = None # reset if class was not reloaded (ckey)
