@@ -93,39 +93,34 @@ class kiosk(object):
         b = pybrowser.browser(parentui=self.ui, items=items)
         b.urlvisit()
 
-    def gooretrieve(self, mid, found, opener):
-        msg = ''
-        try:
-            fp = opener.open(_makequery(mid))
-            msgurl = fp.geturl()
-            fp.close()
-            fp = opener.open('%s?dmode=source&output=gplain' % msgurl)
-            msg = fp.read().lstrip()
-            fp.close()
-        except urllib2.URLError, inst:
-            if hasattr(inst, 'reason'):
-                urlfailmsg = 'reason of url retrieval failure: '
-                raise util.DeadMan(urlfailmsg + inst)
-            if hasattr(inst, 'code'):
-                urlerrmsg = 'url retrieval error code: '
-                raise util.DeadMan(urlerrmsg + inst)
-        if msg and msg.split('\n', 1)[0].find('DOCTYPE html') == -1:
-            msg = email.message_from_string(msg)
-            found.append(mid)
-            self.msgs.append(msg)
-        else:
-            self.ui.warn('%s: not found at google\n' % mid)
-
     def gogoogle(self):
         '''Gets messages from Google Groups.'''
         self.ui.note('note: google masks all email addresses\n',
                      'going google ...\n')
         opener = urllib2.build_opener()
         opener.addheaders = [('User-Agent', 'w3m')]
-        found = []
-        for mid in self.items:
-            self.gooretrieve(mid, found, opener)
-        self.items = [mid for mid in self.items if mid not in found]
+        for mid in self.items[:]:
+            msg = ''
+            try:
+                fp = opener.open(_makequery(mid))
+                msgurl = fp.geturl()
+                fp.close()
+                fp = opener.open('%s?dmode=source&output=gplain' % msgurl)
+                msg = fp.read().lstrip()
+                fp.close()
+            except urllib2.URLError, inst:
+                if hasattr(inst, 'reason'):
+                    urlfailmsg = 'reason of url retrieval failure: '
+                    raise util.DeadMan(urlfailmsg + inst)
+                if hasattr(inst, 'code'):
+                    urlerrmsg = 'url retrieval error code: '
+                    raise util.DeadMan(urlerrmsg + inst)
+            if msg and msg.split('\n', 1)[0].find('DOCTYPE html') == -1:
+                msg = email.message_from_string(msg)
+                self.msgs.append(msg)
+                self.items.remove(mid)
+            else:
+                self.ui.warn('%s: not found at google\n' % mid)
 
     def newssearch(self, sname):
         '''Retrieves messages from local newsserver.'''
@@ -137,17 +132,15 @@ class kiosk(object):
         except Exception, (errno, inst):
             self.ui.warn(inst + '\n')
             return
-        found = []
-        for mid in self.items:
+        for mid in self.items[:]:
             try:
                 art = nserv.article('<%s>' % mid)
                 art = '\n'.join(art[-1]) + '\n'
                 self.msgs.append(email.message_from_string(art))
-                found.append(mid)
+                self.items.remove(mid)
             except nntplib.NNTPTemporaryError:
                 pass
         nserv.quit()
-        self.items = [mid for mid in self.items if mid not in found]
         if self.items:
             self.ui.note('%s not on server %s\n' %
                          (util.plural(len(self.items), 'message'), sname))
