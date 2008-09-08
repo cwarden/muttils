@@ -101,7 +101,8 @@ class tpager(object):
             formfunc = simpleformat
         else:
             formfunc = bracketformat
-        return [formfunc(k) for k in ikeys]
+        for k in ikeys:
+            yield formfunc(k)
 
     def pagesdict(self):
         '''Creates dictionary of pages to display in terminal window.
