@@ -93,13 +93,14 @@ class tpager(object):
         def bracketformat(key):
             return '[%s]\n%s\n' % (key, self.itemsdict[key])
 
-        if not self.items:
-            return []
-        formfunc = (simpleformat, bracketformat)[self.format=='bf']
         self.ilen = len(self.items)
         ikeys = [str(i) for i in xrange(1, self.ilen+1)]
         self.itemsdict = dict(zip(ikeys, self.items))
-        maxl = len(ikeys[-1])
+        if self.format != 'bf':
+            maxl = len(ikeys[-1])
+            formfunc = simpleformat
+        else:
+            formfunc = bracketformat
         return [formfunc(k) for k in ikeys]
 
     def pagesdict(self):
