@@ -108,7 +108,7 @@ class wrap(object):
         elif fraglen > 1:
             fragtails = self.hyph.findall(word) + ['']
             # -> ['.','//','-','']
-            frags = [ft[0] + ft[1] for ft in zip(frags, fragtails)]
+            frags = map(''.join, zip(frags, fragtails))
             # -> ['what.','a//','bull-','shit!']
             fragspace = []
             while frags:
