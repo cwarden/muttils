@@ -51,7 +51,7 @@ class browser(object):
         textbrowsers = ('w3m', 'lynx', 'links', 'elinks')
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
-        self.items = [self.fixurl(url) for url in self.items]
+        self.items = map(self.fixurl, self.items)
         app = os.path.basename(self.ui.app)
         screen = app in textbrowsers and 'STY' in os.environ
         notty = not util.termconnected()
