@@ -14,7 +14,7 @@ class DeadMan(Exception):
 
 def termconnected():
     '''Returns true if we are connected to a terminal.'''
-    if hasattr(sys.stdin, "fileno"):
+    if hasattr(sys.stdin, 'fileno'):
         return os.isatty(sys.stdin.fileno())
     return False
 
@@ -55,5 +55,5 @@ def absolutepath(path):
     return os.path.normpath(os.path.abspath(os.path.expanduser(path)))
 
 def plural(n, word):
-    '''Returns "number word(s).'''
+    '''Returns "number word(s)".'''
     return '%d %s%s' % (n, word, 's'[n==1:])
