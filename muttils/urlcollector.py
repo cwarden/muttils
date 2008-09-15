@@ -25,7 +25,7 @@ class urlcollector(urlregex.urlregex):
                 vals = msg.get_all(header)
                 if vals:
                     pairs = email.Utils.getaddresses(vals)
-                    self.items += [pair[1] for pair in pairs if pair[1]]
+                    self.items += [addr for rname, addr in pairs if addr]
 
         sl = strings or []
         if self.ui.proto != 'mid':
