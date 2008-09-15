@@ -17,36 +17,33 @@ class urlcollector(urlregex.urlregex):
         urlregex.urlregex.__init__(self, ui)
         # ^ items
         self.ui = ui
-        self.files = files or [] # files to search
-
-    def headparser(self, msg, hkeys):
-        for hkey in hkeys:
-            vals = msg.get_all(hkey)
-            if vals:
-                pairs = email.Utils.getaddresses(vals)
-                urls = [pair[1] for pair in pairs if pair[1]]
-                self.items += urls
+        self.files = files
 
     def msgharvest(self, msg, strings=None):
+        def addrget(*headers):
+            for header in headers:
+                vals = msg.get_all(header)
+                if vals:
+                    pairs = email.Utils.getaddresses(vals)
+                    self.items += [pair[1] for pair in pairs if pair[1]]
+
         sl = strings or []
         if self.ui.proto != 'mid':
+            if self.ui.proto in ('all', 'mailto'):
+                addrget('from', 'to', 'reply-to', 'cc', 'sender', 'x-sender',
+                        'mail-followup-to', 'x-apparently-to', 'errors-to',
+                        'x-complaints-to', 'x-beenthere')
             searchheads = ['subject', 'organization', 'user-agent', 'x-mailer',
                            'x-mailer-info', 'x-newsreader', 'list-subscribe',
                            'list-unsubscribe', 'list-help', 'list-archive',
                            'list-url', 'mailing-list', 'x-habeas-swe-9']
-            if self.ui.proto in ('all', 'mailto'):
-                addrheads = ['from', 'to', 'reply-to', 'cc', 'sender',
-                             'x-sender', 'mail-followup-to', 'x-apparently-to',
-                             'errors-to', 'x-complaints-to', 'x-beenthere']
-                self.headparser(msg, addrheads)
-            for skey in searchheads:
-                vals = msg.get_all(skey)
+            for head in searchheads:
+                vals = msg.get_all(head)
                 if vals:
                     sl += vals
         else:
-            refheads = ['references', 'in-reply-to', 'message-id',
-                        'original-message-id']
-            self.headparser(msg, refheads)
+            addrget('references', 'in-reply-to', 'message-id',
+                    'original-message-id')
         # revert resent messages to previous content-type
         oldct = msg['old-content-type']
         if oldct:
@@ -91,7 +88,7 @@ class urlcollector(urlregex.urlregex):
             while msg is not None:
                 msg = mbox.next()
                 if msg:
-                    sl = self.msgharvest(msg, strings=sl)
+                    sl = self.msgharvest(msg, sl)
         return '\n'.join(sl)
 
     def urlcollect(self):
