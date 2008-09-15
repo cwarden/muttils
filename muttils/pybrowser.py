@@ -59,7 +59,7 @@ class browser(object):
         # but has to be connected if called into another screen instance
         if screen or app in textbrowsers[1:] and notty:
             for url in self.items:
-                util.systemcall([self.ui.app, url], notty=notty, screen=screen)
+                util.systemcall([self.ui.app, url], notty, screen)
         else:
             try:
                 if self.ui.app:
