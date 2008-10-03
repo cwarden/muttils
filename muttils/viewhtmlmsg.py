@@ -4,8 +4,8 @@
 '''
 
 import pybrowser, ui, util
-import email, email.Errors, email.Iterators, email.Utils
-import os.path, re, shutil, sys, tempfile, time
+import email, email.Errors, email.Iterators
+import os.path, re, shutil, sys, tempfile, time, urllib
 
 class viewhtml(pybrowser.browser):
     def __init__(self, parentui=None, inp='', safe=False, keep=None, app=''):
@@ -20,6 +20,11 @@ class viewhtml(pybrowser.browser):
             self.keep = self.ui.configint('html', 'keep', 3)
 
     def view(self):
+        def safefilename(fn):
+            fn = urllib.unquote(fn)
+            fn = fn.decode('ascii', 'replace').encode('ascii', 'replace')
+            return fn.replace(' ', '_').replace('?', '-')
+
         try:
             if self.inp:
                 if len(self.inp) > 1:
@@ -46,12 +51,12 @@ class viewhtml(pybrowser.browser):
             for part in msg.walk():
                 fn = part.get_filename()
                 if fn:
-                    fn = email.Utils.collapse_rfc2231_value(fn)
-                elif not fn and part['content-id']:
+                    fn = safefilename(fn)
+                elif part['content-id']:
                     fn = (part.get_param(param='name') or
                           part.get_param(param='filename'))
                     if fn:
-                        fn = email.Utils.collapse_rfc2231_value(fn)
+                        fn = safefilename(fn)
                         cid = part['content-id'].strip('<>')
                         html = html.replace('cid:%s' % cid, fn)
                 if fn:
