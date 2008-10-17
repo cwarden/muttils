@@ -4,7 +4,7 @@
 '''
 
 import pybrowser, ui, util
-import email, email.Errors, email.Iterators
+import email, email.Errors, email.Iterators, email.Utils
 import os.path, re, shutil, sys, tempfile, time, urllib
 
 class viewhtml(pybrowser.browser):
@@ -20,11 +20,6 @@ class viewhtml(pybrowser.browser):
             self.keep = self.ui.configint('html', 'keep', 3)
 
     def view(self):
-        def safefilename(fn):
-            fn = urllib.unquote(fn)
-            fn = fn.decode('ascii', 'replace').encode('ascii', 'replace')
-            return fn.replace(' ', '_').replace('?', '-')
-
         try:
             if self.inp:
                 if len(self.inp) > 1:
@@ -49,17 +44,17 @@ class viewhtml(pybrowser.browser):
             htmlfile = os.path.join(htmldir, 'index.html')
             html = html.get_payload(decode=True)
             for part in msg.walk():
-                fn = part.get_filename()
+                fn = (part.get_filename() or 
+                      part.get_param(param='filename') or
+                      part.get_param(param='name'))
                 if fn:
-                    fn = safefilename(fn)
-                elif part['content-id']:
-                    fn = (part.get_param(param='name') or
-                          part.get_param(param='filename'))
-                    if fn:
-                        fn = safefilename(fn)
-                        cid = part['content-id'].strip('<>')
+                    fn = urllib.unquote(fn)
+                    # safe ascii filename w/o spaces
+                    fn = fn.decode('ascii', 'replace').encode('ascii', 'replace')
+                    fn = fn.replace(' ', '_').replace('?', '-')
+                    if part['content-id']:
+                        cid = email.Utils.unquote(part['content-id'])
                         html = html.replace('cid:%s' % cid, fn)
-                if fn:
                     fp = open(os.path.join(htmldir, fn), 'wb')
                     fp.write(part.get_payload(decode=True))
                     fp.close()
