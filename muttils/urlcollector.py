@@ -32,11 +32,12 @@ class urlcollector(urlregex.urlregex):
             if self.ui.proto in ('all', 'mailto'):
                 addrget('from', 'to', 'reply-to', 'cc', 'sender', 'x-sender',
                         'mail-followup-to', 'x-apparently-to', 'errors-to',
-                        'x-complaints-to', 'x-beenthere')
+                        'x-beenthere')
             searchheads = ['subject', 'organization', 'user-agent', 'x-mailer',
                            'x-mailer-info', 'x-newsreader', 'list-subscribe',
                            'list-unsubscribe', 'list-help', 'list-archive',
-                           'list-url', 'mailing-list', 'x-habeas-swe-9']
+                           'list-url', 'mailing-list', 'x-complaints-to',
+                           'x-habeas-swe-9']
             for head in searchheads:
                 vals = msg.get_all(head)
                 if vals:
