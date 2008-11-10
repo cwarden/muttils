@@ -181,7 +181,6 @@ class urlregex(object):
                     %(uric)s +      #     1 or more uri chars
                   ) ?
                 ) ?
-                (/|\b)              # slash or word boundary
                 ''' % vars()
             spdom = r'''
                 (?<=<)                # look behind for '<'
