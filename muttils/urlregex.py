@@ -9,6 +9,8 @@ valid_protos = ['all', 'web', 'http', 'ftp', 'gopher', 'mailto', 'mid']
 # regexes on demand (web, mail, ftp)
 demand_re = {}
 
+_unreserved = r'a-z0-9\-._~'
+
 def _hostname(generic=False):
     '''Returns hostname pattern
     for all top level domains or just generic domains.'''
@@ -38,7 +40,7 @@ def _hostname(generic=False):
 def _mailpat():
     '''Creates pattern for email addresses,
     grabbing those containing a subject first.'''
-    address = '[-_.a-z0-9]+@%s' % _hostname()
+    address = '[%s]+@%s' % (_unreserved, _hostname())
     return r'''
         \b(                 # word boundary and group open
           mailto:           #  mandatory mailto
@@ -66,7 +68,7 @@ def _nntppat():
 
 def _midpat():
     '''Creates pattern for message ids.'''
-    return r'[-_.a-z0-9#~?+=&%%!$[\]]{9,}@%s' % _hostname()
+    return r'[a-z0-9\-._#~?+=&%%!$[\]]{9,}@%s' % _hostname()
 
 def _declmidpat():
     '''Returns pattern for message id, prefixed with "attribution".'''
@@ -156,11 +158,11 @@ class urlregex(object):
             This seems a reasonable compromise between the goal to find
             malformed urls too and false positives -- especially as we
             treat "www" as sort of inofficial scheme.'''
-            reserved = r';/?:@&=+$,'
-            unreserved = r"-_.!~*'()a-z0-9"
-            escaped = r'(%[0-9a-f]{2})' # % 2 hex
-            # 1 or more unreserved|escaped + 0 or 1 reserved
-            uric = r'([%s%s]+|%s+)' % (unreserved, reserved, escaped)
+            gendelims = r':/?[\]@' # w/o fragment separator "#"
+            subdelims = r"!$&'()*+,;="
+            reserved = gendelims + subdelims
+            escaped = r'%[0-9a-f]{2}' # % 2 hex
+            uric = r'([%s%s]|%s)' % (_unreserved, reserved, escaped)
             if search:
                 hostport = r'%s(:\d+)?' % _hostname(generic=not proto)
             else:
