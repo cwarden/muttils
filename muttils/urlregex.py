@@ -183,20 +183,18 @@ class urlregex(object):
                 ) ?
                 ''' % vars()
             spdom = r'''
-                (?<=<)                # look behind for '<'
-                %(proto)s             # protocol or empty
-                %(hostport)s          # host and optional port (no login [yet])
-                (                     # 0 or 1 group
-                  /                   #   slash
-                  (                   #   0 or 1 group
-                    (%(uric)s|\s) *   #   0 or more uri chars or space
-                    (                 #   0 or 1 group
-                      \#              #     fragment separator
-                      (%(uric)s|\s) + #     1 or more uri chars or space
-                    ) ?
+                (?<=<)              # look behind for '<'
+                %(proto)s           # protocol or empty
+                %(hostport)s        # host and optional port (no login [yet])
+                (                   # 0 or 1 group
+                  /                 #   slash
+                  (%(uric)s|\s) +   #   1 or more uri chars or space
+                  (                 #   0 or 1 group
+                    \#              #     fragment separator
+                    (%(uric)s|\s) + #     1 or more uri chars or space
                   ) ?
                 ) ?
-                (?=>)                 # lookahead for '>'
+                (?=>)               # lookahead for '>'
                 ''' % vars()
             return dom, spdom
 
