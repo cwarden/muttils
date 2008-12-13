@@ -36,7 +36,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         urlcollector.urlcollector.__init__(self, self.ui, files=files)
         tpager.tpager.__init__(self, self.ui, name='url')
 
-    def raw_input(self, prompt):
+    def rawinput(self, prompt):
         '''Wraps raw_input in interactive terminal if needed.'''
         if not self.files:
             it = iterm.iterm()
@@ -51,7 +51,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         if loaded_readline:
             readline.clear_history()
             readline.add_history(self.items[0])
-        url = self.raw_input(confirm_prompt % expando)
+        url = self.rawinput(confirm_prompt % expando)
         if url:
             if loaded_readline:
                 readline.clear_history()
@@ -59,8 +59,8 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
 
     def msgretrieval(self):
         '''Passes message-id and relevant options to kiosk.'''
-        yorn = self.raw_input('retrieve message-id <%s>? yes [No] '
-                              % self.items[0])
+        yorn = self.rawinput('retrieve message-id <%s>? yes [No] '
+                             % self.items[0])
         if yorn.lower() in ('y', 'yes'):
             k = kiosk.kiosk(self.ui, items=self.items)
             k.kioskstore()
@@ -104,7 +104,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             self.name = '%s %s' % (self.ui.proto, self.name)
         self.urlcollect()
         if not self.items:
-            self.raw_input('no %ss found [ok] ' % self.name)
+            self.rawinput('no %ss found [ok] ' % self.name)
             return
         if len(self.items) > 1:
             name = self.name
