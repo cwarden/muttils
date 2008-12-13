@@ -83,7 +83,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             # we assume a file if url has a file extension
             assumefile = os.path.splitext(url)[1]
             if cs[0].endswith('lftp') and assumefile:
-                # lftp need optional command
+                # lftp needs an optional command
                 cs += ['-c', 'get']
             elif cs[0].endswith('ncftp') and assumefile:
                 # use ncftpget instead
