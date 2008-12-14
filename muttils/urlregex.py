@@ -211,7 +211,7 @@ class urlregex(object):
             return not _get_mailre().match(url)
 
         filterdict = {'web': webcheck, 'mailto': mailcheck}
-        if not self.ui.decl and self.ui.proto in filterdict.keys():
+        if not self.ui.decl and self.ui.proto in filterdict:
             self.items = [i for i in self.items
                           if filterdict[self.ui.proto](i)]
         if self.uniq:
