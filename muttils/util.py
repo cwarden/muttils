@@ -58,6 +58,13 @@ def absolutepath(path):
     '''Guesses an absolute path, eg. given on command line.'''
     return os.path.normpath(os.path.abspath(os.path.expanduser(path)))
 
+def savedir(directory):
+    '''Returns absolute path of directory if it is one.'''
+    directory = absolutepath(directory)
+    if not os.path.isdir(directory):
+        raise DeadMan('%s: not a directory' % directory)
+    return directory
+
 def plural(n, word):
     '''Returns "number word(s)".'''
     return '%d %s%s' % (n, word, 's'[n==1:])

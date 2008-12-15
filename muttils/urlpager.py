@@ -6,26 +6,9 @@ import os.path
 
 try:
     import readline
-    loaded_readline = True
-    confirm_prompt = '''
-press <UP> or <C-P> to edit %(name)s,
-<C-C> to cancel, <RET> to visit %(name)s:
-%(url)s
-'''
+    loadedreadline = True
 except ImportError:
-    loaded_readline = False
-    confirm_prompt = '''
-press <RET> to visit %(name)s, <C-C> to cancel,
-or enter %(name)s manually:
-%(url)s
-'''
-
-def savedir(directory):
-    '''Returns absolute path of directory if it is one.'''
-    directory = util.absolutepath(directory)
-    if not os.path.isdir(directory):
-        raise util.DeadMan('%s: not a directory' % directory)
-    return directory
+    loadedreadline = False
 
 class urlpager(urlcollector.urlcollector, tpager.tpager):
     def __init__(self, parentui=None, files=None, opts={}):
@@ -47,13 +30,19 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         return answer
 
     def urlconfirm(self):
-        expando = {'name': self.name, 'url': self.items[0]}
-        if loaded_readline:
+        action = not self.ui.getdir and 'visit' or 'download'
+        expando = {'name': self.name, 'act': action, 'url': self.items[0]}
+        if loadedreadline:
             readline.clear_history()
             readline.add_history(self.items[0])
-        url = self.rawinput(confirm_prompt % expando)
+            prompt = ('press <UP> or <C-P> to edit %(name)s,\n'
+                      '<C-C> to cancel, <RET> to %(act)s %(name)s:\n')
+        else:
+            prompt = ('press <RET> to %(act)s %(name)s, <C-C> to cancel,\n'
+                      'or enter %(name)s manually:\n')
+        url = self.rawinput((prompt + '%(url)s\n') % expando)
         if url:
-            if loaded_readline:
+            if loadedreadline:
                 readline.clear_history()
             self.items = [url]
 
@@ -75,7 +64,7 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         elif self.ui.proto == 'ftp' or urlregex.ftpcheck(url):
             if self.ui.ftpdir:
                 # otherwise eventual download to cwd
-                self.ui.ftpdir = savedir(self.ui.ftpdir)
+                self.ui.ftpdir = util.savedir(self.ui.ftpdir)
                 cwd = os.getcwdu()
                 os.chdir(self.ui.ftpdir)
             cs = [self.ui.configitem('net', 'ftpclient', default='ftp')]
