@@ -10,11 +10,7 @@ class DeadMan(Exception):
     def __init__(self, *inst):
         self.inst = inst
     def __str__(self):
-        try:
-            self.inst = ''.join(self.inst)
-        except TypeError:
-            pass
-        return 'abort: %s' % self.inst
+        return 'abort: %s' % (''.join(self.inst))
 
 def termconnected():
     '''Returns true if we are connected to a terminal.'''
