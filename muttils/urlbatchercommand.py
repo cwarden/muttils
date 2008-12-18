@@ -43,7 +43,7 @@ def run():
     parser.add_option('-b', '--browser', dest='app',
                       help='prefer browser APP over $BROWSER environment')
     parser.add_option('-w', '--wget', dest='getdir',
-                      help='download urls to directory GETDIR using wget')
+                      help='download urls to directory GETDIR')
     parser.add_option('-i', '--midrelax', action='store_true',
                       help='choose from undeclared message-ids '
                            '(false positives probable)')
