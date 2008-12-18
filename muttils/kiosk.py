@@ -106,7 +106,7 @@ class kiosk(object):
             msgurl = uget.request(_makequery(mid), 'g')
             if msgurl:
                 msg = uget.request(getraw(msgurl))
-                if msg and msg.split('\n', 1)[0].find('DOCTYPE html') == -1:
+                if msg and msg.split('\n', 1)[1].find('DOCTYPE html') == -1:
                     msg = email.message_from_string(msg)
                     self.msgs.append(msg)
                     self.items.remove(mid)
