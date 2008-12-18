@@ -101,7 +101,7 @@ class kiosk(object):
 
         self.ui.note('note: google masks all email addresses\n',
                      'going google ...\n')
-        uget = wget.wget(self.ui, [('User-Agent', 'w3m')])
+        uget = wget.wget(self.ui, ('User-Agent', 'w3m'))
         for mid in self.items[:]:
             msgurl = uget.request(_makequery(mid), 'g')
             if msgurl:

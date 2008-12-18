@@ -4,7 +4,7 @@ import urlregex, util
 import os.path, urllib2
 
 class wget(object):
-    def __init__(self, ui, headers=None):
+    def __init__(self, ui, *headers):
         self.ui = ui
         self.opener = urllib2.build_opener()
         if headers:
