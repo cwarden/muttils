@@ -44,7 +44,7 @@ def run():
     parser.add_option('-b', '--browser', dest='app',
                       help='prefer browser APP over $BROWSER environment')
     parser.add_option('-w', '--wget', dest='getdir',
-                      help='download url to directory GETDIR using wget')
+                      help='download url to directory GETDIR')
     parser.add_option('-f', '--ftp', dest='ftpdir',
                       help='use ftp client to download into directory FTPDIR')
     parser.add_option('-i', '--midrelax', action='store_true',

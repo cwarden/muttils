@@ -1,8 +1,8 @@
 # $Id$
 
-import pybrowser, util
+import pybrowser, util, wget
 import email, email.Generator, email.Parser, email.Errors
-import mailbox, nntplib, os, re, tempfile, time, urllib, urllib2
+import mailbox, nntplib, os, re, tempfile, time, urllib
 
 def _makequery(mid):
     '''Reformats Message-ID to google query.'''
@@ -95,32 +95,23 @@ class kiosk(object):
 
     def gogoogle(self):
         '''Gets messages from Google Groups.'''
+        def getraw(msgurl):
+            query = {'dmode': 'source', 'output': 'gplain'}
+            return '%s?%s' % (msgurl, urllib.urlencode(query))
+
         self.ui.note('note: google masks all email addresses\n',
                      'going google ...\n')
-        opener = urllib2.build_opener()
-        opener.addheaders = [('User-Agent', 'w3m')]
+        uget = wget.wget(self.ui, [('User-Agent', 'w3m')])
         for mid in self.items[:]:
-            msg = ''
-            try:
-                fp = opener.open(_makequery(mid))
-                msgurl = fp.geturl()
-                fp.close()
-                fp = opener.open('%s?dmode=source&output=gplain' % msgurl)
-                msg = fp.read().lstrip()
-                fp.close()
-            except urllib2.URLError, inst:
-                if hasattr(inst, 'reason'):
-                    urlfailmsg = 'reason of url retrieval failure: '
-                    raise util.DeadMan(urlfailmsg + inst)
-                if hasattr(inst, 'code'):
-                    urlerrmsg = 'url retrieval error code: '
-                    raise util.DeadMan(urlerrmsg + inst)
-            if msg and msg.split('\n', 1)[0].find('DOCTYPE html') == -1:
-                msg = email.message_from_string(msg)
-                self.msgs.append(msg)
-                self.items.remove(mid)
-            else:
-                self.ui.warn('%s: not found at google\n' % mid)
+            msgurl = uget.request(_makequery(mid), 'g')
+            if msgurl:
+                msg = uget.request(getraw(msgurl))
+                if msg and msg.split('\n', 1)[0].find('DOCTYPE html') == -1:
+                    msg = email.message_from_string(msg)
+                    self.msgs.append(msg)
+                    self.items.remove(mid)
+                else:
+                    self.ui.warn('%s: not found at google\n' % mid)
 
     def newssearch(self, sname):
         '''Retrieves messages from local newsserver.'''

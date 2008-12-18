@@ -9,7 +9,7 @@
 # input is checked anew for each file.
 ###
 
-import iterm, kiosk, pybrowser, ui, urlcollector, util
+import iterm, kiosk, pybrowser, ui, urlcollector, util, wget
 
 class urlbatcher(urlcollector.urlcollector):
     '''
@@ -28,7 +28,8 @@ class urlbatcher(urlcollector.urlcollector):
             k = kiosk.kiosk(self.ui, items=self.items)
             k.kioskstore()
         elif self.ui.getdir:
-            util.systemcall(['wget', '-P', self.ui.getdir] + self.items)
+            uget = wget.wget(self.ui)
+            uget.download(self.items)
         else:
             b = pybrowser.browser(parentui=self.ui, items=self.items)
             b.urlvisit()
