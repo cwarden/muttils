@@ -1,7 +1,7 @@
 # $Id$
 
 import urlcollector, urlregex
-import iterm, kiosk, pybrowser, tpager, ui, util
+import iterm, kiosk, pybrowser, tpager, ui, util, wget
 import os.path
 
 try:
@@ -58,9 +58,6 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         url, cs, cwd = self.items[0], [], ''
         if mail:
             cs = [self.mailer]
-        elif self.ui.getdir:
-            self.ui.getdir = savedir(self.ui.getdir)
-            cs = ['wget', '-P', self.ui.getdir]
         elif self.ui.proto == 'ftp' or urlregex.ftpcheck(url):
             if self.ui.ftpdir:
                 # otherwise eventual download to cwd
@@ -77,9 +74,12 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             elif cs[0].endswith('ncftp') and assumefile:
                 # use ncftpget instead
                 cs = ['%sget' % cs[0]]
-        if not cs:
+        if not cs and not self.ui.getdir:
             b = pybrowser.browser(parentui=self.ui, items=self.items)
             b.urlvisit()
+        elif self.ui.getdir:
+            uget = wget.wget(self.ui)
+            uget.download([url])
         else:
             cs += [url]
             util.systemcall(cs)
