@@ -211,7 +211,7 @@ class urlregex(object):
             self.items = [i for i in self.items
                           if filterdict[self.ui.proto](i)]
         if self.uniq:
-            self.items = list(set(self.items))
+            self.items = set(self.items)
             if self.ui.proto != 'mid':
                 proto_re = re.compile(r'^((https?|s?ftp|gopher)://|mailto:)',
                                       re.IGNORECASE)
@@ -221,6 +221,8 @@ class urlregex(object):
                 for u, t in pairs:
                     if truncs.count(t) == 1 or len(u) > len(t):
                         self.items.append(u)
+            else:
+                self.items = list(self.items)
 
     def urlobject(self, search=True):
         '''Creates customized regex objects of url.'''
