@@ -150,6 +150,10 @@ class tpager(object):
         self.ui.write(header + self.pages[pn])
         return raw_input(self.coltrunc(menu))
 
+    def clamp(self, pn):
+        '''Returns number of next page.'''
+        return max(1, min(pn, self.plen))
+
     def pagemenu(self):
         '''Lets user page through a list of items and make a choice.'''
         header = self.coltrunc('*%s*\n' % util.plural(self.ilen, self.name),
@@ -170,9 +174,6 @@ class tpager(object):
                 reply = self.pagemenu() # display same page
         else: # more than 1 page
             # switch paging command according to paging direction
-            def valclamp(x, low, high):
-                return max(low, min(x, high))
-
             pds = {-1: 'back', 1: 'forward'}
             pn = 1 # start at first page
             pdir = -1 # initial paging direction reversed
@@ -193,10 +194,10 @@ class tpager(object):
                 menu += ', number '
                 reply = self.pagedisplay(header, menu, pn)
                 if not reply:
-                    pn = valclamp(pn+pdir, 1, self.plen)
+                    pn = self.clamp(pn+pdir)
                 elif bs and reply == '-':
                     pdir *= -1
-                    pn = valclamp(pn+pdir, 1, self.plen)
+                    pn = self.clamp(pn+pdir)
                 elif reply in self.itemsdict:
                     self.items = [self.itemsdict[reply]]
                     break
