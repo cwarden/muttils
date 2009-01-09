@@ -37,6 +37,56 @@ def _hostname(generic=False):
     # a sequence of domainlabels + top domain
     return r'(%s\.)+(%s)' % (domainlabel, '|'.join(tds))
 
+def _weburlpats(search, proto=''):
+    '''Creates 2 url patterns. The first according to protocol,
+    The second may contain spaces but is enclosed in '<>'.
+    If no protocol is given the pattern matches only
+    generic top level domains:
+        gmx.net:    counts as url
+        gmx.de:     does not as url
+        www.gmx.de: counts as url
+    This seems a reasonable compromise between the goal to find
+    malformed urls too and false positives -- especially as we
+    treat "www" as sort of inofficial scheme.'''
+    gendelims = r':/?[\]@' # w/o fragment separator "#"
+    subdelims = r"!$&'()*+,;="
+    reserved = gendelims + subdelims
+    escaped = r'%[0-9a-f]{2}' # % 2 hex
+    uric = r'([%s%s]|%s)' % (_unreserved, reserved, escaped)
+    if search:
+        hostport = r'%s(:\d+)?' % _hostname(generic=not proto)
+    else:
+        hostnum = r'(\d+\.){3}\d+'
+        hostport = r'(%s|%s)(:\d+)?' % (_hostname(generic=not proto), hostnum)
+    dom = r'''
+        \b                  # start at word boundary
+        %(proto)s           # protocol or empty
+        %(hostport)s        # host and optional port (no login [yet])
+        (                   # 0 or 1 group
+          /                 #   slash
+          %(uric)s +        #   1 or more uri chars
+          (                 #   0 or 1 group
+            \#              #     fragment separator
+            %(uric)s +      #     1 or more uri chars
+          ) ?
+        ) ?
+        ''' % vars()
+    spdom = r'''
+        (?<=<)              # look behind for '<'
+        %(proto)s           # protocol or empty
+        %(hostport)s        # host and optional port (no login [yet])
+        (                   # 0 or 1 group
+          /                 #   slash
+          (%(uric)s|\s) +   #   1 or more uri chars or space
+          (                 #   0 or 1 group
+            \#              #     fragment separator
+            (%(uric)s|\s) + #     1 or more uri chars or space
+          ) ?
+        ) ?
+        (?=>)               # lookahead for '>'
+        ''' % vars()
+    return dom, spdom
+
 def _mailpat():
     '''Creates pattern for email addresses,
     grabbing those containing a subject first.'''
@@ -83,6 +133,8 @@ def _get_mailre():
                                                 re.IGNORECASE|re.VERBOSE)
     return mailre
 
+def _webcheck(url):
+    return not _get_mailre().match(url)
 
 def webschemecomplete(url):
     '''Returns url with protocol scheme prepended if needed.
@@ -114,7 +166,6 @@ def mailcheck(url):
     Used by urlpager.'''
     return _get_mailre().match(url)
 
-
 class urlregex(object):
     '''
     Provides functions to extract urls from text,
@@ -129,88 +180,33 @@ class urlregex(object):
         self.ui = ui             # proto, decl
         self.uniq = uniq         # list only unique urls
 
+    def setprotocol(self):
+        mailto = 'mailto:\s?' # needed for proto=='all'
+        http = r'(https?://|www\.)'
+        ftp = r'(s?ftp://|ftp\.)'
+        gopher = r'gopher(://|\.)'
+        # finger, telnet, whois, wais?
+        if self.ui.proto in ('all', 'web'):
+            protocols = [http, ftp, gopher]
+            if self.ui.proto == 'all':
+                protocols.append(mailto)
+            return r'(%s)' % '|'.join(protocols)
+        self.ui.decl = True
+        protocol = eval(self.ui.proto)
+        return r'(url:\s?)?%s' % protocol
+
     def getraw(self, search):
         '''Returns raw patterns according to protocol.'''
-
-        def setprotocol():
-            mailto = 'mailto:\s?' # needed for proto=='all'
-            http = r'(https?://|www\.)'
-            ftp = r'(s?ftp://|ftp\.)'
-            gopher = r'gopher(://|\.)'
-            # finger, telnet, whois, wais?
-            if self.ui.proto in ('all', 'web'):
-                protocols = [http, ftp, gopher]
-                if self.ui.proto == 'all':
-                    protocols.append(mailto)
-                return r'(%s)' % '|'.join(protocols)
-            self.ui.decl = True
-            protocol = eval(self.ui.proto)
-            return r'(url:\s?)?%s' % protocol
-
-        def weburlpats(search, proto=''):
-            '''Creates 2 url patterns. The first according to protocol,
-            The second may contain spaces but is enclosed in '<>'.
-            If no protocol is given the pattern matches only
-            generic top level domains:
-                gmx.net:    counts as url
-                gmx.de:     does not as url
-                www.gmx.de: counts as url
-            This seems a reasonable compromise between the goal to find
-            malformed urls too and false positives -- especially as we
-            treat "www" as sort of inofficial scheme.'''
-            gendelims = r':/?[\]@' # w/o fragment separator "#"
-            subdelims = r"!$&'()*+,;="
-            reserved = gendelims + subdelims
-            escaped = r'%[0-9a-f]{2}' # % 2 hex
-            uric = r'([%s%s]|%s)' % (_unreserved, reserved, escaped)
-            if search:
-                hostport = r'%s(:\d+)?' % _hostname(generic=not proto)
-            else:
-                hostnum = r'(\d+\.){3}\d+'
-                hostport = r'(%s|%s)(:\d+)?' % (_hostname(generic=not proto),
-                                                hostnum)
-            dom = r'''
-                \b                  # start at word boundary
-                %(proto)s           # protocol or empty
-                %(hostport)s        # host and optional port (no login [yet])
-                (                   # 0 or 1 group
-                  /                 #   slash
-                  %(uric)s +        #   1 or more uri chars
-                  (                 #   0 or 1 group
-                    \#              #     fragment separator
-                    %(uric)s +      #     1 or more uri chars
-                  ) ?
-                ) ?
-                ''' % vars()
-            spdom = r'''
-                (?<=<)              # look behind for '<'
-                %(proto)s           # protocol or empty
-                %(hostport)s        # host and optional port (no login [yet])
-                (                   # 0 or 1 group
-                  /                 #   slash
-                  (%(uric)s|\s) +   #   1 or more uri chars or space
-                  (                 #   0 or 1 group
-                    \#              #     fragment separator
-                    (%(uric)s|\s) + #     1 or more uri chars or space
-                  ) ?
-                ) ?
-                (?=>)               # lookahead for '>'
-                ''' % vars()
-            return dom, spdom
-
-        url, spurl = weburlpats(search, proto=setprotocol())
+        url, spurl = _weburlpats(search, proto=self.setprotocol())
         if self.ui.decl:
             return r'(%s|%s)' % (spurl, url)
-        any_url, any_spurl = weburlpats(search)
+        any_url, any_spurl = _weburlpats(search)
         return (r'(%s|%s|%s|%s|%s)'
                 % (_mailpat(), spurl, any_spurl, url, any_url))
 
     def urlfilter(self):
         '''Filters out urls not in given scheme and duplicates.'''
-        def webcheck(url):
-            return not _get_mailre().match(url)
-
-        filterdict = {'web': webcheck, 'mailto': mailcheck}
+        filterdict = {'web': _webcheck, 'mailto': mailcheck}
         if not self.ui.decl and self.ui.proto in filterdict:
             self.items = [i for i in self.items
                           if filterdict[self.ui.proto](i)]

@@ -8,6 +8,12 @@ try:
 except ImportError:
     pass
 
+def _gettyenv(v):
+    try:
+        return int(os.environ[v])
+    except (KeyError, ValueError):
+        return 0
+
 class tpager(object):
     '''
     Customizes interactive choice to current terminal.
@@ -51,12 +57,6 @@ class tpager(object):
 
     def terminspect(self):
         '''Get current term's columns and rows, return customized values.'''
-        def gettyenv(v):
-            try:
-                return int(os.environ[v])
-            except (KeyError, ValueError):
-                return 0
-
         notty = False  # assume connection to terminal
         self.fd = None # reset if class was not reloaded (ckey)
         for dev in (sys.stdout, sys.stdin):
@@ -81,8 +81,8 @@ class tpager(object):
                         self.fd = None
             except NameError:
                 self.fd = None
-        self.rows = self.rows or (gettyenv('LINES') or 24) - 1
-        self.cols = self.cols or (gettyenv('COLUMNS') or 80) + 1
+        self.rows = self.rows or (_gettyenv('LINES') or 24) - 1
+        self.cols = self.cols or (_gettyenv('COLUMNS') or 80) + 1
         return notty
 
     def formatitems(self):
@@ -104,17 +104,17 @@ class tpager(object):
         for k in ikeys:
             yield formfunc(k)
 
+    def addpage(self, buff, lines, pn):
+        pn += 1
+        if self.more:
+            # fill page with newlines
+            buff += '\n' * (self.rows-lines-1)
+        self.pages[pn] = buff
+        return pn
+
     def pagesdict(self):
         '''Creates dictionary of pages to display in terminal window.
         Keys are integers as string starting from "1".'''
-        def addpage(buff, lines, pn):
-            pn += 1
-            if self.more:
-                # fill page with newlines
-                buff += '\n' * (self.rows-lines-1)
-            self.pages[pn] = buff
-            return pn
-
         self.itemsdict.clear()
         self.pages.clear()
         # all this still supposes that no wrapped text item
@@ -130,9 +130,9 @@ class tpager(object):
                 lines = linecheck
             else:
                 self.more = True
-                pn = addpage(buff, lines, pn)
+                pn = self.addpage(buff, lines, pn)
                 buff, lines = item, ilines
-        pn = addpage(buff, lines, pn)
+        pn = self.addpage(buff, lines, pn)
         self.plen = len(self.pages)
 
     def coltrunc(self, s, cols=0):

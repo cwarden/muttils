@@ -5,6 +5,12 @@ import cStringIO, re, sys
 import email, email.Iterators, email.Utils, email.Errors
 import mailbox
 
+def _msgfactory(fp):
+    try:
+        fp.seek(0)
+        return email.message_from_file(fp)
+    except email.Errors.MessageParseError:
+        return None
 
 class urlcollector(urlregex.urlregex):
     '''
@@ -19,20 +25,20 @@ class urlcollector(urlregex.urlregex):
         self.ui = ui
         self.files = files
 
-    def msgharvest(self, msg, strings=None):
-        def addrget(*headers):
-            for header in headers:
-                vals = msg.get_all(header)
-                if vals:
-                    pairs = email.Utils.getaddresses(vals)
-                    self.items += [addr for rname, addr in pairs if addr]
+    def getaddr(self, msg, *headers):
+        for header in headers:
+            vals = msg.get_all(header)
+            if vals:
+                pairs = email.Utils.getaddresses(vals)
+                self.items += [addr for rname, addr in pairs if addr]
 
+    def msgharvest(self, msg, strings=None):
         sl = strings or []
         if self.ui.proto != 'mid':
             if self.ui.proto in ('all', 'mailto'):
-                addrget('from', 'to', 'reply-to', 'cc', 'sender', 'x-sender',
-                        'mail-followup-to', 'x-apparently-to', 'errors-to',
-                        'x-beenthere')
+                self.getaddr(msg, 'from', 'to', 'reply-to', 'cc', 'sender',
+                             'x-sender', 'mail-followup-to', 'x-apparently-to',
+                             'errors-to', 'x-beenthere')
             searchheads = ['subject', 'organization', 'user-agent', 'x-mailer',
                            'x-mailer-info', 'x-newsreader', 'list-subscribe',
                            'list-unsubscribe', 'list-help', 'list-archive',
@@ -43,8 +49,8 @@ class urlcollector(urlregex.urlregex):
                 if vals:
                     sl += vals
         else:
-            addrget('references', 'in-reply-to', 'message-id',
-                    'original-message-id')
+            self.getaddr(msg, 'references', 'in-reply-to', 'message-id',
+                         'original-message-id')
         # revert resent messages to previous content-type
         oldct = msg['old-content-type']
         if oldct:
@@ -65,18 +71,11 @@ class urlcollector(urlregex.urlregex):
         If no, returns text contents of file or empty string if file is binary.
         Parses message/mailbox for relevant headers adding urls to list of items
         and returns text parts for further searching.'''
-        def msgfactory(fp):
-            try:
-                fp.seek(0)
-                return email.message_from_file(fp)
-            except email.Errors.MessageParseError:
-                return None
-
         # binary check from mercurial.util
         s = fp.read(4096)
         if '\0' in s:
             return ''
-        msg = msgfactory(fp)
+        msg = _msgfactory(fp)
         if not msg or not msg['Message-ID']:
             fp.seek(0)
             return fp.read()
@@ -85,7 +84,7 @@ class urlcollector(urlregex.urlregex):
             sl = self.msgharvest(msg)
         else: # treat s like a mailbox because it might be one
             sl = [] # list of strings to search
-            mbox = mailbox.PortableUnixMailbox(fp, msgfactory)
+            mbox = mailbox.PortableUnixMailbox(fp, _msgfactory)
             while msg is not None:
                 msg = mbox.next()
                 if msg:

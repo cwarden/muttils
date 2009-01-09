@@ -3,6 +3,18 @@
 import util
 import re, sys
 
+def _mrex(pat):
+    '''Checks and returns MULTILINE regex of pat.'''
+    try:
+        return re.compile(r'%s' % pat, re.MULTILINE)
+    except re.error, inst:
+        raise util.DeadMan("error in pattern `%s': %s" % (pat, inst))
+
+def _unmangle(mobj):
+    if mobj.group(1):
+        return '%s%s' % (mobj.group(1), mobj.group(2)[1:])
+    return mobj.group(2)[1:]
+
 class wrap(object):
     '''
     Provides customized line breaking.
@@ -44,31 +56,23 @@ class wrap(object):
         self.input = inp or None # will be treated according to type
         for k in opts.iterkeys():
             setattr(self, k, opts[k])
-
-        def mrex(pat):
-            '''Checks and returns MULTILINE regex of pat.'''
-            try:
-                return re.compile(r'%s' % pat, re.MULTILINE)
-            except re.error, inst:
-                raise util.DeadMan("error in pattern `%s': %s" % (pat, inst))
-
         # wrap width falls back on width if neither respect nor ipar
         # are specified in that order, and finally to 78
         self.defwidth = self.width = (self.respect or self.ipar or
                                       self.width or 78)
         if self.excl:
-            self.excl = mrex(self.excl)
+            self.excl = _mrex(self.excl)
         if self.qmail:
             self.email = True
             if '>' not in self.quote:
                 self.quote = '>%s' % self.quote
         del self.qmail
         if self.email and '>' in self.quote:
-            self.email = mrex('([%s] ?)*(>[fF]rom)' % self.quote)
+            self.email = _mrex('([%s] ?)*(>[fF]rom)' % self.quote)
         elif self.email:
-            self.email = mrex('([>%s] ?)*(>[fF]rom)' % self.quote)
+            self.email = _mrex('([>%s] ?)*(>[fF]rom)' % self.quote)
         if self.quote:
-            self.quote = mrex('([%s] ?)+' % self.quote)
+            self.quote = _mrex('([%s] ?)+' % self.quote)
         if self.hyph:
             self.hyph = re.compile(r'\b[-/]+\b')
             self.tail_re = re.compile(r'\w[-/([{&^]$')
@@ -152,14 +156,9 @@ class wrap(object):
         return indent.group(0)
 
     def lineparser(self):
-        def unmangle(mobj):
-            if mobj.group(1):
-                return '%s%s' % (mobj.group(1), mobj.group(2)[1:])
-            return mobj.group(2)[1:]
-
         # unmangle From
         if self.email:
-            self.line = self.email.sub(unmangle, self.line, 1)
+            self.line = self.email.sub(_unmangle, self.line, 1)
         # look for quote string
         if self.quote:    # and set quote indent
             qindent = self.getindent(self.quote)

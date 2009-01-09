@@ -10,6 +10,45 @@ def _makequery(mid):
     query = {'selm': mid}
     return '%s?%s' % (ggroups,  urllib.urlencode(query))
 
+def _getraw(msgurl):
+    query = {'dmode': 'source', 'output': 'gplain'}
+    return '%s?%s' % (msgurl, urllib.urlencode(query))
+
+def _msgfactory(fp):
+    try:
+        p = email.Parser.HeaderParser()
+        return p.parse(fp, headersonly=True)
+    except email.Errors.HeaderParseError:
+        return ''
+
+def _getmhier():
+    castle = os.environ['HOME']
+    for md in ('Maildir', 'Mail'):
+        d = os.path.join(castle, md)
+        if os.path.isdir(d):
+            return [d]
+    return []
+
+def _getmspool():
+    '''Tries to return a sensible default for user's mail spool.'''
+    mailspool = os.getenv('MAIL', '')
+    if not mailspool:
+        ms = os.path.join('var', 'mail', os.environ['USER'])
+        if os.path.isfile(ms):
+            return ms
+    elif mailspool.endswith(os.sep):
+        return mailspool[:-1] # ~/Maildir/-INBOX[/]
+    return mailspool
+
+def _mkunixfrom(msg):
+    if msg['return-path']:
+        ufrom = msg['return-path'][1:-1]
+    else:
+        ufrom = email.Utils.parseaddr(msg.get('from', 'nobody'))[1]
+    msg.set_unixfrom('From %s  %s' % (ufrom, time.asctime()))
+    return msg
+
+
 class kiosk(object):
     '''
     Provides methods to search for and retrieve
@@ -54,14 +93,6 @@ class kiosk(object):
     def getmhiers(self):
         '''Checks whether given directories exist and
         creates mhiers set (unique elems) with absolute paths.'''
-        def getmhier():
-            castle = os.environ['HOME']
-            for md in ('Maildir', 'Mail'):
-                d = os.path.join(castle, md)
-                if os.path.isdir(d):
-                    return [d]
-            return []
-
         if self.ui.mhiers or self.ui.specdirs: # cmdline priority
             # specdirs have priority
             mhiers = self.ui.specdirs or self.ui.mhiers
@@ -69,7 +100,7 @@ class kiosk(object):
             mhiers = mhiers.split(':')
         else:
             mhiers = self.ui.configlist('messages', 'maildirs',
-                                        default=getmhier())
+                                        default=_getmhier())
         # create set of unique elements
         mhiers = set([util.absolutepath(e) for e in mhiers])
         mhiers = list(mhiers)
@@ -95,17 +126,13 @@ class kiosk(object):
 
     def gogoogle(self):
         '''Gets messages from Google Groups.'''
-        def getraw(msgurl):
-            query = {'dmode': 'source', 'output': 'gplain'}
-            return '%s?%s' % (msgurl, urllib.urlencode(query))
-
         self.ui.note('note: google masks all email addresses\n',
                      'going google ...\n')
         uget = wget.wget(self.ui, ('User-Agent', 'w3m'))
         for mid in self.items[:]:
             msgurl = uget.request(_makequery(mid), 'g')
             if msgurl:
-                msg = uget.request(getraw(msgurl))
+                msg = uget.request(_getraw(msgurl))
                 if msg and msg.split('\n', 1)[1].find('DOCTYPE html') == -1:
                     msg = email.message_from_string(msg)
                     self.msgs.append(msg)
@@ -137,13 +164,6 @@ class kiosk(object):
                          (util.plural(len(self.items), 'message'), sname))
 
     def boxparser(self, path, maildir=False, isspool=False):
-        def msgfactory(fp):
-            try:
-                p = email.Parser.HeaderParser()
-                return p.parse(fp, headersonly=True)
-            except email.Errors.HeaderParseError:
-                return ''
-
         if (not isspool and path == self.mspool or
             self.ui.mask and self.ui.mask.search(path) is not None):
             return
@@ -155,14 +175,14 @@ class kiosk(object):
             for d in 'cur', 'new', 'tmp':
                 if d not in dl:
                     return
-            mbox = mailbox.Maildir(path, msgfactory)
+            mbox = mailbox.Maildir(path, _msgfactory)
         else:
             try:
                 fp = open(path, 'rb')
             except IOError, inst:
                 self.ui.warn('%s\n' % inst)
                 return
-            mbox = mailbox.PortableUnixMailbox(fp, msgfactory)
+            mbox = mailbox.PortableUnixMailbox(fp, _msgfactory)
         self.ui.note('searching %s ' % path)
         while True:
             try:
@@ -206,20 +226,9 @@ class kiosk(object):
     def mailsearch(self):
         '''Announces search of mailboxes, searches spool,
         and passes mail hierarchies to walkmhier.'''
-        def getmspool():
-            '''Tries to return a sensible default for user's mail spool.'''
-            mailspool = os.getenv('MAIL', '')
-            if not mailspool:
-                ms = os.path.join('var', 'mail', os.environ['USER'])
-                if os.path.isfile(ms):
-                    return ms
-            elif mailspool.endswith(os.sep):
-                return mailspool[:-1] # ~/Maildir/-INBOX[/]
-            return mailspool
-
         self.ui.note('Searching local mailboxes ...\n')
         if not self.ui.specdirs: # include mspool
-            self.mspool = getmspool()
+            self.mspool = _getmspool()
             if self.mspool:
                 self.boxparser(self.mspool,
                                os.path.isdir(self.mspool), isspool=True)
@@ -235,14 +244,6 @@ class kiosk(object):
 
     def openkiosk(self, firstid):
         '''Opens mutt on kiosk mailbox.'''
-        def mkunixfrom(msg):
-            if msg['return-path']:
-                ufrom = msg['return-path'][1:-1]
-            else:
-                ufrom = email.Utils.parseaddr(msg.get('from', 'nobody'))[1]
-            msg.set_unixfrom('From %s  %s' % (ufrom, time.asctime()))
-            return msg
-
         fp = open(self.ui.kiosk, 'ab')
         try:
             g = email.Generator.Generator(fp, maxheaderlen=0)
@@ -251,7 +252,7 @@ class kiosk(object):
                 for h in ('status', 'xref'):
                     del msg[h]
                 if not msg.get_unixfrom():
-                    msg = mkunixfrom(msg)
+                    msg = _mkunixfrom(msg)
                 g.flatten(msg, unixfrom=True)
         finally:
             fp.close()
