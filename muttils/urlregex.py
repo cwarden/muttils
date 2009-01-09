@@ -216,13 +216,11 @@ class urlregex(object):
                 proto_re = re.compile(r'^((https?|s?ftp|gopher)://|mailto:)',
                                       re.IGNORECASE)
                 truncs = [proto_re.sub('', u, 1) for u in self.items]
-                uniqurls = []
-                for i in xrange(len(self.items)):
-                    url = self.items[i]
-                    trunc = truncs[i]
-                    if truncs.count(trunc) == 1 or len(url) > len(trunc):
-                        uniqurls.append(url)
-                self.items = uniqurls
+                pairs = zip(self.items, truncs)
+                self.items = []
+                for u, t in pairs:
+                    if truncs.count(t) == 1 or len(u) > len(t):
+                        self.items.append(u)
 
     def urlobject(self, search=True):
         '''Creates customized regex objects of url.'''
