@@ -118,7 +118,7 @@ def _nntppat():
 
 def _midpat():
     '''Creates pattern for message ids.'''
-    return r'[a-z0-9\-._#~?+=&%%!$[\]]{9,}@%s' % _hostname()
+    return r'[^\x80-\xFF<>@\s]{9,}@%s' % _hostname()
 
 def _declmidpat():
     '''Returns pattern for message id, prefixed with "attribution".'''
