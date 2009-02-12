@@ -43,12 +43,12 @@ class wget(object):
     def download(self, urls):
         self.ui.getdir = util.savedir(self.ui.getdir)
         for url in map(urlregex.webschemecomplete, urls):
+            self.ui.note('downloading to %s ...\n' % path)
             s = self.request(url)
             if s:
                 try:
                         bn = url.rstrip('/').split('/')[-1]
                         path = os.path.join(self.ui.getdir, bn)
-                        self.ui.note('downloading to %s ...\n' % path)
                         fp = open(path, 'wb')
                         fp.write(s)
                         fp.close()
