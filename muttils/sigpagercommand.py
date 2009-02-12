@@ -4,10 +4,8 @@
 and prints selected signature to standard output or files.
 '''
 
-import sigpager
-import util
-import optparse
-import sys
+import sigpager, util
+import optparse, sys
 
 proginfo = 'Sigpager - email signature selection'
 

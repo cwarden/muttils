@@ -7,10 +7,8 @@ Can be told to respect linebreaks and just wrap long lines.
 Capability to hyphenate dash-compounded words.
 '''
 
-import wrap
-import util
-import optparse
-import sys
+import wrap, util
+import optparse, sys
 
 proginfo = 'Wrap - word wrap text to stdout'
 

@@ -20,8 +20,7 @@ Options "-p mid", "-i", "-n", "-B", "-l", "-m", "-d", "-D", "-M"
 switch to message retrieval.
 '''
 
-import urlpager, util
-from urlregex import valid_protos
+import urlpager, urlregex, util
 import optparse, sys
 
 proginfo = 'Urlpager - search, choose and retrieve url'
@@ -37,7 +36,7 @@ def run():
                         kiosk='', mhiers='', specdirs='', mask=None)
 
     parser.add_option('-p', '--protocol', dest='proto',
-                      type='choice', choices=valid_protos,
+                      type='choice', choices=urlregex.valid_protos,
                       help='narrow down url choice to protocol PROTO')
     parser.add_option('-r', '--regex', dest='pat',
                       help='narrow down url choice to urls matching PAT')
