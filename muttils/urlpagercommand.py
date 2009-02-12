@@ -20,7 +20,7 @@ Options "-p mid", "-i", "-n", "-B", "-l", "-m", "-d", "-D", "-M"
 switch to message retrieval.
 '''
 
-import urlpager, util, version
+import urlpager, util
 from urlregex import valid_protos
 import optparse, sys
 
@@ -31,7 +31,7 @@ def run():
     parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(),
                                    usage='%prog [options] [files]',
                                    description=__doc__,
-                                   version=version.version_(proginfo))
+                                   version=util.fullversion(proginfo))
     parser.set_defaults(proto='all', pat=None, app='', getdir='', ftpdir='',
                         midrelax=False, local=False, browse=False, news=False,
                         kiosk='', mhiers='', specdirs='', mask=None)

@@ -6,7 +6,6 @@ and prints selected signature to standard output or files.
 
 import sigpager
 import util
-import version
 import optparse
 import sys
 
@@ -16,7 +15,7 @@ def run():
     '''Runs the sigpager script.'''
     parser = optparse.OptionParser(usage='%prog [options] [files to sign]',
                                    description=__doc__,
-                                   version=version.version_(proginfo))
+                                   version=util.fullversion(proginfo))
     parser.set_defaults(defsig='', sigdir='', tail='', sigsep='-- \n')
 
     parser.add_option('-d', '--sigdir',

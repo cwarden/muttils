@@ -12,6 +12,20 @@ class DeadMan(Exception):
     def __str__(self):
         return 'abort: %s' % (''.join(self.inst))
 
+def version():
+    try:
+        import __version__
+        return __version__.version
+    except ImportError:
+        return 'unknown'
+
+def fullversion(proginfo):
+    return ('%s (version %s)\n\n'
+            'Copyright (C) 2007-2008 Christian Ebert <blacktrash@gmx.net>\n'
+            'This is free software. See the source for copying conditions.\n'
+            'The Muttils package comes with ABSOLUTELY NO WARRANTY.'
+            % (proginfo, version()))
+
 def termconnected():
     '''Returns true if we are connected to a terminal.'''
     if hasattr(sys.stdin, 'fileno'):

@@ -7,7 +7,6 @@ $BROWSER environment may be overridden with option "-b".
 
 import viewhtmlmsg
 import util
-import version
 import optparse
 import sys
 
@@ -17,7 +16,7 @@ def run():
     '''Runs the viewhtmlmsg script.'''
     parser = optparse.OptionParser(usage='%prog [options]',
                                    description=__doc__,
-                                   version=version.version_(proginfo))
+                                   version=util.fullversion(proginfo))
     parser.set_defaults(safe=False, keep=None, app='')
     parser.add_option('-s', '--safe', action='store_true',
                       help='view html w/o loading remote files')

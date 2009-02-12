@@ -9,7 +9,6 @@ Capability to hyphenate dash-compounded words.
 
 import wrap
 import util
-import version
 import optparse
 import sys
 
@@ -19,7 +18,7 @@ def run():
     '''Command interface to the Wrap class.'''
     parser = optparse.OptionParser(usage='%prog [options] [files]',
                                    description=__doc__,
-                                   version=version.version_(proginfo))
+                                   version=util.fullversion(proginfo))
     parser.set_defaults(width=0, ipar=0, respect=0, hyph=False,
                         tabwidth=8, excl='', quote='',
                         qmail=False, email=False, _outfunc=False)

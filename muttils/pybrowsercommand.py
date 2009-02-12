@@ -9,7 +9,6 @@ $BROWSER environment may be overridden with option "-b".
 
 import pybrowser
 import util
-import version
 import optparse
 import sys
 
@@ -19,7 +18,7 @@ def run():
     '''Runs the pybrowser script.'''
     parser = optparse.OptionParser(usage='%prog [option] [urls]',
                                    description=__doc__,
-                                   version=version.version_(proginfo))
+                                   version=util.fullversion(proginfo))
     parser.set_defaults(app='')
     parser.add_option('-b', '--browser', dest='app',
                       help='prefer browser APP over $BROWSER environment')
