@@ -103,8 +103,7 @@ class kiosk(object):
                                         default=_getmhier())
         # create set of unique elements
         mhiers = set([util.absolutepath(e) for e in mhiers])
-        mhiers = list(mhiers)
-        mhiers.sort()
+        mhiers = sorted(mhiers)
         self.ui.mhiers = []
         previtem = ''
         for hier in mhiers:
