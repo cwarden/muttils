@@ -1,6 +1,6 @@
 # $Id$
 
-import tpager, util, ui
+from muttils import tpager, util, ui
 import os, random, re
 try:
     import readline

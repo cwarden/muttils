@@ -18,7 +18,7 @@ Options "-p mid", "-i", "-n", "-B", "-l", "-m", "-d", "-D", "-M"
 switch to message retrieval.
 '''
 
-import urlbatcher, util
+from muttils import urlbatcher, util
 import optparse, sys
 
 valid_protos = ['web', 'http', 'ftp', 'mid']

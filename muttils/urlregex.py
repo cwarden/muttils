@@ -1,6 +1,6 @@
 # $Id$
 
-import util
+from muttils import util
 import re
 
 valid_protos = ['all', 'web', 'http', 'ftp', 'gopher', 'mailto', 'mid']

@@ -1,6 +1,6 @@
 # $Id$
 
-import urlregex, util
+from muttils import urlregex, util
 import os.path, urllib2
 
 class wget(object):

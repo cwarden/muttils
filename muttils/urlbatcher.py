@@ -9,7 +9,7 @@
 # input is checked anew for each file.
 ###
 
-import iterm, kiosk, pybrowser, ui, urlcollector, util, wget
+from muttils import iterm, kiosk, pybrowser, ui, urlcollector, util, wget
 
 class urlbatcher(urlcollector.urlcollector):
     '''

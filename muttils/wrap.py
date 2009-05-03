@@ -1,6 +1,6 @@
 # $Id$
 
-import util
+from muttils import util
 import re, sys
 
 def _mrex(pat):

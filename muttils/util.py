@@ -16,7 +16,7 @@ class DeadMan(Exception):
 
 def version():
     try:
-        import __version__
+        from muttils import __version__
         return __version__.version
     except ImportError:
         return 'unknown'

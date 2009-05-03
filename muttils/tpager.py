@@ -1,6 +1,6 @@
 # $Id$
 
-import iterm, util
+from muttils import iterm, util
 import os, sys
 try:
     # termios only available for unix

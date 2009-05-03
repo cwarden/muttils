@@ -3,7 +3,7 @@
 '''ui.py - user interface for muttils package
 '''
 
-import util
+from muttils import util
 import ConfigParser, os.path, sys
 
 class ui(object):

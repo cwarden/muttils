@@ -1,6 +1,6 @@
 # $Id$
 
-import ui, urlregex, util
+from muttils import ui, urlregex, util
 import os, webbrowser
 
 class browser(object):

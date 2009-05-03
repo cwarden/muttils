@@ -4,7 +4,7 @@
 and prints selected signature to standard output or files.
 '''
 
-import sigpager, util
+from muttils import sigpager, util
 import optparse, sys
 
 proginfo = 'Sigpager - email signature selection'

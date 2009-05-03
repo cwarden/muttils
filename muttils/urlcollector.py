@@ -1,6 +1,6 @@
 # $Id$
 
-import urlregex, util
+from muttils import urlregex, util
 import cStringIO, re, sys
 import email, email.Iterators, email.Utils, email.Errors
 import mailbox

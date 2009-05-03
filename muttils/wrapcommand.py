@@ -7,7 +7,7 @@ Can be told to respect linebreaks and just wrap long lines.
 Capability to hyphenate dash-compounded words.
 '''
 
-import wrap, util
+from muttils import wrap, util
 import optparse, sys
 
 proginfo = 'Wrap - word wrap text to stdout'

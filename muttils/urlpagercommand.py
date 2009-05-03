@@ -20,7 +20,7 @@ Options "-p mid", "-i", "-n", "-B", "-l", "-m", "-d", "-D", "-M"
 switch to message retrieval.
 '''
 
-import urlpager, urlregex, util
+from muttils import urlpager, urlregex, util
 import optparse, sys
 
 proginfo = 'Urlpager - search, choose and retrieve url'

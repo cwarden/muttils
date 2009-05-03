@@ -1,7 +1,7 @@
 # $Id$
 
-import urlcollector, urlregex
-import iterm, kiosk, pybrowser, tpager, ui, util, wget
+from muttils import urlcollector, urlregex
+from muttils import iterm, kiosk, pybrowser, tpager, ui, util, wget
 import os.path
 
 try:

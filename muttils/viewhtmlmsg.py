@@ -3,7 +3,7 @@
 '''viewhtml - unpack html message and display with browser
 '''
 
-import pybrowser, ui, util
+from muttils import pybrowser, ui, util
 import email, email.Errors, email.Iterators, email.Utils
 import os.path, re, shutil, sys, tempfile, time, urllib
 

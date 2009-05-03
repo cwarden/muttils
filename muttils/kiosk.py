@@ -1,6 +1,6 @@
 # $Id$
 
-import pybrowser, util, wget
+from muttils import pybrowser, util, wget
 import email, email.Generator, email.Parser, email.Errors
 import mailbox, nntplib, os, re, tempfile, time, urllib
 

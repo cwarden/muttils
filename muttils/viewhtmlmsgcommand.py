@@ -5,7 +5,7 @@
 $BROWSER environment may be overridden with option "-b".
 '''
 
-import viewhtmlmsg, util
+from muttils import viewhtmlmsg, util
 import optparse, sys
 
 proginfo = 'Viewhtmlmsg - view html message in browser'
