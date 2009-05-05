@@ -3,9 +3,9 @@
 '''viewhtml - unpack html message and display with browser
 '''
 
-from muttils import pybrowser, ui, util
 import email, email.Errors, email.Iterators, email.Utils
 import os.path, re, shutil, sys, tempfile, time, urllib
+from muttils import pybrowser, ui, util
 
 class viewhtml(pybrowser.browser):
     def __init__(self, parentui=None, inp='', safe=False, keep=None, app=''):

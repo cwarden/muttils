@@ -1,7 +1,7 @@
 # $Id$
 
-from muttils import util
 import re, sys
+from muttils import util
 
 def _mrex(pat):
     '''Checks and returns MULTILINE regex of pat.'''

@@ -1,7 +1,7 @@
 # $Id$
 
-from muttils import ui, urlregex, util
 import os, webbrowser
+from muttils import ui, urlregex, util
 
 class browser(object):
     '''

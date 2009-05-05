@@ -1,12 +1,13 @@
 # $Id$
 
-from muttils import iterm, util
 import os, sys
 try:
     # termios only available for unix
     import termios, array, fcntl, signal
 except ImportError:
     pass
+
+from muttils import iterm, util
 
 def _gettyenv(v):
     try:

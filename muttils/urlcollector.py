@@ -1,9 +1,9 @@
 # $Id$
 
-from muttils import urlregex, util
 import cStringIO, re, sys
 import email, email.Iterators, email.Utils, email.Errors
 import mailbox
+from muttils import urlregex, util
 
 def _msgfactory(fp):
     try:

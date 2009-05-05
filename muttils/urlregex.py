@@ -1,7 +1,7 @@
 # $Id$
 
-from muttils import util
 import re
+from muttils import util
 
 valid_protos = ['all', 'web', 'http', 'ftp', 'gopher', 'mailto', 'mid']
 # finger, telnet, whois, wais?

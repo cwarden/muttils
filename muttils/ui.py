@@ -3,8 +3,8 @@
 '''ui.py - user interface for muttils package
 '''
 
-from muttils import util
 import ConfigParser, os.path, sys
+from muttils import util
 
 class ui(object):
     config = None

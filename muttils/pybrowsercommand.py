@@ -7,8 +7,8 @@ Completes short urls like "blacktrash.org" automagically.
 $BROWSER environment may be overridden with option "-b".
 '''
 
-from muttils import pybrowser, util
 import optparse, sys
+from muttils import pybrowser, util
 
 proginfo = 'Pybrowser - python interface to system browsers'
 

@@ -1,7 +1,7 @@
 # $Id$
 
-from muttils import urlregex, util
 import os.path, urllib2
+from muttils import urlregex, util
 
 class wget(object):
     def __init__(self, ui, *headers):

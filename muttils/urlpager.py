@@ -1,14 +1,14 @@
 # $Id$
 
-from muttils import urlcollector, urlregex
-from muttils import iterm, kiosk, pybrowser, tpager, ui, util, wget
 import os.path
-
 try:
     import readline
     loadedreadline = True
 except ImportError:
     loadedreadline = False
+
+from muttils import urlcollector, urlregex
+from muttils import iterm, kiosk, pybrowser, tpager, ui, util, wget
 
 class urlpager(urlcollector.urlcollector, tpager.tpager):
     def __init__(self, parentui=None, files=None, opts={}):

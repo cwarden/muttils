@@ -1,8 +1,8 @@
 # $Id$
 
-from muttils import pybrowser, util, wget
 import email, email.Generator, email.Parser, email.Errors
 import mailbox, nntplib, os, re, tempfile, time, urllib
+from muttils import pybrowser, util, wget
 
 def _makequery(mid):
     '''Reformats Message-ID to google query.'''
