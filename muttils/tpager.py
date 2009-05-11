@@ -13,7 +13,7 @@ def _gettyenv(v):
     try:
         return int(os.environ[v])
     except (KeyError, ValueError):
-        return 0
+        pass
 
 class tpager(object):
     '''
