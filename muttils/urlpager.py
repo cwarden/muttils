@@ -67,13 +67,14 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
             cs = [self.ui.configitem('net', 'ftpclient', default='ftp')]
             # for ftp programs that have more of a browser interface
             # we assume a file if url has a file extension
-            assumefile = os.path.splitext(url)[1]
-            if cs[0].endswith('lftp') and assumefile:
-                # lftp needs an optional command
-                cs += ['-c', 'get']
-            elif cs[0].endswith('ncftp') and assumefile:
-                # use ncftpget instead
-                cs = ['%sget' % cs[0]]
+            if os.path.splitext(url)[1]:
+                exe = os.path.split(cs[0])[-1]
+                if exe == 'lftp':
+                    # lftp needs an optional command
+                    cs += ['-c', 'get']
+                elif exe == 'ncftp':
+                    # use ncftpget instead
+                    cs = ['%sget' % cs[0]]
         if not cs and not self.ui.getdir:
             b = pybrowser.browser(parentui=self.ui, items=self.items)
             b.urlvisit()
