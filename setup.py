@@ -15,8 +15,8 @@ if os.path.isdir('.hg'):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE).communicate()
     if e:
-        sys.stderr.write('warning: could not establish muttils version: %s'
-                         % e)
+        sys.stderr.write('warning: could not establish muttils '
+                         'version:\n%s\n' % e)
     else:
         v = v.split()
         while len(v) > 1 and v[-1][0].isalpha(): # no numbered tags
