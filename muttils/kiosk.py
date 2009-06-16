@@ -140,15 +140,16 @@ class kiosk(object):
                     self.ui.warn('%s: not found at google\n' % mid)
 
     def newssearch(self, sname):
-        '''Retrieves messages from local newsserver.'''
+        '''Retrieves messages from newsserver.'''
         self.ui.note('searching news server %s\n' % sname)
         try:
             nserv = nntplib.NNTP(sname, readermode=True, usenetrc=True)
         except nntplib.NNTPPermanentError:
-            nserv = nntplib.NNTP(sname, readermode=True, usenetrc=False)
-        except Exception, (errno, inst):
-            self.ui.warn(inst + '\n')
-            return
+            try:
+                nserv = nntplib.NNTP(sname, readermode=True, usenetrc=False)
+            except nntplib.NNTPPermanentError, inst:
+                self.ui.warn('%s\n' % inst)
+                return
         for mid in self.items[:]:
             try:
                 art = nserv.article('<%s>' % mid)
