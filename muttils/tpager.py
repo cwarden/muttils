@@ -29,14 +29,14 @@ class tpager(object):
     plen = 0            # how many pages
 
     def __init__(self, ui, items=None, name='item',
-                 format='sf', ckey='', qfunc='quit', crit='pattern'):
+                 fmt='sf', ckey='', qfunc='quit', crit='pattern'):
         self.ui = ui
         self.items = items or [] # (text) items to choose from
         self.name = name         # general name of an item
-        self.format = format
-        if self.format not in ('sf', 'bf'):
+        self.fmt = fmt
+        if self.fmt not in ('sf', 'bf'):
             raise util.DeadMan('%s: invalid format, use one of "sf", "bf"'
-                               % self.format)
+                               % self.fmt)
         self.ckey = ckey         # key to customize pager
         if self.ckey in ('q', 'Q', '-'):
             raise util.DeadMan("the `%s' key is internally reserved."
@@ -97,7 +97,7 @@ class tpager(object):
         self.ilen = len(self.items)
         ikeys = [str(i) for i in xrange(1, self.ilen+1)]
         self.itemsdict = dict(zip(ikeys, self.items))
-        if self.format != 'bf':
+        if self.fmt != 'bf':
             maxl = len(ikeys[-1])
             formfunc = simpleformat
         else:
