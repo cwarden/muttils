@@ -44,48 +44,6 @@ class tpager(object):
         self.qfunc = qfunc       # name of exit function
         self.crit = crit         # name of criterion for customizing
 
-    def ttysize(self):
-        arrini = fcntl.ioctl(self.fd, termios.TIOCGWINSZ, '\0' * 8)
-        self.rows, self.cols = array.array('h', arrini)[:2]
-        # rows: retain 1 line for header + 1 for menu
-        # cols need 1 extra when lines are broken
-        self.rows -= 1
-        self.cols += 1
-
-    def resizehandler(self, signalnum, frame):
-        self.ttysize()
-        self.pagesdict()
-
-    def terminspect(self):
-        '''Get current term's columns and rows, return customized values.'''
-        notty = False  # assume connection to terminal
-        self.fd = None # reset if class was not reloaded (ckey)
-        for dev in (sys.stdout, sys.stdin):
-            try:
-                fd = dev.fileno()
-                istty =  os.isatty(fd)
-                if not istty:
-                    notty = True
-                elif not self.fd:
-                    self.fd = fd
-            except ValueError:
-                # I/O operation on closed file
-                notty = True
-        if self.fd is not None:
-            try:
-                if not notty:
-                    self.resizehandler(None, None)
-                    signal.signal(signal.SIGWINCH, self.resizehandler)
-                else:
-                    self.ttysize()
-                    if notty:
-                        self.fd = None
-            except NameError:
-                self.fd = None
-        self.rows = self.rows or (_gettyenv('LINES') or 24) - 1
-        self.cols = self.cols or (_gettyenv('COLUMNS') or 80) + 1
-        return notty
-
     def formatitems(self):
         '''Formats items of itemsdict to numbered list.'''
         def simpleformat(k, v):
@@ -205,6 +163,48 @@ class tpager(object):
                     # preemptively switch direction
                     pdir *= -1
                 pn = max(1, min(pn + pdir, self.plen))
+
+    def ttysize(self):
+        arrini = fcntl.ioctl(self.fd, termios.TIOCGWINSZ, '\0' * 8)
+        self.rows, self.cols = array.array('h', arrini)[:2]
+        # rows: retain 1 line for header + 1 for menu
+        # cols need 1 extra when lines are broken
+        self.rows -= 1
+        self.cols += 1
+
+    def resizehandler(self, signalnum, frame):
+        self.ttysize()
+        self.pagesdict()
+
+    def terminspect(self):
+        '''Get current term's columns and rows, return customized values.'''
+        notty = False  # assume connection to terminal
+        self.fd = None # reset if class was not reloaded (ckey)
+        for dev in (sys.stdout, sys.stdin):
+            try:
+                fd = dev.fileno()
+                istty =  os.isatty(fd)
+                if not istty:
+                    notty = True
+                elif not self.fd:
+                    self.fd = fd
+            except ValueError:
+                # I/O operation on closed file
+                notty = True
+        if self.fd is not None:
+            try:
+                if not notty:
+                    self.resizehandler(None, None)
+                    signal.signal(signal.SIGWINCH, self.resizehandler)
+                else:
+                    self.ttysize()
+                    if notty:
+                        self.fd = None
+            except NameError:
+                self.fd = None
+        self.rows = self.rows or (_gettyenv('LINES') or 24) - 1
+        self.cols = self.cols or (_gettyenv('COLUMNS') or 80) + 1
+        return notty
 
     def interact(self):
         notty = self.terminspect()
