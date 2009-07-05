@@ -44,6 +44,10 @@ class tpager(object):
         self.qfunc = qfunc       # name of exit function
         self.crit = crit         # name of criterion for customizing
 
+    def kmaxl(self):
+        '''Returns string length of highest current itemsdict key.'''
+        return len(str(len(self.itemsdict)))
+
     def formatitems(self):
         '''Formats items of itemsdict to numbered list.'''
         def simpleformat(k, v):
@@ -54,7 +58,7 @@ class tpager(object):
 
         self.ilen = len(self.items)
         if self.fmt != 'bf':
-            maxl = len(str(self.ilen))
+            maxl = self.kmaxl()
             formfunc = simpleformat
         else:
             formfunc = bracketformat
@@ -107,7 +111,7 @@ class tpager(object):
         '''Displays a page of items, header and choice menu.
         Returns response and validity of choice.'''
         self.ui.write(header + self.pages[pn])
-        resp = raw_input(self.coltrunc(menu))
+        resp = raw_input(self.coltrunc(menu, self.cols - self.kmaxl() - 3))
         valid = True
         try:
             self.items = [self.itemsdict[int(resp) - 1]]
