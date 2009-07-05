@@ -88,22 +88,21 @@ class tpager(object):
 
     def formatitems(self):
         '''Formats items of itemsdict to numbered list.'''
-        def simpleformat(key):
-            return '%s) %s\n' % (key.rjust(maxl), self.itemsdict[key])
+        def simpleformat(k, v):
+            return '%s) %s\n' % (str(k).rjust(maxl), v)
 
-        def bracketformat(key):
-            return '[%s]\n%s\n' % (key, self.itemsdict[key])
+        def bracketformat(k, v):
+            return '[%d]\n%s\n' % (k, v)
 
         self.ilen = len(self.items)
-        ikeys = [str(i) for i in xrange(1, self.ilen+1)]
-        self.itemsdict = dict(zip(ikeys, self.items))
         if self.fmt != 'bf':
-            maxl = len(ikeys[-1])
+            maxl = len(str(self.ilen))
             formfunc = simpleformat
         else:
             formfunc = bracketformat
-        for k in ikeys:
-            yield formfunc(k)
+        self.itemsdict = dict(enumerate(self.items))
+        for key in sorted(self.itemsdict.keys()):
+            yield formfunc(key + 1, self.itemsdict[key])
 
     def addpage(self, buff, lines, pn):
         pn += 1
@@ -146,14 +145,22 @@ class tpager(object):
         else:
             return '>%s' % s[slen-mcols:]
 
-    def pagedisplay(self, header, menu, pn=1):
-        '''Displays a page of items including header and choice menu.'''
+    def choice(self, header, menu, pn=1):
+        '''Displays a page of items, header and choice menu.
+        Returns response and validity of choice.'''
         self.ui.write(header + self.pages[pn])
-        return raw_input(self.coltrunc(menu))
-
-    def clamp(self, pn):
-        '''Returns number of next page.'''
-        return max(1, min(pn, self.plen))
+        resp = raw_input(self.coltrunc(menu))
+        valid = True
+        try:
+            self.items = [self.itemsdict[int(resp) - 1]]
+        except (ValueError, KeyError):
+            if self.more and resp in ('q', 'Q') or not self.more and not resp:
+                # quit
+                self.items = []
+            else:
+                # user command is a valid response
+                valid = self.ckey and resp.startswith(self.ckey)
+        return resp, valid
 
     def pagemenu(self):
         '''Lets user page through a list of items and make a choice.'''
@@ -166,13 +173,10 @@ class tpager(object):
             if self.itemsdict:
                 cs += ', number'
             menu = '[%s]%s ' % (self.qfunc, cs)
-            reply = self.pagedisplay(header, menu)
-            if reply in self.itemsdict:
-                self.items = [self.itemsdict[reply]]
-            elif not reply:
-                self.items = []
-            elif not self.ckey or not reply.startswith(self.ckey):
-                reply = self.pagemenu() # display same page
+            resp, valid = self.choice(header, menu)
+            if valid:
+                return resp
+            return self.pagemenu()
         else: # more than 1 page
             # switch paging command according to paging direction
             pds = {-1: 'back', 1: 'forward'}
@@ -193,22 +197,14 @@ class tpager(object):
                 if self.ckey:
                     menu += ', %s<%s>' % (self.ckey, self.crit)
                 menu += ', number '
-                reply = self.pagedisplay(header, menu, pn)
-                if not reply:
-                    pn = self.clamp(pn+pdir)
-                elif bs and reply == '-':
+                resp, valid = self.choice(header, menu, pn)
+                if valid:
+                    return resp
+                if resp == '-' and bs or resp and pn in (1, self.plen):
+                    # on first and last page with invalid response
+                    # preemptively switch direction
                     pdir *= -1
-                    pn = self.clamp(pn+pdir)
-                elif reply in self.itemsdict:
-                    self.items = [self.itemsdict[reply]]
-                    break
-                elif reply in 'qQ':
-                    self.items = []
-                    break
-                elif self.ckey and reply.startswith(self.ckey):
-                    break
-                #else: same page displayed on invalid response
-        return reply
+                pn = max(1, min(pn + pdir, self.plen))
 
     def interact(self):
         notty = self.terminspect()
