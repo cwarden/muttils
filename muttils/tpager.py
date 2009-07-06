@@ -186,12 +186,10 @@ class tpager(object):
         self.fd = None # reset if class was not reloaded (ckey)
         for dev in (sys.stdout, sys.stdin):
             try:
-                fd = dev.fileno()
-                istty =  os.isatty(fd)
-                if not istty:
+                if not dev.isatty():
                     notty = True
                 elif not self.fd:
-                    self.fd = fd
+                    self.fd = dev.fileno()
             except ValueError:
                 # I/O operation on closed file
                 notty = True

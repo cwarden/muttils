@@ -30,9 +30,7 @@ def fullversion(proginfo):
 
 def termconnected():
     '''Returns true if we are connected to a terminal.'''
-    if hasattr(sys.stdin, 'fileno'):
-        return os.isatty(sys.stdin.fileno())
-    return False
+    return sys.stdin.isatty()
 
 def systemcall(cs, notty=False, screen=False):
     '''Calls command sequence cs in manner suiting
