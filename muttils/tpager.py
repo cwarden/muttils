@@ -9,12 +9,6 @@ except ImportError:
 
 from muttils import iterm, util
 
-def _gettyenv(v):
-    try:
-        return int(os.environ[v])
-    except (KeyError, ValueError):
-        pass
-
 class tpager(object):
     '''
     Customizes interactive choice to current terminal.
@@ -171,10 +165,6 @@ class tpager(object):
     def ttysize(self):
         arrini = fcntl.ioctl(self.fd, termios.TIOCGWINSZ, '\0' * 8)
         self.rows, self.cols = array.array('h', arrini)[:2]
-        # rows: retain 1 line for header + 1 for menu
-        # cols need 1 extra when lines are broken
-        self.rows -= 1
-        self.cols += 1
 
     def resizehandler(self, signalnum, frame):
         self.ttysize()
@@ -193,19 +183,26 @@ class tpager(object):
             except ValueError:
                 # I/O operation on closed file
                 notty = True
-        if self.fd is not None:
-            try:
-                if not notty:
-                    self.resizehandler(None, None)
-                    signal.signal(signal.SIGWINCH, self.resizehandler)
-                else:
-                    self.ttysize()
+        try:
+            self.rows = int(os.environ['LINES'])
+            self.cols = int(os.environ['COLUMNS'])
+        except (KeyError, ValueError):
+            if self.fd is not None:
+                try:
                     if notty:
+                        self.ttysize()
                         self.fd = None
-            except NameError:
-                self.fd = None
-        self.rows = self.rows or (_gettyenv('LINES') or 24) - 1
-        self.cols = self.cols or (_gettyenv('COLUMNS') or 80) + 1
+                    else:
+                        self.resizehandler(None, None)
+                        signal.signal(signal.SIGWINCH, self.resizehandler)
+                except NameError:
+                    self.fd = None
+                    self.rows = 24
+                    self.cols = 80
+        # rows: retain 1 line for header + 1 for menu
+        # cols need 1 extra when lines are broken
+        self.rows -= 1
+        self.cols += 1
         return notty
 
     def interact(self):
