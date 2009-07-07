@@ -278,10 +278,10 @@ class urlregex(object):
             ctan = self.ui.configitem('net', 'ctan',
                                       default='ftp://ftp.ctan.org/tex-archive')
             rawcan = r'C%sAN:\s*/?([a-zA-Z]+?)'
-            for can in [(cpan, 'P'), (ctan, 'T')]:
-                if can[0]:
-                    cansub = r'%s/\1' % can[0].rstrip('/')
-                    text = re.sub(rawcan % can[1], cansub, text)
+            for u, char in ((cpan, 'P'), (ctan, 'T')):
+                if u:
+                    cansub = r'%s/\1' % u.rstrip('/')
+                    text = re.sub(rawcan % char, cansub, text)
         urls = [u[0] for u in self.url_re.findall(text)]
         if kill_re:
             urls = [kill_re.sub('', u) for u in urls]
