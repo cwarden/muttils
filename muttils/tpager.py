@@ -79,7 +79,7 @@ class tpager(object):
         for item in self.formatitems():
             # lines of item, taking overruns into account
             ilines = item.splitlines()
-            ilines = sum([len(line)/self.cols for line in ilines], len(ilines))
+            ilines = sum((len(line)/self.cols for line in ilines), len(ilines))
             linecheck = lines + ilines
             if linecheck < self.rows:
                 buff += item
