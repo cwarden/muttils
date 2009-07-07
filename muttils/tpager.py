@@ -57,8 +57,8 @@ class tpager(object):
         else:
             formfunc = bracketformat
         self.itemsdict = dict(enumerate(self.items))
-        for key in sorted(self.itemsdict.keys()):
-            yield formfunc(key + 1, self.itemsdict[key])
+        for k, v in self.itemsdict.iteritems():
+            yield formfunc(k + 1, v)
 
     def addpage(self, buff, lines, pn):
         pn += 1
