@@ -4,7 +4,6 @@ PREFIX=$(shell python -c "import sys; print sys.prefix")
 export PREFIX
 PYTHON=python
 FIND=find
-RM=rm
 
 .PHONY: help all local build clean install install-home dist distclean
 
@@ -37,8 +36,8 @@ local:
 
 clean:
 	-$(PYTHON) setup.py clean --all # ignore errors of this command
-	$(FIND) . -name '*.py[cdo]' -exec rm -f '{}' ';'
-	$(RM) -f MANIFEST muttils/__version__.py
+	$(FIND) . -name '*.py[cdo]' -exec $(RM) '{}' ';'
+	$(RM) MANIFEST muttils/__version__.py
 
 install: build
 	$(PYTHON) setup.py install --prefix="$(PREFIX)" --force
@@ -56,6 +55,6 @@ dist:
 	$(PYTHON) setup.py sdist
 
 distclean: clean
-	$(RM) -rf dist
+	$(RM) -r dist
 
 .DEFAULT_GOAL:= all
