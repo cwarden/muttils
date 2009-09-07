@@ -1,6 +1,6 @@
 # $Id$
 
-PREFIX=/usr/local
+PREFIX=$(shell python -c "import sys; print sys.prefix")
 export PREFIX
 PYTHON=python
 FIND=find
@@ -19,7 +19,7 @@ help:
 	@echo '  clean        - remove files created by other targets'
 	@echo '                 (except installed files or dist source tarball)'
 	@echo
-	@echo 'Example for a system-wide installation under /usr/local:'
+	@echo 'Example for a system-wide installation under $(PREFIX):'
 	@echo '  make && sudo make install'
 	@echo
 	@echo 'Example for a local installation (usable in this directory):'
