@@ -225,7 +225,7 @@ class wrap(object):
             self.literator(lit)
         except AttributeError: # list of files
             for f in self.input:
-                lit = open(f)
+                lit = open(f, 'rb')
                 try:
                     self.literator(lit)
                 finally:
