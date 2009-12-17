@@ -1,4 +1,4 @@
-# $Id$
+# $Id: example-muttilsrc,v 02cf4dde5b6c 2008-05-24 01:14 +0200 blacktrash $
 # rcfile example for Python muttils package
 # RCPATH: /etc/muttilsrc:/usr/local/etc/muttilsrc:~/.muttilsrc
 
