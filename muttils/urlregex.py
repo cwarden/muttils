@@ -158,7 +158,7 @@ def ftpcheck(url):
         ftpre = demand_re['ftp']
     except KeyError:
         ftpre = demand_re['ftp'] = re.compile(r'(s?ftp://|ftp\.)',
-                                              re.IGNORECASE) 
+                                              re.IGNORECASE)
     return ftpre.match(url)
 
 def mailcheck(url):

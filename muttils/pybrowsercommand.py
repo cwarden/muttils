@@ -22,7 +22,7 @@ def run():
                       help='prefer browser APP over $BROWSER environment')
     options, args = parser.parse_args()
     del parser
-    
+
     try:
         b = pybrowser.browser(items=args, app=options.app, evalurl=True)
         b.urlvisit()

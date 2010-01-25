@@ -64,7 +64,7 @@ class tpager(object):
         pn += 1
         if self.more:
             # fill page with newlines
-            buff += '\n' * (self.rows-lines-1)
+            buff += '\n' * (self.rows - lines - 1)
         self.pages[pn] = buff
         return pn
 
@@ -99,7 +99,7 @@ class tpager(object):
         if slen <= mcols:
             return s
         else:
-            return '>%s' % s[slen-mcols:]
+            return '>%s' % s[slen - mcols:]
 
     def choice(self, header, menu, pn=1):
         '''Displays a page of items, header and choice menu.

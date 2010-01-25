@@ -44,7 +44,7 @@ class viewhtml(pybrowser.browser):
             htmlfile = os.path.join(htmldir, 'index.html')
             html = html.get_payload(decode=True)
             for part in msg.walk():
-                fn = (part.get_filename() or 
+                fn = (part.get_filename() or
                       part.get_param(param='filename') or
                       part.get_param(param='name'))
                 if fn:
