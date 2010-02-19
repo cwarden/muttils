@@ -1,7 +1,7 @@
-# $Id$
-
 '''viewhtml - unpack html message and display with browser
 '''
+
+# $Id$
 
 import email, email.Errors, email.Iterators, email.Utils
 import os.path, re, shutil, sys, tempfile, time, urllib

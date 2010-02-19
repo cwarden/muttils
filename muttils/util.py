@@ -1,7 +1,7 @@
-# $Id$
-
 '''util.py - helper functions for muttils package
 '''
+
+# $Id$
 
 import os, subprocess, sys
 

@@ -1,14 +1,3 @@
-# $Id$
-
-###
-# Caveat:
-# If input is read from stdin, it should be of one type
-# (text/plain, text/html, email) because the type detecting
-# mechanism is only triggered once.
-# However you should be able to run this on all kind of files,
-# input is checked anew for each file.
-###
-
 '''Searches files or standard input for urls.
 User chooses 1 url interactively which is subsequently retrieved.
 Urls are either web locations or Message-IDs.
@@ -19,6 +8,17 @@ Valid url schemes are: "all", "web", "mailto", "http", "ftp", "gopher",
 Options "-p mid", "-i", "-n", "-B", "-l", "-m", "-d", "-D", "-M"
 switch to message retrieval.
 '''
+
+# $Id$
+
+###
+# Caveat:
+# If input is read from stdin, it should be of one type
+# (text/plain, text/html, email) because the type detecting
+# mechanism is only triggered once.
+# However you should be able to run this on all kind of files,
+# input is checked anew for each file.
+###
 
 import optparse, sys
 from muttils import urlpager, urlregex, util

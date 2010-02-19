@@ -1,6 +1,6 @@
 # $Id$
 
-import re
+import re, urllib
 from muttils import util
 
 valid_protos = ['all', 'web', 'http', 'ftp', 'gopher', 'mailto', 'mid']
@@ -138,12 +138,16 @@ def _webcheck(url):
 
 def webschemecomplete(url):
     '''Returns url with protocol scheme prepended if needed.
-    Used by pybrowser.'''
+    Used by pybrowser, wget.'''
     try:
         webre = demand_re['web']
     except KeyError:
         webre = demand_re['web'] = re.compile(r'(https?|s?ftp|gopher)://',
                                               re.IGNORECASE)
+#    spliturl = url.split(':', 1)
+#    spliturl[-1] = urllib.quote(spliturl[-1], '/?=')
+#    url = ':'.join(spliturl)
+    url = url.replace("'", '%27')
     if webre.match(url):
         return url
     for scheme in ('ftp', 'gopher'):

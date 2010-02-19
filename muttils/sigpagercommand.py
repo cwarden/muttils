@@ -1,8 +1,8 @@
-# $Id$
-
 '''Presents choice of randomly ordered email signatures
 and prints selected signature to standard output or files.
 '''
+
+# $Id$
 
 from muttils import sigpager, util
 import optparse, sys

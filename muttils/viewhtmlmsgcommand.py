@@ -1,9 +1,9 @@
-# $Id$
-
 '''Displays html message read from stdin.
 
 $BROWSER environment may be overridden with option "-b".
 '''
+
+# $Id$
 
 import optparse, sys
 from muttils import viewhtmlmsg, util

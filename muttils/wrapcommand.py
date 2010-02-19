@@ -1,11 +1,11 @@
-# $Id$
-
 '''Word wraps text to given width.
 Handles (email) quote chars.
 Quotation lines (eg. email: |) can be excluded from wrapping.
 Can be told to respect linebreaks and just wrap long lines.
 Capability to hyphenate dash-compounded words.
 '''
+
+# $Id$
 
 import optparse, sys
 from muttils import wrap, util

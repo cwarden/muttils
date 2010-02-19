@@ -1,11 +1,11 @@
-# $Id$
-
 '''Launches browser to visit given urls (local and remote).
 
 Completes short urls like "blacktrash.org" automagically.
 
 $BROWSER environment may be overridden with option "-b".
 '''
+
+# $Id$
 
 import optparse, sys
 from muttils import pybrowser, util
