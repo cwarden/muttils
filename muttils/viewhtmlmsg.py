@@ -64,7 +64,7 @@ class viewhtml(pybrowser.browser):
             fp = open(htmlfile, 'wb')
             fp.write(html)
             fp.close()
-            self.items = ['file://' + htmlfile]
+            self.items = [htmlfile]
             self.urlvisit()
             if self.keep:
                 time.sleep(self.keep)

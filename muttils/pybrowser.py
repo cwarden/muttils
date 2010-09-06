@@ -44,6 +44,7 @@ class browser(object):
                 url = util.absolutepath(url)
                 if not os.path.exists(url):
                     raise util.DeadMan('%s: not found' % url)
+                url = 'file://' + url
         return url
 
     def urlvisit(self):
