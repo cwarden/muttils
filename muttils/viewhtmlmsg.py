@@ -72,3 +72,4 @@ class viewhtml(pybrowser.browser):
         except:
             # on error always remove personal mail
             shutil.rmtree(htmldir)
+            raise
