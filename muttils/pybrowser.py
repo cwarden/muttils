@@ -33,7 +33,7 @@ class browser(object):
         else: # local
             if url.startswith('file:'):
                 # drop scheme in favour of local path
-                # as some browser don't handle file scheme gracefully
+                # as some browsers do not handle file scheme gracefully
                 url = url[5:]
                 if url.startswith('//'):
                     url = url[2:]
