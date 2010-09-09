@@ -43,6 +43,7 @@ class viewhtml(pybrowser.browser):
         try:
             htmlfile = os.path.join(htmldir, 'index.html')
             html = html.get_payload(decode=True)
+            fc = 1
             for part in msg.walk():
                 fn = (part.get_filename() or
                       part.get_param(param='filename') or
@@ -52,11 +53,16 @@ class viewhtml(pybrowser.browser):
                     # safe ascii filename w/o spaces
                     fn = fn.decode('ascii', 'replace').encode('ascii', 'replace')
                     fn = fn.replace(' ', '_').replace('?', '-')
-                    if part['content-id']:
-                        cid = email.Utils.unquote(part['content-id'])
-                        html = html.replace('cid:%s' % cid, fn)
+                else:
+                    fn = 'prefix_%d' % fc
+                    fc += 1
+                if part['content-id']:
+                    cid = email.Utils.unquote(part['content-id'])
+                    html = html.replace('cid:%s' % cid, fn)
+                fpay = part.get_payload(decode=True)
+                if fpay:
                     fp = open(os.path.join(htmldir, fn), 'wb')
-                    fp.write(part.get_payload(decode=True))
+                    fp.write(fpay)
                     fp.close()
             if self.safe:
                 safe_pat = r'(src|background)\s*=\s*["\']??https??://[^"\'>]*["\'>]'
