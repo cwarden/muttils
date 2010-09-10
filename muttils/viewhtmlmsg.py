@@ -43,20 +43,16 @@ class viewhtml(pybrowser.browser):
         try:
             htmlfile = os.path.join(htmldir, 'index.html')
             html = html.get_payload(decode=True)
-            fc = 1
+            fc = 0
             for part in msg.walk():
-                fn = (part.get_filename() or
-                      part.get_param(param='filename') or
-                      part.get_param(param='name'))
-                if fn:
-                    fn = urllib.unquote(fn)
+                fc += 1
+                fn = (part.get_filename() or part.get_param('filename') or
+                      part.get_param('name', 'prefix_%d' % fc))
+                if part['content-id']:
                     # safe ascii filename w/o spaces
+                    fn = urllib.unquote(fn)
                     fn = fn.decode('ascii', 'replace').encode('ascii', 'replace')
                     fn = fn.replace(' ', '_').replace('?', '-')
-                else:
-                    fn = 'prefix_%d' % fc
-                    fc += 1
-                if part['content-id']:
                     cid = email.Utils.unquote(part['content-id'])
                     html = html.replace('cid:%s' % cid, fn)
                 fpay = part.get_payload(decode=True)
