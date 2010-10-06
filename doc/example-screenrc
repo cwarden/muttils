@@ -1,4 +1,4 @@
-# $Id: example-screenrc,v 79e6de65d472 2009-02-12 22:53 +0100 blacktrash $
+# $Id$
 
 # retrieve urls from current screen
 bind ^b eval "hardcopy /tmp/screen.dump" "exec screen -X screen urlpager /tmp/screen.dump"
