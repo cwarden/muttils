@@ -1,9 +1,9 @@
-# $Id$
-
 '''Displays html message read from stdin.
 
 $BROWSER environment may be overridden with option "-b".
 '''
+
+# $Id$
 
 import optparse, sys
 from muttils import viewhtmlmsg, util
@@ -23,7 +23,7 @@ def run():
                            '(0 for keeping files)')
     parser.add_option('-b', '--browser', dest='app',
                       help='prefer browser APP over $BROWSER environment')
-    
+
     options, args = parser.parse_args()
     del parser
 

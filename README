@@ -5,7 +5,7 @@ Description:
 This package provides utilities for use with console mail
 clients, eg. Mutt.
 
-See also: doc/example-muttrc
+See also: contrib/example-muttrc
 
 sigpager:
 Offers an interactive selection of signatures.

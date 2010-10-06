@@ -1,7 +1,7 @@
-# $Id$
-
 '''util.py - helper functions for muttils package
 '''
+
+# $Id$
 
 import os, subprocess, sys
 
@@ -30,7 +30,11 @@ def fullversion(proginfo):
 
 def termconnected():
     '''Returns true if we are connected to a terminal.'''
-    return sys.stdin.isatty()
+    try:
+        return sys.stdin.isatty()
+    except ValueError:
+        # I/O operation on closed file
+        return False
 
 def systemcall(cs, notty=False, screen=False):
     '''Calls command sequence cs in manner suiting

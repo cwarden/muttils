@@ -1,7 +1,7 @@
-# $Id$
-
 '''ui.py - user interface for muttils package
 '''
+
+# $Id$
 
 import ConfigParser, os.path, sys
 from muttils import util

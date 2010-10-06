@@ -1,11 +1,6 @@
 # $Id$
 
 import os.path
-try:
-    import readline
-    loadedreadline = True
-except ImportError:
-    loadedreadline = False
 
 from muttils import urlcollector, urlregex
 from muttils import iterm, kiosk, pybrowser, tpager, ui, util, wget
@@ -19,11 +14,13 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
         urlcollector.urlcollector.__init__(self, self.ui, files=files)
         tpager.tpager.__init__(self, self.ui, name='url')
 
-    def rawinput(self, prompt):
+    def rawinput(self, prompt, msg=''):
         '''Wraps raw_input in interactive terminal if needed.'''
         if not self.files:
             it = iterm.iterm()
             it.terminit()
+        if msg:
+            self.ui.write(msg)
         answer = raw_input(prompt)
         if not self.files:
             it.reinit()
@@ -32,18 +29,17 @@ class urlpager(urlcollector.urlcollector, tpager.tpager):
     def urlconfirm(self):
         action = not self.ui.getdir and 'visit' or 'download'
         expando = {'name': self.name, 'act': action, 'url': self.items[0]}
-        if loadedreadline:
-            readline.clear_history()
+        try:
+            import readline
+            readline.read_history_file
             readline.add_history(self.items[0])
             prompt = ('press <UP> or <C-P> to edit %(name)s,\n'
                       '<C-C> to cancel, <RET> to %(act)s %(name)s:\n')
-        else:
+        except ImportError:
             prompt = ('press <RET> to %(act)s %(name)s, <C-C> to cancel,\n'
                       'or enter %(name)s manually:\n')
-        url = self.rawinput((prompt + '%(url)s\n') % expando)
+        url = self.rawinput('', (prompt + '%(url)s\n') % expando)
         if url:
-            if loadedreadline:
-                readline.clear_history()
             self.items = [url]
 
     def msgretrieval(self):

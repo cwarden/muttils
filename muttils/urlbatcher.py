@@ -33,7 +33,7 @@ class urlbatcher(urlcollector.urlcollector):
         else:
             b = pybrowser.browser(parentui=self.ui, items=self.items)
             b.urlvisit()
-                    
+
     def urlsearch(self):
         self.urlcollect()
         if not self.files:

@@ -208,7 +208,7 @@ class kiosk(object):
     def walkmhier(self, mdir):
         '''Visits mail hierarchies and parses their mailboxes.
         Detects mbox and Maildir mailboxes.'''
-        for root, dirs, files in os.walk(mdir):    
+        for root, dirs, files in os.walk(mdir):
             if not self.items:
                 break
             rmdl = [d for d in dirs if self.mdmask.search(d) is not None]

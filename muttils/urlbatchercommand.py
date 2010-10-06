@@ -1,3 +1,12 @@
+'''Searches files or standard input for urls, and retrieves them.
+Urls are either web locations or Message-IDs.
+
+Valid url schemes are: "web", "http", "ftp", "mid" (for Message-ID).
+
+Options "-p mid", "-i", "-n", "-B", "-l", "-m", "-d", "-D", "-M"
+switch to message retrieval.
+'''
+
 # $Id$
 
 ###
@@ -8,15 +17,6 @@
 # However you should be able to run this on all kind of files,
 # input is checked anew for each file.
 ###
-
-'''Searches files or standard input for urls, and retrieves them.
-Urls are either web locations or Message-IDs.
-
-Valid url schemes are: "web", "http", "ftp", "mid" (for Message-ID).
-
-Options "-p mid", "-i", "-n", "-B", "-l", "-m", "-d", "-D", "-M"
-switch to message retrieval.
-'''
 
 import optparse, sys
 from muttils import urlbatcher, util

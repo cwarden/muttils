@@ -38,6 +38,7 @@ clean:
 	-$(PYTHON) setup.py clean --all # ignore errors of this command
 	$(FIND) . -name '*.py[cdo]' -exec $(RM) '{}' ';'
 	$(RM) MANIFEST muttils/__version__.py
+	$(RM) -r build
 
 install: build
 	$(PYTHON) setup.py install --prefix="$(PREFIX)" --force
