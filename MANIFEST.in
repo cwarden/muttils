@@ -1,4 +1,7 @@
 # $Id$
 
 include COPYING MANIFEST.in Makefile
-include doc/example-mail.vim doc/example-muttilsrc doc/example-muttrc
+include contrib/example-mail.vim
+include contrib/example-muttilsrc
+include contrib/example-muttrc
+include contrib/example-screenrc
