@@ -49,8 +49,8 @@ class wget(object):
             s = self.request(url)
             if s:
                 try:
-                        fp = open(path, 'wb')
-                        fp.write(s)
-                        fp.close()
+                    fp = open(path, 'wb')
+                    fp.write(s)
+                    fp.close()
                 except IOError, inst:
                     raise util.DeadMan(inst)
