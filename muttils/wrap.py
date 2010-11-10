@@ -79,11 +79,7 @@ class wrap(object):
         if self._outfunc:
             self._outfunc = sys.stdout.write
         else:
-            self._outfunc = self.collectout
-
-    def collectout(self, line):
-        '''Collects wrapped lines. Slightly faster.'''
-        self.olines.append(line)
+            self._outfunc = self.olines.append
 
     def addholdspace(self):
         '''Ships out and resets holdspace.'''
