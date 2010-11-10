@@ -77,13 +77,9 @@ class wrap(object):
             self.hyph = re.compile(r'\b[-/]+\b')
             self.tail_re = re.compile(r'\w[-/([{&^]$')
         if self._outfunc:
-            self._outfunc = self.streamout
+            self._outfunc = sys.stdout.write
         else:
             self._outfunc = self.collectout
-
-    def streamout(self, line):
-        '''Immediate print of wrapped line.'''
-        sys.stdout.write(line)
 
     def collectout(self, line):
         '''Collects wrapped lines. Slightly faster.'''
