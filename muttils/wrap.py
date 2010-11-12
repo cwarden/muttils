@@ -42,9 +42,9 @@ class wrap(object):
     hyph = False        # break words at hyphens
     qmail = False       # treat as email, ">" (additional quote char)
     email = False       # treat as email: skip headers, unmangle >From
-    _outfunc = False    # output as stream
     # attribs for internal use:
     olines = []         # output lines
+    outadd = olines.append
     line = ''           # current line
     words = []          # current list of words to fill line
     holdspace = []      # current list of words in line
@@ -52,8 +52,8 @@ class wrap(object):
     indent = ''         # current indent
     qindent = ''        # current quote indent
 
-    def __init__(self, inp=None, opts={}):
-        self.input = inp or None # will be treated according to type
+    def __init__(self, opts, inp):
+        self.inp = inp or None # list of files or stdin
         for k in opts.iterkeys():
             setattr(self, k, opts[k])
         # wrap width falls back on width if neither respect nor ipar
@@ -76,22 +76,18 @@ class wrap(object):
         if self.hyph:
             self.hyph = re.compile(r'\b[-/]+\b')
             self.tail_re = re.compile(r'\w[-/([{&^]$')
-        if self._outfunc:
-            self._outfunc = sys.stdout.write
-        else:
-            self._outfunc = self.olines.append
 
     def addholdspace(self):
         '''Ships out and resets holdspace.'''
         if self.holdspace:
-            self._outfunc(self.qindent + self.indent +
+            self.outadd(self.qindent + self.indent +
                           ' '.join(self.holdspace) + '\n')
             self.holdspace = []
 
     def addoversize(self):
         '''Ships out holdspace and pops overlong word from list.'''
         self.addholdspace()
-        self._outfunc(self.qindent + self.indent + self.words.pop(0) + '\n')
+        self.outadd(self.qindent + self.indent + self.words.pop(0) + '\n')
 
     def breakword(self, word, wlen):
         '''Tries to break word at hyphen(s).'''
@@ -167,7 +163,7 @@ class wrap(object):
         if (self.empty_re.match(self.line)
             or self.excl and self.excl.match(self.line)):
             self.addholdspace()
-            self._outfunc(self.qindent + self.line)
+            self.outadd(self.qindent + self.line)
             self.indent = ''
             self.width = self.defwidth - len(self.qindent)
         else:
@@ -185,7 +181,7 @@ class wrap(object):
     def nowrap(self, lit):
         '''Puts out lines unwrapped while they are not empty.'''
         while self.line[:-1]:
-            self._outfunc(self.line)
+            self.outadd(self.line)
             self.line = lit.next()
 
     def literator(self, lit):
@@ -210,13 +206,13 @@ class wrap(object):
             if not isinstance(i, int):
                 raise util.DeadMan('integer expected, got "%s"' % i)
         try:
-            if self.input is None:
+            if self.inp is None:
                 lit = sys.stdin
             else:
-                lit = iter(self.input.splitlines(True))
+                lit = iter(self.inp.splitlines(True))
             self.literator(lit)
         except AttributeError: # list of files
-            for f in self.input:
+            for f in self.inp:
                 lit = open(f, 'rb')
                 try:
                     self.literator(lit)

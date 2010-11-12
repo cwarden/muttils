@@ -48,14 +48,12 @@ def run():
     parser.add_option('-M', dest='qmail', action='store_true',
                       help='treat input as email message and ">" '
                            'as (additional) quote char')
-    parser.add_option('-s', '--stream', dest='_outfunc', action='store_true',
-                      help='stream output immediately')
 
     options, args = parser.parse_args()
     del parser
 
     try:
-        w = wrap.wrap(inp=args, opts=options.__dict__)
+        w = wrap.wrap(options.__dict__, args)
         w.formwrap()
         sys.stdout.writelines(w.olines)
     except (util.DeadMan, IOError, KeyboardInterrupt), inst:
