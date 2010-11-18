@@ -51,7 +51,8 @@ class viewhtml(pybrowser.browser):
                 if part['content-id']:
                     # safe ascii filename w/o spaces
                     fn = urllib.unquote(fn)
-                    fn = fn.decode('ascii', 'replace').encode('ascii', 'replace')
+                    fn = fn.decode('ascii',
+                                   'replace').encode('ascii', 'replace')
                     fn = fn.replace(' ', '_').replace('?', '-')
                     cid = email.Utils.unquote(part['content-id'])
                     html = html.replace('cid:%s' % cid, fn)
@@ -61,8 +62,8 @@ class viewhtml(pybrowser.browser):
                     fp.write(fpay)
                     fp.close()
             if self.safe:
-                safe_pat = r'(src|background)\s*=\s*["\']??https??://[^"\'>]*["\'>]'
-                html = re.sub(safe_pat, r'\1="#"', html)
+                spat = r'(src|background)\s*=\s*["\']??https??://[^"\'>]*["\'>]'
+                html = re.sub(spat, r'\1="#"', html)
             fp = open(htmlfile, 'wb')
             fp.write(html)
             fp.close()
