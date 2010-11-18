@@ -6,12 +6,12 @@ from muttils import urlcollector, urlregex
 from muttils import iterm, kiosk, pybrowser, tpager, ui, util, wget
 
 class urlpager(urlcollector.urlcollector, tpager.tpager):
-    def __init__(self, parentui=None, files=None, opts={}):
-        self.ui = parentui or ui.ui()
+    def __init__(self, opts, args):
+        self.ui = ui.ui()
         self.ui.updateconfig()
         self.ui.resolveopts(opts)
         self.mailer = self.ui.configitem('messages', 'mailer', default='mutt')
-        urlcollector.urlcollector.__init__(self, self.ui, files=files)
+        urlcollector.urlcollector.__init__(self, self.ui, args)
         tpager.tpager.__init__(self, self.ui, name='url')
 
     def rawinput(self, prompt, msg=''):

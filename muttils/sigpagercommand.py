@@ -30,9 +30,8 @@ def run():
     del parser
 
     try:
-        s = sigpager.signature(dest=args,
-                               sig=options.defsig, sdir=options.sigdir,
-                               tail=options.tail, sep=options.sigsep)
+        s = sigpager.signature(options.defsig, options.sigdir, options.tail,
+                               options.sigsep, args)
         s.sign()
     except (util.DeadMan, IOError, OSError), inst:
         sys.exit(inst)

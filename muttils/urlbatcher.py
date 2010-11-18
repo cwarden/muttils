@@ -17,11 +17,11 @@ class urlbatcher(urlcollector.urlcollector):
     Browses all urls or creates a message tree in mutt.
     You can specify urls/ids by a regex pattern.
     '''
-    def __init__(self, parentui=None, files=None, opts={}):
-        self.ui = parentui or ui.ui()
+    def __init__(self, opts, args):
+        self.ui = ui.ui()
         self.ui.updateconfig()
         self.ui.resolveopts(opts)
-        urlcollector.urlcollector.__init__(self, self.ui, files=files)
+        urlcollector.urlcollector.__init__(self, self.ui, args)
 
     def urlgo(self):
         if self.ui.proto == 'mid':

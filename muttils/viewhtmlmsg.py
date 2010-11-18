@@ -8,12 +8,12 @@ import os.path, re, shutil, sys, tempfile, time, urllib
 from muttils import pybrowser, ui, util
 
 class viewhtml(pybrowser.browser):
-    def __init__(self, parentui=None, inp='', safe=False, keep=None, app=''):
-        self.ui = parentui or ui.ui()
+    def __init__(self, safe, keep, app, args):
+        self.ui = ui.ui()
         self.ui.updateconfig()
         pybrowser.browser.__init__(self, parentui=self.ui,
                                    app=app, evalurl=True)
-        self.inp = inp
+        self.inp = args
         self.safe = safe or self.ui.configbool('html', 'safe')
         self.keep = keep
         if self.keep is None:

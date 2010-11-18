@@ -68,7 +68,7 @@ def run():
     del parser
 
     try:
-        u = urlbatcher.urlbatcher(files=args, opts=options.__dict__)
+        u = urlbatcher.urlbatcher(options.__dict__, args)
         u.urlsearch()
     except (util.DeadMan, IOError, KeyboardInterrupt), inst:
         sys.exit(inst)

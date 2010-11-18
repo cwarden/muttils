@@ -28,8 +28,7 @@ def run():
     del parser
 
     try:
-        v = viewhtmlmsg.viewhtml(inp=args, safe=options.safe,
-                                 keep=options.keep, app=options.app)
+        v = viewhtmlmsg.viewhtml(options.safe, options.keep, options.app, args)
         v.view()
     except (util.DeadMan, IOError, KeyboardInterrupt), inst:
         sys.exit(inst)

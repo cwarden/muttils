@@ -14,9 +14,8 @@ class signature(tpager.tpager):
     '''
     sigs = [] # complete list of signature strings
 
-    def __init__(self, parentui=None,
-                 dest=None, sig='', sdir='', sep='-- \n', tail=''):
-        self.ui = parentui or ui.ui()
+    def __init__(self, sig, sdir, tail, sep, dest):
+        self.ui = ui.ui()
         tpager.tpager.__init__(self, self.ui, name='sig',
                                fmt='bf', qfunc='default sig', ckey='/')
         self.ui.updateconfig()

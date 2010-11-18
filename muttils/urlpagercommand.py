@@ -70,7 +70,7 @@ def run():
     del parser
 
     try:
-        u = urlpager.urlpager(files=args, opts=options.__dict__)
+        u = urlpager.urlpager(options.__dict__, args)
         u.urlselect()
     except (util.DeadMan, IOError, KeyboardInterrupt), inst:
         sys.exit(inst)
