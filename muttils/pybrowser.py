@@ -9,7 +9,7 @@ class browser(object):
     '''
     weburl_re = None          # url protocol scheme regex
 
-    def __init__(self, parentui=None, items=None, app='', evalurl=False):
+    def __init__(self, parentui=None, items=None, app=None, evalurl=False):
         self.ui = parentui or ui.ui()
         self.ui.updateconfig()
         self.items = items             # urls
@@ -53,7 +53,9 @@ class browser(object):
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
         self.items = map(self.fixurl, self.items)
-        app = os.path.basename(self.ui.app)
+        app = self.ui.app
+        if app is not None:
+            app = os.path.basename(self.ui.app)
         screen = app in textbrowsers and 'STY' in os.environ
         notty = not util.termconnected()
         # w3m does not need to be connected to terminal
@@ -63,10 +65,7 @@ class browser(object):
                 util.systemcall([self.ui.app, url], notty, screen)
         else:
             try:
-                if self.ui.app:
-                    b = webbrowser.get(self.ui.app)
-                else:
-                    b = webbrowser.get()
+                b = webbrowser.get(self.ui.app)
                 for url in self.items:
                     b.open(url)
             except webbrowser.Error, inst:

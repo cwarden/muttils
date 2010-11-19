@@ -31,7 +31,7 @@ def run():
                                    usage='%prog [options] [files]',
                                    description=__doc__,
                                    version=util.fullversion(proginfo))
-    parser.set_defaults(proto='all', pat=None, app='', getdir='', ftpdir='',
+    parser.set_defaults(proto='all', pat=None, app=None, getdir='', ftpdir='',
                         midrelax=False, local=False, browse=False, news=False,
                         kiosk='', mhiers=None, specdirs=None, mask=None)
 

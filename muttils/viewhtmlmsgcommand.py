@@ -15,7 +15,7 @@ def run():
     parser = optparse.OptionParser(usage='%prog [options]',
                                    description=__doc__,
                                    version=util.fullversion(proginfo))
-    parser.set_defaults(safe=False, keep=None, app='')
+    parser.set_defaults(safe=False, keep=None, app=None)
     parser.add_option('-s', '--safe', action='store_true',
                       help='view html w/o loading remote files')
     parser.add_option('-k', '--keep', type='int',

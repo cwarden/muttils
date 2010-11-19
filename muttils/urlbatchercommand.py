@@ -31,7 +31,7 @@ def run():
                                    usage='%prog [options] [files]',
                                    description=__doc__,
                                    version=util.fullversion(proginfo))
-    parser.set_defaults(proto='web', pat=None, app='', getdir='',
+    parser.set_defaults(proto='web', pat=None, app=None, getdir='',
                         midrelax=False, local=False, browse=False, news=False,
                         kiosk='', mhiers=None, specdirs=None, mask=None)
 

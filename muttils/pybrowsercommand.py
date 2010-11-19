@@ -17,7 +17,7 @@ def run():
     parser = optparse.OptionParser(usage='%prog [option] [urls]',
                                    description=__doc__,
                                    version=util.fullversion(proginfo))
-    parser.set_defaults(app='')
+    parser.set_defaults(app=None)
     parser.add_option('-b', '--browser', dest='app',
                       help='prefer browser APP over $BROWSER environment')
     options, args = parser.parse_args()
