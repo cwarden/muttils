@@ -144,10 +144,11 @@ class kiosk(object):
         self.ui.note('searching news server %s\n' % sname)
         try:
             nserv = nntplib.NNTP(sname, readermode=True, usenetrc=True)
-        except nntplib.NNTPPermanentError:
+        except (nntplib.NNTPPermanentError, nntplib.NNTPTemporaryError):
             try:
                 nserv = nntplib.NNTP(sname, readermode=True, usenetrc=False)
-            except nntplib.NNTPPermanentError, inst:
+            except (nntplib.NNTPPermanentError,
+                    nntplib.NNTPTemporaryError), inst:
                 self.ui.warn('%s\n' % inst)
                 return
         for mid in self.items[:]:
