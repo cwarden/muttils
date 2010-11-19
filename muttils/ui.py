@@ -84,7 +84,9 @@ class ui(object):
             options['proto'] = 'web'
         if options['proto'] != 'mid':
             for o in messageopts:
-                if options[o]:
+                val = options[o]
+                if (val or val is not None and (o == 'mhiers' or
+                                                o == 'specdirs')):
                     options['proto'] = 'mid'
                     options['decl'] = not options['midrelax']
                     break

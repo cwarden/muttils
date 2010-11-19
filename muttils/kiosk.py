@@ -98,9 +98,11 @@ class kiosk(object):
             mhiers = self.ui.specdirs or self.ui.mhiers
             # split colon-separated list from cmdline
             mhiers = mhiers.split(':')
-        else:
+        elif self.ui.mhiers is None:
             mhiers = self.ui.configlist('messages', 'maildirs',
                                         default=_getmhier())
+        else:
+            mhiers = self.ui.mhiers
         # create set of unique elements
         mhiers = set([util.absolutepath(e) for e in mhiers])
         mhiers = sorted(mhiers)

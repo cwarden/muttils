@@ -33,7 +33,7 @@ def run():
                                    version=util.fullversion(proginfo))
     parser.set_defaults(proto='all', pat=None, app='', getdir='', ftpdir='',
                         midrelax=False, local=False, browse=False, news=False,
-                        kiosk='', mhiers='', specdirs='', mask=None)
+                        kiosk='', mhiers=None, specdirs=None, mask=None)
 
     parser.add_option('-p', '--protocol', dest='proto',
                       type='choice', choices=urlregex.valid_protos,
