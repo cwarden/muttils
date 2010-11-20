@@ -13,8 +13,7 @@ class browser(object):
         self.ui = parentui or ui.ui()
         self.ui.updateconfig()
         self.items = items             # urls
-        if app:
-            self.ui.app = app          # browser app from command-line
+        self.ui.app = app
         if evalurl: # check remote url protocol scheme
             self.ui.proto = 'web'
             u = urlregex.urlregex(self.ui, uniq=False)
