@@ -19,6 +19,10 @@ class viewhtml(pybrowser.browser):
         if self.keep is None:
             self.keep = self.ui.configint('html', 'keep', 3)
 
+    def cleanup(self, tmpdir):
+        if self.keep:
+            shutil.rmtree(tmpdir)
+
     def view(self):
         try:
             if self.inp:
@@ -71,8 +75,5 @@ class viewhtml(pybrowser.browser):
             self.urlvisit()
             if self.keep:
                 time.sleep(self.keep)
-                shutil.rmtree(htmldir)
-        except:
-            # on error always remove personal mail
-            shutil.rmtree(htmldir)
-            raise
+        finally:
+            self.cleanup(htmldir)
