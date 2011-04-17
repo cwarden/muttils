@@ -30,6 +30,8 @@ class browser(object):
                 # use gateway when browser is not gopher capable
                 url = url.replace('gopher://',
                                   'http://gopher.floodgap.com/gopher/gw?')
+        elif self.use_cygpath:
+            pass # regular Windows filesystem path expected, nothing to do
         else: # local
             if url.startswith('file:'):
                 # drop scheme in favour of local path
