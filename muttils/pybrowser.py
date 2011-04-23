@@ -1,6 +1,6 @@
 # $Id$
 
-import os, platform, webbrowser
+import os, webbrowser, sys
 from muttils import ui, urlregex, util
 
 class browser(object):
@@ -13,7 +13,6 @@ class browser(object):
         self.ui = parentui or ui.ui()
         self.ui.updateconfig()
         self.items = items             # urls
-        self.cygpath = platform.system().find('CYGWIN') > -1
         if app is not None:
             self.ui.app = app
         if evalurl: # check remote url protocol scheme
@@ -31,9 +30,6 @@ class browser(object):
                 # use gateway when browser is not gopher capable
                 url = url.replace('gopher://',
                                   'http://gopher.floodgap.com/gopher/gw?')
-        elif self.cygpath:
-            # cygwin expects windows filesystem path
-            url = util.pipeline(['cygpath', '-w', url]).rstrip()
         else: # local
             if url.startswith('file:'):
                 # drop scheme in favour of local path
@@ -48,6 +44,10 @@ class browser(object):
                 url = util.absolutepath(url)
                 if not os.path.exists(url):
                     raise util.DeadMan('%s: not found' % url)
+                if sys.platform == 'cygwin':
+                    # cygwin expects windows filesystem path for system
+                    # browsers
+                    url = util.pipeline(['cygpath', '-w', url]).rstrip()
                 url = 'file://' + url
         return url
 
