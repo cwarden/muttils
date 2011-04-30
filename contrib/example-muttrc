@@ -11,14 +11,18 @@ set signature="sigpager|"
 # this is for recent Mutt versions that support variables
 # configuration is simpler, but less flexible otherwise
 macro index,pager,attach ^B "\
-<enter-command> set my_wait_key=\$wait_key wait_key=no<enter>\
-<pipe-message>urlpager<enter>\
-<enter-command> set wait_key=\$my_wait_key &my_wait_key<enter>\
+<enter-command> set my_pipe_decode=\$pipe_decode my_wait_key=\$wait_key \
+pipe_decode=no wait_key=no<enter>\
+<pipe-message> urlpager<enter>\
+<enter-command> set pipe_decode=\$my_pipe_decode wait_key=\$my_wait_key \
+&my_pipe_decode &my_wait_key<enter>\
 " "go to any url"
 macro index,pager,attach ,t "\
-<enter-command> set my_wait_key=\$wait_key wait_key=no<enter>\
-<pipe-message>urlpager -b w3m -p web<enter>\
-<enter-command> set wait_key=\$my_wait_key &my_wait_key<enter>\
+<enter-command> set my_pipe_decode=\$pipe_decode my_wait_key=\$wait_key \
+pipe_decode=no wait_key=no<enter>\
+<pipe-message> urlpager -b w3m -pweb<enter>\
+<enter-command> set pipe_decode=\$my_pipe_decode wait_key=\$my_wait_key \
+&my_pipe_decode &my_wait_key<enter>\
 " "text browse web"
 
 # wrap as $display_filter
@@ -47,15 +51,18 @@ macro pager ,r "\
 
 # call viewhtmlmsg from macro
 macro index,pager <F7> "\
-<enter-command> set my_wait_key=\$wait_key wait_key=no<enter>\
-<pipe-message>viewhtmlmsg<enter>\
-<enter-command> set wait_key=\$my_wait_key &my_wait_key<enter>\
+<enter-command> set my_pipe_decode=\$pipe_decode my_wait_key=\$wait_key \
+pipe_decode=no wait_key=no<enter>\
+<pipe-message> viewhtmlmsg<enter>\
+<enter-command> set pipe_decode=\$my_pipe_decode wait_key=\$my_wait_key \
+&my_pipe_decode &my_wait_key<enter>\
 " "view HTML in browser"
-
 macro index,pager <F8> "\
-<enter-command> set my_wait_key=\$wait_key wait_key=no<enter>\
-<pipe-message>viewhtmlmsg -s<enter>\
-<enter-command> set wait_key=\$my_wait_key &my_wait_key<enter>\
+<enter-command> set my_pipe_decode=\$pipe_decode my_wait_key=\$wait_key \
+pipe_decode=no wait_key=no<enter>\
+<pipe-message> viewhtmlmsg -s<enter>\
+<enter-command> set pipe_decode=\$my_pipe_decode wait_key=\$my_wait_key \
+&my_pipe_decode &my_wait_key<enter>\
 " "view HTML (safe) in browser"
 
 # EOF vim:ft=muttrc
