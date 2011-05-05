@@ -76,10 +76,14 @@ class urlcollector(urlregex.urlregex):
         if '\0' in s:
             return ''
         msg = _msgfactory(fp)
-        if not msg or not msg['Message-ID']:
+        if not msg:
             fp.seek(0)
             return fp.read()
         # else it's a message or a mailbox
+        if not msg['message-id']:
+            hint = ('make sure input is a raw message,'
+                    ' in mutt: unset pipe_decode')
+            raise util.DeadMan('no message-id found', hint=hint)
         if not msg.get_unixfrom():
             sl = self.msgharvest(msg)
         else: # treat s like a mailbox because it might be one

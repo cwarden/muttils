@@ -36,8 +36,12 @@ class viewhtml(pybrowser.browser):
                 fp.close()
         except email.Errors.MessageParseError, inst:
             raise util.DeadMan(inst)
-        if not msg or not msg['message-id']:
+        if not msg:
             raise util.DeadMan('input not a message')
+        if not msg['message-id']:
+            hint = ('make sure input is a raw message,'
+                    ' in mutt: unset pipe_decode')
+            raise util.DeadMan('no message-id found', hint=hint)
         htiter = email.Iterators.typed_subpart_iterator(msg, subtype='html')
         try:
             html = htiter.next()
