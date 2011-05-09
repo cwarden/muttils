@@ -21,7 +21,7 @@ class browser(object):
             u.urlobject(search=False)
             self.weburl_re = u.url_re
 
-    def fixurl(self, url):
+    def fixurl(self, url, cygpath):
         '''Adapts possibly short url to pass as browser argument.'''
         if not self.weburl_re or self.weburl_re.match(url):
             url = urlregex.webschemecomplete(url)
@@ -44,24 +44,34 @@ class browser(object):
                 url = util.absolutepath(url)
                 if not os.path.exists(url):
                     raise util.DeadMan('%s: not found' % url)
-                if sys.platform == 'cygwin':
-                    # cygwin expects windows filesystem path for system
-                    # browsers
+                if cygpath:
                     url = util.pipeline(['cygpath', '-w', url]).rstrip()
                 url = 'file://' + url
         return url
 
     def urlvisit(self):
         '''Visit url(s).'''
-        textbrowsers = ('w3m', 'lynx', 'links', 'elinks')
+        textbrowsers = 'w3m', 'lynx', 'links', 'elinks'
+        cygwin = sys.platform == 'cygwin'
+        app, tb, cygpath, notty, screen = '', False, False, False, False
+        if self.ui.app is not None:
+            app = os.path.basename(self.ui.app)
+            tb = app in textbrowsers
+            if tb:
+                notty = not util.termconnected()
+                screen = 'STY' in os.environ
+            elif cygwin:
+                # do we have to call cygpath to transform local path to windows
+                # file system path?
+                cygpath = (self.ui.app.find('/cygdrive/') == 0 and
+                           self.ui.app.find('/Cygwin/') < 0)
+        elif cygwin:
+            #cygpath = True # not tested yet, err on safe side
+            hint = 'set the $BROWSER environment variable explicitly on cygwin'
+            raise util.DeadMan('cannot detect system browser', hint=hint)
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
-        self.items = map(self.fixurl, self.items)
-        app = self.ui.app
-        if app is not None:
-            app = os.path.basename(self.ui.app)
-        screen = app in textbrowsers and 'STY' in os.environ
-        notty = not util.termconnected()
+        self.items = [self.fixurl(url, cygpath) for url in self.items]
         # w3m does not need to be connected to terminal
         # but has to be connected if called into another screen instance
         if screen or app in textbrowsers[1:] and notty:
