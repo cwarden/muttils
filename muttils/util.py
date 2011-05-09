@@ -40,6 +40,10 @@ def termconnected():
         # I/O operation on closed file
         return False
 
+def cygwin():
+    '''Returns true when we are on cygwin.'''
+    return sys.platform == 'cygwin'
+
 def systemcall(cs, notty=False, screen=False):
     '''Calls command sequence cs in manner suiting
     terminal connectivity.'''

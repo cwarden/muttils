@@ -1,6 +1,6 @@
 # $Id$
 
-import os, webbrowser, sys
+import os, webbrowser
 from muttils import ui, urlregex, util
 
 class browser(object):
@@ -52,7 +52,7 @@ class browser(object):
     def urlvisit(self):
         '''Visit url(s).'''
         textbrowsers = 'w3m', 'lynx', 'links', 'elinks'
-        cygwin = sys.platform == 'cygwin'
+        cygwin = util.cygwin()
         app, tb, cygpath, notty, screen = '', False, False, False, False
         if self.ui.app is not None:
             app = os.path.basename(self.ui.app)
