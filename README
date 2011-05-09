@@ -10,11 +10,11 @@ See also: contrib/example-muttrc
 sigpager:
 Offers an interactive selection of signatures.
 
-urlpager:
+urlpager[*]:
 Searches for urls, and retrieves url selected by user.
 Urls include Message-IDs.
 
-urlbatcher:
+urlbatcher[*]:
 Retrieve urls contained in input.
 
 pybrowser:
@@ -22,12 +22,16 @@ Can be used as general browser call.
 Application to override platform default can be specified via -b
 option.
 
-viewhtmlmsg:
+viewhtmlmsg[*]:
 Display html message in browser.
 
 wrap:
 Word wrap text input.
 With support for messages (recognition of quote chars etc.).
+
+[*]needs raw message as input to work correctly.
+In Mutt, set pipe_decode=no in conjunction with pipe-message.
+
 
 Installation:
 -------------
