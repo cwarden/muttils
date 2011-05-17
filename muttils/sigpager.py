@@ -25,17 +25,18 @@ class signature(tpager.tpager):
         self.sdir = sdir or self.ui.configitem('messages', 'sigdir')
         if not self.sdir:
             raise util.Abort('no directory for signatures configured')
-        self.tail = tail or self.ui.configitem('messages', 'sigtail')
+        self.tail = tail or self.ui.configitem('messages', 'sigtail', '')
         self.sep = sep          # signature separator
 
     def getstring(self, fn):
         fn = os.path.join(self.sdir, fn)
-        f = open(fn)
-        try:
-            s = f.read()
-        finally:
-            f.close()
-        return s
+        if os.path.isfile(fn):
+            f = open(fn)
+            try:
+                s = f.read()
+            finally:
+                f.close()
+            return s
 
     def getsig(self, weed_re=None):
         if weed_re:
