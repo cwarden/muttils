@@ -68,7 +68,7 @@ class signature(tpager.tpager):
         sl = [f for f in os.listdir(self.sdir) if f.endswith(self.tail)]
         if not sl:
             raise util.DeadMan('no signature files in %s' % self.sdir)
-        self.sigs = map(self.getstring, sl)
+        self.sigs = [sig for sig in map(self.getstring, sl) if sig]
         weed_re = None
         while True:
             reply = self.getsig(weed_re)
