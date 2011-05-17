@@ -23,6 +23,8 @@ class signature(tpager.tpager):
         self.sig = (sig or self.ui.configitem('messages', 'signature')
                     or os.getenv('SIGNATURE') or '~/.signature')
         self.sdir = sdir or self.ui.configitem('messages', 'sigdir')
+        if not self.sdir:
+            raise util.Abort('no directory for signatures configured')
         self.tail = tail or self.ui.configitem('messages', 'sigtail')
         self.sep = sep          # signature separator
 
