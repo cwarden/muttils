@@ -30,13 +30,16 @@ class signature(tpager.tpager):
 
     def getstring(self, fn):
         fn = os.path.join(self.sdir, fn)
-        if os.path.isfile(fn):
+        s = ''
+        try:
             f = open(fn)
             try:
                 s = f.read()
             finally:
                 f.close()
-            return s
+        except IOError:
+            pass
+        return s
 
     def getsig(self, weed_re=None):
         if weed_re:
