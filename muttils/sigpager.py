@@ -34,7 +34,11 @@ class signature(tpager.tpager):
         try:
             fp = open(fn)
             try:
-                sig = fp.read()
+                lines = fp.readlines()
+                if lines and lines[0] == self.sep:
+                    lines = lines[1:]
+                if lines:
+                    sig = ''.join(lines)
             finally:
                 fp.close()
         except IOError:
