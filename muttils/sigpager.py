@@ -30,16 +30,16 @@ class signature(tpager.tpager):
 
     def getstring(self, fn):
         fn = os.path.join(self.sdir, fn)
-        s = ''
+        sig = ''
         try:
-            f = open(fn)
+            fp = open(fn)
             try:
-                s = f.read()
+                sig = fp.read()
             finally:
-                f.close()
+                fp.close()
         except IOError:
             pass
-        return s
+        return sig
 
     def getsig(self, weed_re=None):
         if weed_re:
@@ -81,19 +81,19 @@ class signature(tpager.tpager):
                 sig = self.sep + self.items[0]
             else:
                 self.sig = util.absolutepath(self.sig)
-                f = open(self.sig)
+                fp = open(self.sig)
                 try:
-                    sig = self.sep + f.read()
+                    sig = self.sep + fp.read()
                 finally:
-                    f.close()
+                    fp.close()
             if not self.dest:
                 self.ui.write(sig)
             else:
                 for fn in self.dest:
-                    f = open(fn, 'a')
+                    fp = open(fn, 'a')
                     try:
-                        f.write(sig)
+                        fp.write(sig)
                     finally:
-                        f.close()
+                        fp.close()
         elif self.dest:
             self.ui.write('\n')
