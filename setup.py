@@ -9,29 +9,45 @@ if not hasattr(sys, 'version_info') or sys.version_info < (2, 4):
 from distutils.core import setup
 import os.path, subprocess, time
 
-version = None
+
+# simplified hg versioning
+
+def runhg(cmd):
+    out, err = subprocess.Popen(['hg'] + cmd,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE).communicate()
+    err = [e for e in err.splitlines()
+           if not e.startswith('Not trusting file') \
+              and not e.startswith('warning: Not importing')]
+    if err:
+        return ''
+    return out
+
+version = ''
 
 if os.path.isdir('.hg'):
-    v, e = subprocess.Popen(['hg', 'id', '-i', '-t'],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE).communicate()
-    if e:
-        sys.stderr.write('warning: could not establish muttils '
-                         'version:\n%s\n' % e)
-    else:
-        v = v.split()
-        while len(v) > 1 and v[-1][0].isalpha(): # no numbered tags
-            v.pop()
-        version = v[-1] # latest tag or revision number
-        if version.endswith('+'):
-            version += time.strftime('%Y%m%d')
+    v = runhg(['id', '-i', '-t'])
+    v = v.split()
+    while len(v) > 1 and v[-1][0].isalpha():
+        v.pop()
+    if len(v) > 1: # tag found
+        version = v[-1]
+        if v[0].endswith('+'):
+            version += '+'
+    elif len(v) == 1:
+        cmd = ['parents', '--template', '{latesttag}+{latesttagdistance}-']
+        version = runhg(cmd) + v[0]
+    if version.endswith('+'):
+        version += time.strftime('%Y%m%d')
 elif os.path.isfile('.hg_archival.txt'):
-    fp = open('.hg_archival.txt')
-    for line in fp:
-        if line.startswith('node:'):
-            version = line.split(':', 1)[1].strip()[:12]
-            break
-    fp.close()
+    kw = dict([[t.strip() for t in l.split(':', 1)]
+               for l in open('.hg_archival.txt')])
+    if 'tag' in kw:
+        version =  kw['tag']
+    elif 'latesttag' in kw:
+        version = '%(latesttag)s+%(latesttagdistance)s-%(node).12s' % kw
+    else:
+        version = kw.get('node', '')[:12]
 
 if version:
     fp = open('muttils/__version__.py', 'w')
