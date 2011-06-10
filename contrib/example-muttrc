@@ -4,6 +4,7 @@
 
 # sigpager
 # sigpager appends separator by default
+# unset sig_dashes or use sigpager --nosep
 set sig_dashes=no
 set signature="sigpager|"
 
