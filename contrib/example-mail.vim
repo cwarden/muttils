@@ -1,5 +1,8 @@
 " $Id$
 " set up sigpager eg. in ~/.vim/after/ftplugin/mail.vim
+"
+" when signing with sigpager from within vim, you might want to unset
+" signature in muttrc
 
 function! s:Sigpager()
   " appends signature chosen via sigpager at end of file
