@@ -20,3 +20,7 @@ endfunction
 
 " choose email signature, append at EOF, jump back to previous position
 nnoremap <buffer> <LocalLeader>s m`:call <SID>Sigpager()<CR>``
+
+" you can also choose to run sigpager when you start editing a mail
+silent call append("$", "")
+call <SID>Sigpager()
