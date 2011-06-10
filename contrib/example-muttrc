@@ -7,6 +7,8 @@
 # unset sig_dashes or use sigpager --nosep
 set sig_dashes=no
 set signature="sigpager|"
+# alternatively you can run sigpager in the editor
+# see example-mail.vim
 
 # urlpager
 # this is for recent Mutt versions that support variables
