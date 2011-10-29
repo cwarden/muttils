@@ -72,13 +72,12 @@ class urlcollector(urlregex.urlregex):
         Parses message/mailbox for relevant headers adding urls to list of items
         and returns text parts for further searching.'''
         # binary check from mercurial.util
-        s = fp.read(4096)
+        s = fp.read()
         if '\0' in s:
             return ''
         msg = _msgfactory(fp)
         if not msg:
-            fp.seek(0)
-            return fp.read()
+            return s
         # else it's a message or a mailbox
         if not msg['message-id']:
             hint = ('make sure input is a raw message,'
