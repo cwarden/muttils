@@ -63,6 +63,9 @@ def run():
                            '(colon-separated list, excluding mail spool)')
     parser.add_option('-M', '--mask',
                       help='exclude mailboxes matching MASK from search')
+    parser.add_option('-t', '--text', action='store_true',
+                      help='treat input as text '
+                           '(do not autodetect message or mailbox)')
 
     options, args = parser.parse_args()
     del parser

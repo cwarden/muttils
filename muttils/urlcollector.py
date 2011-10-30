@@ -75,6 +75,8 @@ class urlcollector(urlregex.urlregex):
         s = fp.read()
         if '\0' in s:
             return ''
+        elif self.ui.text:
+            return s
         msg = _msgfactory(fp)
         if not msg:
             return s
