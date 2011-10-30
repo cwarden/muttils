@@ -1,6 +1,6 @@
 # $Id$
 
-import cStringIO, re, sys
+import os, re, sys, tempfile
 import email, email.Iterators, email.Utils, email.Errors
 import mailbox
 from muttils import urlregex, util
@@ -99,13 +99,21 @@ class urlcollector(urlregex.urlregex):
         textlist = []
         if not self.files: # read from stdin
             fp = sys.stdin
+            tempname = ''
             try: # not every stdin file object is seekable
                 fp.seek(0)
             except IOError:
-                fp = cStringIO.StringIO()
-                fp.write(sys.stdin.read())
+                tempname = tempfile.mkstemp(prefix='urlcollector')[1]
+                fp = open(tempname, 'wb')
+                try:
+                    fp.write(sys.stdin.read())
+                finally:
+                    fp.close()
+                fp = open(tempname, 'rb')
             text = self.filedeconstructor(fp)
-            fp.close()
+            if tempname:
+                fp.close()
+                os.unlink(tempname)
             textlist.append(text)
         else:
             for f in self.files:
