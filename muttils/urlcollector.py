@@ -32,8 +32,8 @@ class urlcollector(urlregex.urlregex):
                 pairs = email.Utils.getaddresses(vals)
                 self.items += [addr for rname, addr in pairs if addr]
 
-    def msgharvest(self, msg, strings=None):
-        sl = strings or []
+    def msgharvest(self, msg):
+        sl = []
         if self.ui.proto != 'mid':
             if self.ui.proto in ('all', 'mailto'):
                 self.getaddr(msg, 'from', 'to', 'reply-to', 'cc', 'sender',
@@ -95,7 +95,7 @@ class urlcollector(urlregex.urlregex):
                 while msg is not None:
                     msg = mbox.next()
                     if msg:
-                        sl = self.msgharvest(msg, sl)
+                        sl += self.msgharvest(msg)
         finally:
             fp.close()
         return '\n'.join(sl)
