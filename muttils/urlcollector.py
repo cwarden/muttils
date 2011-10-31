@@ -33,7 +33,7 @@ class urlcollector(urlregex.urlregex):
                 self.items += [addr for rname, addr in pairs if addr]
 
     def msgharvest(self, msg):
-        sl = []
+        textlist = []
         if self.ui.proto != 'mid':
             if self.ui.proto in ('all', 'mailto'):
                 self.getaddr(msg, 'from', 'to', 'reply-to', 'cc', 'sender',
@@ -47,7 +47,7 @@ class urlcollector(urlregex.urlregex):
             for head in searchheads:
                 vals = msg.get_all(head)
                 if vals:
-                    sl += vals
+                    textlist += vals
         else:
             self.getaddr(msg, 'references', 'in-reply-to', 'message-id',
                          'original-message-id')
@@ -58,13 +58,13 @@ class urlcollector(urlregex.urlregex):
             msg['Content-Type'] = oldct
         for part in email.Iterators.typed_subpart_iterator(msg):
             # try getting quoted urls spanning more than 1 line
-            s = self.quote_re.sub('', part.get_payload(decode=True))
+            text = self.quote_re.sub('', part.get_payload(decode=True))
             # handle DelSp (rfc 3675)
             ct = part.get('content-type', '').lower()
             if ct.find('delsp=yes') > -1:
-                s = s.replace(' \n', '')
-            sl.append(s)
-        return sl
+                text = text.replace(' \n', '')
+            textlist.append(text)
+        return textlist
 
     def filedeconstructor(self, fn):
         '''Checks if given file object is message or mailbox.
@@ -74,31 +74,31 @@ class urlcollector(urlregex.urlregex):
         # binary check from mercurial.util
         fp = open(fn, 'rb')
         try:
-            s = fp.read()
-            if '\0' in s:
+            text = fp.read()
+            if '\0' in text:
                 return ''
             elif self.ui.text:
-                return s
+                return text
             msg = _msgfactory(fp)
             if not msg:
-                return s
+                return text
             # else it's a message or a mailbox
             if not msg['message-id']:
                 hint = ('make sure input is a raw message,'
                         ' in mutt: unset pipe_decode')
                 raise util.DeadMan('no message-id found', hint=hint)
             if not msg.get_unixfrom():
-                sl = self.msgharvest(msg)
-            else: # treat s like a mailbox because it might be one
-                sl = [] # list of strings to search
+                textlist = self.msgharvest(msg)
+            else: # treat text like a mailbox because it might be one
+                textlist = [] # list of strings to search
                 mbox = mailbox.PortableUnixMailbox(fp, _msgfactory)
                 while msg is not None:
                     msg = mbox.next()
                     if msg:
-                        sl += self.msgharvest(msg)
+                        textlist += self.msgharvest(msg)
         finally:
             fp.close()
-        return '\n'.join(sl)
+        return '\n'.join(textlist)
 
     def urlcollect(self):
         '''Harvests urls from stdin or files.'''
@@ -113,8 +113,8 @@ class urlcollector(urlregex.urlregex):
             os.unlink(tempname)
         else:
             textlist = []
-            for f in self.files:
-                textlist.append(self.filedeconstructor(util.absolutepath(f)))
+            for fn in self.files:
+                textlist.append(self.filedeconstructor(util.absolutepath(fn)))
             text = '\n'.join(textlist)
         if text:
             self.findurls(text)
