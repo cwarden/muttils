@@ -84,8 +84,9 @@ class urlcollector(urlregex.urlregex):
                 return text
             # else it's a message or a mailbox
             if not msg['message-id']:
-                hint = ('make sure input is a raw message,'
-                        ' in mutt: unset pipe_decode')
+                hint = ('make sure input is a raw message'
+                        ' - in mutt: unset pipe_decode -,'
+                        ' or use -t/--text to disable message detection')
                 raise util.DeadMan('no message-id found', hint=hint)
             if not msg.get_unixfrom():
                 textlist = self.msgharvest(msg)
