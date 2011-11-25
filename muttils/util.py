@@ -6,17 +6,23 @@
 import os, subprocess, sys
 
 class DeadMan(Exception):
-    '''Exception class for muttils package.'''
+    '''Exception class for muttils package.
+    '''
     def __init__(self, *args, **kw):
         Exception.__init__(self, *args)
-        self.inst = ' '.join(args)
+        try:
+            self.value = ' '.join(args)
+        except TypeError:
+            self.value = args
         self.hint = kw.get('hint')
+
     def __str__(self):
-        if not self.inst:
+        if not self.value:
             return 'abort'
         if self.hint:
-            return 'abort: %s\n(%s)' % (self.inst, self.hint)
-        return 'abort: %s' % self.inst
+            self.value = '%s\n(%s)' % (self.value, self.hint)
+        return 'abort: %s' % self.value
+
 
 def version():
     try:
