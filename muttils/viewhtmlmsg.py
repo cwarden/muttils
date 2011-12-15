@@ -8,7 +8,7 @@ import os.path, re, shutil, sys, tempfile, time, urllib
 from muttils import pybrowser, ui, util
 
 class viewhtml(pybrowser.browser):
-    def __init__(self, safe, keep, app, args):
+    def __init__(self, safe, keep, use_inotify, app, args):
         self.ui = ui.ui()
         self.ui.updateconfig()
         pybrowser.browser.__init__(self, parentui=self.ui,
@@ -16,11 +16,12 @@ class viewhtml(pybrowser.browser):
         self.inp = args
         self.safe = safe or self.ui.configbool('html', 'safe')
         self.keep = keep
-        if self.keep is None:
+        self.use_inotify = use_inotify or self.ui.configbool('html', 'inotify')
+        if self.keep is None and not use_inotify:
             self.keep = self.ui.configint('html', 'keep', 3)
 
     def cleanup(self, tmpdir):
-        if self.keep:
+        if self.keep or self.use_inotify:
             shutil.rmtree(tmpdir)
 
     def view(self):
@@ -76,8 +77,24 @@ class viewhtml(pybrowser.browser):
             fp.write(html)
             fp.close()
             self.items = [htmlfile]
-            self.urlvisit()
-            if self.keep:
+            if self.use_inotify:
+                import inotifyx
+                try:
+                    fd = inotifyx.init()
+                    wd = inotifyx.add_watch(fd, htmlfile, inotifyx.IN_CLOSE)
+                    self.urlvisit()
+                    # timeout after keep seconds, or wait forever if keep is None
+                    if self.keep:
+                        event = inotifyx.get_events(fd, self.keep)
+                    else:
+                        events = inotifyx.get_events(fd)
+                    inotifyx.rm_watch(fd, wd)
+                except IOError:
+                    raise util.DeadMan('Failed to enable inotify.  Verify that /proc/sys/fs/inotify/max_user_watches is high enough.')
+                finally:
+                    os.close(fd)
+            elif self.keep:
+                self.urlvisit()
                 time.sleep(self.keep)
         finally:
             self.cleanup(htmldir)
