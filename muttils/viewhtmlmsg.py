@@ -4,11 +4,17 @@
 # $Id$
 
 import email, email.Errors, email.Iterators, email.Utils
-import os.path, re, shutil, sys, tempfile, time, urllib
+import os.path, re, shutil, sys, tempfile, urllib
 from muttils import pybrowser, ui, util
 
+try:
+    import inotifyx
+except ImportError:
+    import time
+
+
 class viewhtml(pybrowser.browser):
-    def __init__(self, safe, keep, use_inotify, app, args):
+    def __init__(self, safe, keep, app, args):
         self.ui = ui.ui()
         self.ui.updateconfig()
         pybrowser.browser.__init__(self, parentui=self.ui,
@@ -16,13 +22,25 @@ class viewhtml(pybrowser.browser):
         self.inp = args
         self.safe = safe or self.ui.configbool('html', 'safe')
         self.keep = keep
-        self.use_inotify = use_inotify or self.ui.configbool('html', 'inotify')
-        if self.keep is None and not use_inotify:
+        if self.keep is None:
             self.keep = self.ui.configint('html', 'keep', 3)
 
     def cleanup(self, tmpdir):
-        if self.keep or self.use_inotify:
+        if self.keep:
             shutil.rmtree(tmpdir)
+
+    def ivisit(self):
+        try:
+            fd = inotifyx.init()
+            wd = inotifyx.add_watch(fd, self.items[0], inotifyx.IN_CLOSE)
+            self.urlvisit()
+            inotifyx.get_events(fd, self.keep)
+            inotifyx.rm_watch(fd, wd)
+            os.close(fd)
+        except IOError:
+            hint = ('consider increasing '
+                    '/proc/sys/fs/inotify/max_user_watches')
+            raise util.DeadMan('failed to enable inotify', hint=hint)
 
     def view(self):
         try:
@@ -77,24 +95,13 @@ class viewhtml(pybrowser.browser):
             fp.write(html)
             fp.close()
             self.items = [htmlfile]
-            if self.use_inotify:
-                import inotifyx
+            if self.keep:
                 try:
-                    fd = inotifyx.init()
-                    wd = inotifyx.add_watch(fd, htmlfile, inotifyx.IN_CLOSE)
+                    self.ivisit()
+                except NameError:
                     self.urlvisit()
-                    # timeout after keep seconds, or wait forever if keep is None
-                    if self.keep:
-                        event = inotifyx.get_events(fd, self.keep)
-                    else:
-                        events = inotifyx.get_events(fd)
-                    inotifyx.rm_watch(fd, wd)
-                except IOError:
-                    raise util.DeadMan('Failed to enable inotify.  Verify that /proc/sys/fs/inotify/max_user_watches is high enough.')
-                finally:
-                    os.close(fd)
-            elif self.keep:
+                    time.sleep(self.keep)
+            else:
                 self.urlvisit()
-                time.sleep(self.keep)
         finally:
             self.cleanup(htmldir)
