@@ -5,6 +5,14 @@
 
 import os, subprocess, sys
 
+_notset = object()
+
+def safehasattr(thing, attr):
+    '''Deal with python compatibility problems of hasattr().
+    See: http://selenic.com/hg/rev/5a0fdc715769'''
+    return getattr(thing, attr, _notset) is not _notset
+
+
 class DeadMan(Exception):
     '''Exception class for muttils package.
     '''

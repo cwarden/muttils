@@ -11,7 +11,7 @@ class wget(object):
             self.opener.addheaders = headers
 
     def wwarn(self, url, inst):
-        if hasattr(inst, 'reason'):
+        if util.safehasattr(inst, 'reason'):
             self.ui.warn('failed to reach a server for %s\n' % url,
                          'reason: %s\n' % inst)
         else:
@@ -32,7 +32,7 @@ class wget(object):
                 raise util.DeadMan('%s: invalid request instruction')
             fp.close()
         except urllib2.URLError, inst:
-            if hasattr(inst, 'reason'):
+            if util.safehasattr(inst, 'reason'):
                 self.ui.warn('failed to reach a server for %s\n' % req,
                              'reason: %s\n' % inst)
             else:
