@@ -16,9 +16,9 @@ def _hostname(generic=False):
     for all top level domains or just generic domains.'''
     domainlabel = r'[a-z0-9]+([-a-z0-9]+[a-z0-9])?'
     # generic domains
-    generics = ['aero', 'arpa', 'biz', 'cat', 'com', 'coop',
+    generics = ['aero', 'arpa', 'asia', 'biz', 'cat', 'com', 'coop',
                 'edu', 'gov', 'info', 'int', 'jobs', 'mil', 'mobi', 'museum',
-                'name', 'net', 'org', 'pro', 'root', 'travel']
+                'name', 'net', 'org', 'pro', 'root', 'travel', 'xxx']
     # top level domains
     tops = generics + ['a[cdefgilmnoqrstuwz]', 'b[abdefghijmnorstvwyz]',
                        'c[acdfghiklmnoruvxyz]', 'd[ejkmoz]', 'e[ceghrstu]',
