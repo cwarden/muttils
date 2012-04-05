@@ -23,7 +23,7 @@ def run():
     parser.add_option('-t', '--tail',
                       help='signatures are read from files with suffix TAIL')
     parser.add_option('-S', '--nosep',
-                      dest='sigsep', action='store_const', const= '',
+                      dest='sigsep', action='store_const', const='',
                       help='suppress prepending of signature separator')
 
     options, args = parser.parse_args()
