@@ -49,26 +49,31 @@ class browser(object):
                 url = 'file://' + url
         return url
 
+    def cygpath(self, tb):
+        '''Do we have to call cygpath to transform local path to windows file
+        system path?'''
+        if not util.cygwin() or tb:
+            return False
+        app = self.ui.app
+        if app is None:
+            try:
+                app = os.environ['BROWSER']
+            except KeyError:
+                hint = '$BROWSER environment variable required on cygwin'
+                raise util.DeadMan('cannot detect system browser', hint=hint)
+        return app.find('/cygdrive/') == 0 and app.find('/Cygwin/') < 0
+
     def urlvisit(self):
         '''Visit url(s).'''
         textbrowsers = 'w3m', 'lynx', 'links', 'elinks'
-        cygwin = util.cygwin()
-        app, tb, cygpath, notty, screen = '', False, False, False, False
+        app, tb, notty, screen = '', False, False, False
         if self.ui.app is not None:
             app = os.path.basename(self.ui.app)
             tb = app in textbrowsers
             if tb:
                 notty = not util.termconnected()
                 screen = 'STY' in os.environ
-            elif cygwin:
-                # do we have to call cygpath to transform local path to windows
-                # file system path?
-                cygpath = (self.ui.app.find('/cygdrive/') == 0 and
-                           self.ui.app.find('/Cygwin/') < 0)
-        elif cygwin:
-            #cygpath = True # not tested yet, err on safe side
-            hint = 'set the $BROWSER environment variable explicitly on cygwin'
-            raise util.DeadMan('cannot detect system browser', hint=hint)
+        cygpath = self.cygpath(tb)
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
         self.items = [self.fixurl(url, cygpath) for url in self.items]
