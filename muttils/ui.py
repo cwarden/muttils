@@ -26,10 +26,12 @@ class ui(object):
 
     defrcpath = ['/etc/muttils/muttilsrc',
                  '/usr/local/etc/muttilsrc',
-                 os.path.expanduser('~/.muttilsrc'),]
+                 os.path.expanduser('~/.muttilsrc')]
 
     def __init__(self, rcpath=None):
-        self.rcpath = rcpath or self.defrcpath
+        self.rcpath = rcpath
+        if self.rcpath is None:
+            self.rcpath = self.defrcpath
         self.config = ConfigParser.SafeConfigParser()
 
     def updateconfig(self):
