@@ -25,8 +25,8 @@ class browser(object):
         '''Adapts possibly short url to pass as browser argument.'''
         if not self.weburl_re or self.weburl_re.match(url):
             url = urlregex.webschemecomplete(url)
-            gophers = ('lynx', 'firefox')
             if url.startswith('gopher://') and self.ui.app not in gophers:
+            gophers = 'lynx', 'firefox'
                 # use gateway when browser is not gopher capable
                 url = url.replace('gopher://',
                                   'http://gopher.floodgap.com/gopher/gw?')
