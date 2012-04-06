@@ -24,25 +24,19 @@ class browser(object):
         self.items = items             # urls
         if app is not None:
             self.ui.app = app
+        self.appname = util.progname(self.ui.app)
         if evalurl: # check remote url protocol scheme
             self.ui.proto = 'web'
             u = urlregex.urlregex(self.ui, uniq=False)
             u.urlobject(search=False)
             self.weburl_re = u.url_re
 
-    def appname(self):
-        '''Extracts (text)browser name from /path/to/name(.exe).'''
-        try:
-            return os.path.splitext(os.path.basename(self.ui.app))[0]
-        except AttributeError:
-            return ''
-
     def fixurl(self, url, cygpath):
         '''Adapts possibly short url to pass as browser argument.'''
         if not self.weburl_re or self.weburl_re.match(url):
             url = urlregex.webschemecomplete(url)
             gophers = 'lynx', 'firefox'
-            if url.startswith('gopher://') and self.appname() not in gophers:
+            if url.startswith('gopher://') and self.appname not in gophers:
                 # use gateway when browser is not gopher capable
                 url = url.replace('gopher://',
                                   'http://gopher.floodgap.com/gopher/gw?')
@@ -81,8 +75,7 @@ class browser(object):
         '''Visit url(s).'''
         textbrowsers = 'w3m', 'lynx', 'links', 'elinks'
         notty, screen = False, False
-        app = self.appname()
-        tb = app in textbrowsers
+        tb = self.appname in textbrowsers
         if tb:
             notty = not util.termconnected()
             screen = 'STY' in os.environ
@@ -92,7 +85,7 @@ class browser(object):
         self.items = [self.fixurl(url, cygpath) for url in self.items]
         # w3m does not need to be connected to terminal
         # but has to be connected if called into another screen instance
-        if screen or app in textbrowsers[1:] and notty:
+        if screen or self.appname in textbrowsers[1:] and notty:
             for url in self.items:
                 util.systemcall([self.ui.app, url], notty, screen)
         else:
