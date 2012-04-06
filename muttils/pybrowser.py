@@ -3,6 +3,15 @@
 import os, webbrowser
 from muttils import ui, urlregex, util
 
+class PybrowserError(util.DeadMan):
+    '''
+    Error class for the pybrowser module.
+    '''
+    def __init__(self, *args, **kw):
+        util.DeadMan.__init__(self, *args, **kw)
+        if not self.value:
+            self.value = 'could not locate runnable browser'
+
 class browser(object):
     '''
     Visits items with default or given browser.
@@ -23,7 +32,10 @@ class browser(object):
 
     def appname(self):
         '''Extracts (text)browser name from /path/to/name(.exe).'''
-        return os.path.splitext(os.path.basename(self.ui.app))[0]
+        try:
+            return os.path.splitext(os.path.basename(self.ui.app))[0]
+        except AttributeError:
+            return ''
 
     def fixurl(self, url, cygpath):
         '''Adapts possibly short url to pass as browser argument.'''
@@ -47,7 +59,7 @@ class browser(object):
             if not url.startswith('http://'):
                 url = util.absolutepath(url)
                 if not os.path.exists(url):
-                    raise util.DeadMan('%s: not found' % url)
+                    raise PybrowserError('%s: not found' % url)
                 if cygpath:
                     url = util.pipeline(['cygpath', '-w', url]).rstrip()
                 url = 'file://' + url
@@ -58,25 +70,22 @@ class browser(object):
         system path?'''
         if not util.cygwin() or tb:
             return False
-        app = self.ui.app
-        if app is None:
-            try:
-                app = os.environ['BROWSER']
-            except KeyError:
-                hint = '$BROWSER environment variable required on cygwin'
-                raise util.DeadMan('cannot detect system browser', hint=hint)
-        return app.find('/cygdrive/') == 0 and app.find('/Cygwin/') < 0
+        try:
+            return (self.ui.app.find('/cygdrive/') == 0 and
+                    self.ui.app.find('/Cygwin/') < 0)
+        except AttributeError:
+            hint = '$BROWSER environment variable required on cygwin'
+            raise PybrowserError(hint=hint)
 
     def urlvisit(self):
         '''Visit url(s).'''
         textbrowsers = 'w3m', 'lynx', 'links', 'elinks'
-        app, tb, notty, screen = '', False, False, False
-        if self.ui.app is not None:
-            app = self.appname()
-            tb = app in textbrowsers
-            if tb:
-                notty = not util.termconnected()
-                screen = 'STY' in os.environ
+        notty, screen = False, False
+        app = self.appname()
+        tb = app in textbrowsers
+        if tb:
+            notty = not util.termconnected()
+            screen = 'STY' in os.environ
         cygpath = self.cygpath(tb)
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
@@ -90,6 +99,10 @@ class browser(object):
             try:
                 b = webbrowser.get(self.ui.app)
                 for url in self.items:
-                    b.open(url)
+                    if not b.open(url):
+                        # BROWSER=invalid gives valid
+                        # webbrowser.GenericBrowser instance
+                        # and returns False
+                        raise PybrowserError
             except webbrowser.Error, inst:
-                raise util.DeadMan(inst)
+                raise PybrowserError(inst)
