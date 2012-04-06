@@ -21,12 +21,16 @@ class browser(object):
             u.urlobject(search=False)
             self.weburl_re = u.url_re
 
+    def appname(self):
+        '''Extracts (text)browser name from /path/to/name(.exe).'''
+        return os.path.splitext(os.path.basename(self.ui.app))[0]
+
     def fixurl(self, url, cygpath):
         '''Adapts possibly short url to pass as browser argument.'''
         if not self.weburl_re or self.weburl_re.match(url):
             url = urlregex.webschemecomplete(url)
-            if url.startswith('gopher://') and self.ui.app not in gophers:
             gophers = 'lynx', 'firefox'
+            if url.startswith('gopher://') and self.appname() not in gophers:
                 # use gateway when browser is not gopher capable
                 url = url.replace('gopher://',
                                   'http://gopher.floodgap.com/gopher/gw?')
@@ -68,7 +72,7 @@ class browser(object):
         textbrowsers = 'w3m', 'lynx', 'links', 'elinks'
         app, tb, notty, screen = '', False, False, False
         if self.ui.app is not None:
-            app = os.path.basename(self.ui.app)
+            app = self.appname()
             tb = app in textbrowsers
             if tb:
                 notty = not util.termconnected()
