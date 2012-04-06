@@ -72,8 +72,8 @@ def systemcall(cs, notty=False, screen=False):
     # programs that can be launched without terminal connection
     term_progs = ('w3m', 'wget')
     # check if connected to terminal
-    prog = os.path.basename(cs[0])
     notty = notty or prog not in term_progs and not termconnected()
+    prog = progname(cs[0])
     # are we inside a screen session
     screen = screen or prog not in term_progs[1:] and 'STY' in os.environ
     try:
