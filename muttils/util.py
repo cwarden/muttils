@@ -58,6 +58,14 @@ def cygwin():
     '''Returns true when we are on cygwin.'''
     return sys.platform == 'cygwin'
 
+def progname(prog):
+    '''Extracts program name from /path/to/name(.exe).
+    Returns empty string when prog is None.'''
+    try:
+        return os.path.splitext(os.path.basename(prog))[0]
+    except AttributeError:
+        return ''
+
 def systemcall(cs, notty=False, screen=False):
     '''Calls command sequence cs in manner suiting
     terminal connectivity.'''
