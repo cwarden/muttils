@@ -25,6 +25,7 @@ class browser(object):
         if app is not None:
             self.ui.app = app
         self.appname = util.progname(self.ui.app)
+        self.cygwin = util.cygwin()
         if evalurl: # check remote url protocol scheme
             self.ui.proto = 'web'
             u = urlregex.urlregex(self.ui, uniq=False)
@@ -62,7 +63,7 @@ class browser(object):
     def cygpath(self, tb):
         '''Do we have to call cygpath to transform local path to windows file
         system path?'''
-        if not util.cygwin() or tb:
+        if not self.cygwin or tb:
             return False
         try:
             return (self.ui.app.find('/cygdrive/') == 0 and
@@ -79,6 +80,8 @@ class browser(object):
         if tb:
             notty = not util.termconnected()
             screen = 'STY' in os.environ
+            if self.cygwin:
+                self.ui.app = os.path.splitext(self.ui.app)[0]
         cygpath = self.cygpath(tb)
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
