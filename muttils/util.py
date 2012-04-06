@@ -70,12 +70,12 @@ def systemcall(cs, notty=False, screen=False):
     '''Calls command sequence cs in manner suiting
     terminal connectivity.'''
     # programs that can be launched without terminal connection
-    term_progs = ('w3m', 'wget')
-    # check if connected to terminal
-    notty = notty or prog not in term_progs and not termconnected()
+    termprogs = 'w3m', 'wget'
     prog = progname(cs[0])
+    # check if connected to terminal
+    notty = notty or prog not in termprogs and not termconnected()
     # are we inside a screen session
-    screen = screen or prog not in term_progs[1:] and 'STY' in os.environ
+    screen = screen or prog not in termprogs[1:] and 'STY' in os.environ
     try:
         if notty and not screen:
             tty = os.ctermid()
