@@ -61,10 +61,9 @@ def cygwin():
 def progname(prog):
     '''Extracts program name from /path/to/name(.exe).
     Returns empty string when prog is None.'''
-    try:
-        return os.path.splitext(os.path.basename(prog))[0]
-    except AttributeError:
+    if prog is None:
         return ''
+    return os.path.splitext(os.path.basename(prog))[0]
 
 def systemcall(cs, notty=False, screen=False):
     '''Calls command sequence cs in manner suiting
