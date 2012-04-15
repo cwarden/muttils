@@ -65,16 +65,18 @@ def progname(prog):
         return ''
     return os.path.splitext(os.path.basename(prog))[0]
 
-def systemcall(cs, notty=False, screen=False):
+def systemcall(cs, notty=None, screen=None):
     '''Calls command sequence cs in manner suiting
     terminal connectivity.'''
     # programs that can be launched without terminal connection
     termprogs = 'w3m', 'wget'
     prog = progname(cs[0])
-    # check if connected to terminal
-    notty = notty or prog not in termprogs and not termconnected()
-    # are we inside a screen session
-    screen = screen or prog not in termprogs[1:] and 'STY' in os.environ
+    if notty is None:
+        # check if connected to terminal
+        notty = prog not in termprogs and not termconnected()
+    if screen is None:
+        # w3m behaves differently in screen
+        screen = prog not in termprogs[1:] and 'STY' in os.environ
     try:
         if notty and not screen:
             tty = os.ctermid()
