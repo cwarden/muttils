@@ -3,7 +3,7 @@
 
 # $Id$
 
-import ConfigParser, os, sys
+import ConfigParser, os.path, sys
 from muttils import util
 
 class ui(object):
@@ -20,7 +20,7 @@ class ui(object):
     mhiers = ''     # colon separated list of mail hierarchies
     specdirs = ''   # colon separated list of specified mail hierarchies
     mask = None     # file mask for mail hierarchies
-    app = os.getenv('BROWSER')
+    app = None      # browser program
     ftpdir = ''     # download directory for ftp
     getdir = ''     # download directory for wget
 

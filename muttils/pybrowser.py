@@ -17,6 +17,7 @@ class browser(object):
     Visits items with default or given browser.
     '''
     weburl_re = None          # url protocol scheme regex
+    appname = ''
 
     def __init__(self, parentui=None, items=None, app=None, evalurl=False):
         self.ui = parentui or ui.ui()
@@ -24,8 +25,15 @@ class browser(object):
         self.items = items             # urls
         if app is not None:
             self.ui.app = app
-        self.appname = util.progname(self.ui.app)
-        self.cygwin = util.cygwin()
+        try:
+            self.ui.app = webbrowser.get(self.ui.app)
+        except webbrowser.Error, inst:
+            raise PybrowserError(inst)
+        try:
+            # lynx.old -> lynx, lynx.exe -> lynx
+            self.appname = os.path.splitext(self.ui.app.basename)[0]
+        except AttributeError:
+            pass
         if evalurl: # check remote url protocol scheme
             self.ui.proto = 'web'
             u = urlregex.urlregex(self.ui, uniq=False)
@@ -63,14 +71,10 @@ class browser(object):
     def cygpath(self, tb):
         '''Do we have to call cygpath to transform local path to windows file
         system path?'''
-        if not self.cygwin or tb:
+        if not util.cygwin() or tb:
             return False
-        try:
-            return (self.ui.app.find('/cygdrive/') == 0 and
-                    self.ui.app.find('/Cygwin/') < 0)
-        except AttributeError:
-            hint = '$BROWSER environment variable required on cygwin'
-            raise PybrowserError(hint=hint)
+        return (self.ui.app.name.find('/cygdrive/') == 0 and
+                self.ui.app.name.find('/Cygwin/') < 0)
 
     def urlvisit(self):
         '''Visit url(s).'''
@@ -80,8 +84,6 @@ class browser(object):
         if tb:
             notty = not util.termconnected()
             screen = 'STY' in os.environ
-            if self.cygwin:
-                self.ui.app = os.path.splitext(self.ui.app)[0]
         cygpath = self.cygpath(tb)
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
@@ -90,15 +92,11 @@ class browser(object):
         # but has to be connected if called into another screen instance
         if screen or self.appname in textbrowsers[1:] and notty:
             for url in self.items:
-                util.systemcall([self.ui.app, url], notty, screen)
+                util.systemcall([self.ui.app.name, url], notty, screen)
         else:
-            try:
-                b = webbrowser.get(self.ui.app)
-                for url in self.items:
-                    if not b.open(url):
-                        # BROWSER=invalid gives valid
-                        # webbrowser.GenericBrowser instance
-                        # and returns False
-                        raise PybrowserError
-            except webbrowser.Error, inst:
-                raise PybrowserError(inst)
+            for url in self.items:
+                if not self.ui.app.open(url):
+                    # BROWSER=invalid gives valid
+                    # webbrowser.GenericBrowser instance
+                    # and returns False
+                    raise PybrowserError

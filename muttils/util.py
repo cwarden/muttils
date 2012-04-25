@@ -58,19 +58,12 @@ def cygwin():
     '''Returns true when we are on cygwin.'''
     return sys.platform == 'cygwin'
 
-def progname(prog):
-    '''Extracts program name from /path/to/name(.exe).
-    Returns empty string when prog is None.'''
-    if prog is None:
-        return ''
-    return os.path.splitext(os.path.basename(prog))[0]
-
 def systemcall(cs, notty=None, screen=None):
     '''Calls command sequence cs in manner suiting
     terminal connectivity.'''
     # programs that can be launched without terminal connection
     termprogs = 'w3m', 'wget'
-    prog = progname(cs[0])
+    prog = cs[0]
     if notty is None:
         # check if connected to terminal
         notty = prog not in termprogs and not termconnected()
