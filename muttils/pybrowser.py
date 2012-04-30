@@ -68,10 +68,10 @@ class browser(object):
                 url = 'file://' + url
         return url
 
-    def cygpath(self, tb):
+    def cygpath(self, tb, cygwin):
         '''Do we have to call cygpath to transform local path to windows file
         system path?'''
-        if not util.cygwin() or tb:
+        if tb or not cygwin:
             return False
         return (self.ui.app.name.find('/cygdrive/') == 0 and
                 self.ui.app.name.find('/Cygwin/') < 0)
@@ -79,12 +79,12 @@ class browser(object):
     def urlvisit(self):
         '''Visit url(s).'''
         textbrowsers = 'w3m', 'lynx', 'links', 'elinks'
-        notty, screen = False, False
+        notty, screen, cygwin = False, False, util.cygwin()
         tb = self.appname in textbrowsers
         if tb:
             notty = not util.termconnected()
             screen = 'STY' in os.environ
-        cygpath = self.cygpath(tb)
+        cygpath = self.cygpath(tb, cygwin)
         if not self.items:
             self.items = [self.ui.configitem('net', 'homepage')]
         self.items = [self.fixurl(url, cygpath) for url in self.items]
@@ -95,8 +95,10 @@ class browser(object):
                 util.systemcall([self.ui.app.name, url], notty, screen)
         else:
             for url in self.items:
-                if not self.ui.app.open(url):
+                if not self.ui.app.open(url) and not cygwin:
                     # BROWSER=invalid gives valid
                     # webbrowser.GenericBrowser instance
-                    # and returns False
+                    # but returns False
+                    # disable check for cygwin as valid
+                    # graphical browser instances return False too
                     raise PybrowserError
