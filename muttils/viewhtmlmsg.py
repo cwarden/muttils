@@ -69,7 +69,10 @@ class viewhtml(pybrowser.browser):
         htmldir = tempfile.mkdtemp('', 'viewhtmlmsg.')
         try:
             htmlfile = os.path.join(htmldir, 'index.html')
+            charset = html.get_param('charset')
             html = html.get_payload(decode=True)
+            if charset:
+                html = html.replace('<head>', '<head><meta charset="%s">' % charset)
             fc = 0
             for part in msg.walk():
                 fc += 1
