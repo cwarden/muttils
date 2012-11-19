@@ -210,6 +210,8 @@ class urlregex(object):
 
     def urlfilter(self):
         '''Filters out urls not in given scheme and duplicates.'''
+        self.items = [i.replace('&amp;', '&') for i in self.items]
+        self.items = [i.rstrip('.!?:;,"\'') for i in self.items]
         filterdict = {'web': _webcheck, 'mailto': mailcheck}
         if not self.ui.decl and self.ui.proto in filterdict:
             self.items = [i for i in self.items
