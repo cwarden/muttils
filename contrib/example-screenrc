@@ -1,6 +1,8 @@
 # $Id$
 
 # retrieve urls from current screen
-bind ^b eval "hardcopy /tmp/screen.dump" "exec screen -X screen urlpager /tmp/screen.dump"
+bind ^b eval 'hardcopy /tmp/urlpager-screen.dump' exec 'screen -X screen ${SHELL} -c "urlpager /tmp/urlpager-screen.dump && rm -f /tmp/urlpager-screen.dump"'
+
+# you probably want to replace /tmp/ with something like ${TMPDIR:-/tmp/}
 
 # EOF vim:ft=screen
