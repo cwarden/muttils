@@ -72,7 +72,11 @@ class viewhtml(pybrowser.browser):
             charset = html.get_param('charset')
             html = html.get_payload(decode=True)
             if charset:
-                html = html.replace('<head>', '<head><meta charset="%s">' % charset)
+                charsetmeta = '<meta charset="%s">' % charset
+                if '<head>' in html:
+                    html = html.replace('<head>', '<head>%s' % charsetmeta)
+                else:
+                    html = '<head>%s</head>%s' % (charsetmeta, html)
             fc = 0
             for part in msg.walk():
                 fc += 1
