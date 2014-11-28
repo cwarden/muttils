@@ -1,7 +1,7 @@
 # $Id$
 
 import re
-from muttils import util
+from muttils import tld, util
 
 valid_protos = ['all', 'web', 'http', 'ftp', 'gopher', 'mailto', 'mid']
 # finger, telnet, whois, wais?
@@ -16,9 +16,7 @@ def _hostname(generic=False):
     for all top level domains or just generic domains.'''
     domainlabel = r'[a-z0-9]+([-a-z0-9]+[a-z0-9])?'
     # generic domains
-    generics = ['aero', 'arpa', 'asia', 'biz', 'cat', 'com', 'coop',
-                'edu', 'gov', 'info', 'int', 'jobs', 'mil', 'mobi', 'museum',
-                'name', 'net', 'org', 'pro', 'root', 'travel', 'xxx']
+    generics = tld.generics.split()
     # top level domains
     tops = generics + ['a[cdefgilmnoqrstuwz]', 'b[abdefghijmnorstvwyz]',
                        'c[acdfghiklmnoruvxyz]', 'd[ejkmoz]', 'e[ceghrstu]',
@@ -31,11 +29,11 @@ def _hostname(generic=False):
                        't[cdfghjkmnoprtvwz]', 'u[agkmsyz]',
                        'v[acegivu]', 'w[fs]', 'y[etu]', 'z[amw]']
     if generic:
-        tds = generics
+        tlds = generics
     else:
-        tds = tops
+        tlds = tops
     # a sequence of domainlabels + top domain
-    return r'(%s\.)+(%s)' % (domainlabel, '|'.join(tds))
+    return r'(%s\.)+(%s)' % (domainlabel, '|'.join(tlds))
 
 def _weburlpats(search, proto=''):
     '''Creates 2 url patterns. The first according to protocol,
