@@ -1,7 +1,7 @@
 # $Id$
 
-import re
-from muttils import tld, util
+import re, os.path
+from muttils import util
 
 valid_protos = ['all', 'web', 'http', 'ftp', 'gopher', 'mailto', 'mid']
 # finger, telnet, whois, wais?
@@ -11,27 +11,15 @@ demand_re = {}
 
 _unreserved = r'a-z0-9\-._~'
 
-def _hostname(generic=False):
+def _hostname():
     '''Returns hostname pattern
     for all top level domains or just generic domains.'''
     domainlabel = r'[a-z0-9]+([-a-z0-9]+[a-z0-9])?'
-    # generic domains
-    generics = tld.generics.split()
-    # top level domains
-    tops = generics + ['a[cdefgilmnoqrstuwz]', 'b[abdefghijmnorstvwyz]',
-                       'c[acdfghiklmnoruvxyz]', 'd[ejkmoz]', 'e[ceghrstu]',
-                       'f[ijkmor]', 'g[abdefghilmnpqrstuwy]',
-                       'h[kmnrtu]', 'i[delnmoqrst]', 'j[emop]',
-                       'k[eghimnprwyz]', 'l[abcikrstuvy]',
-                       'm[acdeghklmnopqrstuvwxyz]', 'n[acefgilopruz]', 'om',
-                       'p[aefghklmnrstwy]', 'qa', 'r[eosuw]',
-                       's[abcdeghijklmnortuvyz]',
-                       't[cdfghjkmnoprtvwz]', 'u[agkmsyz]',
-                       'v[acegivu]', 'w[fs]', 'y[etu]', 'z[amw]']
-    if generic:
-        tlds = generics
-    else:
-        tlds = tops
+    fp = open(os.path.join(os.path.dirname(__file__),
+                           'effective_tld_names.dat'))
+
+    tlds = [line.rstrip() for line in fp if line.rstrip().isalpha()]
+
     # a sequence of domainlabels + top domain
     return r'(%s\.)+(%s)' % (domainlabel, '|'.join(tlds))
 
@@ -52,10 +40,10 @@ def _weburlpats(search, proto=''):
     escaped = r'%[0-9a-f]{2}' # % 2 hex
     uric = r'([%s%s]|%s)' % (_unreserved, reserved, escaped)
     if search:
-        hostport = r'%s(:\d+)?' % _hostname(generic=not proto)
+        hostport = r'%s(:\d+)?' % _hostname()
     else:
         hostnum = r'(\d+\.){3}\d+'
-        hostport = r'(%s|%s)(:\d+)?' % (_hostname(generic=not proto), hostnum)
+        hostport = r'(%s|%s)(:\d+)?' % (_hostname(), hostnum)
     dom = r'''
         \b                  # start at word boundary
         %(proto)s           # protocol or empty
@@ -68,6 +56,7 @@ def _weburlpats(search, proto=''):
             %(uric)s +      #     1 or more uri chars
           ) ?
         ) ?
+        \b
         ''' % vars()
     spdom = r'''
         (?<=<)              # look behind for '<'

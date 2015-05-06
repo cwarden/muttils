@@ -68,5 +68,6 @@ setup(name='muttils',
       author_email='blacktrash@gmx.net',
       url='http://www.blacktrash.org/hg/muttils/',
       packages=['muttils'],
+      package_data={'muttils': ['effective_tld_names.dat']},
       scripts=['sigpager', 'urlbatcher', 'urlpager',
                'pybrowser', 'wrap', 'viewhtmlmsg'])

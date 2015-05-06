@@ -52,3 +52,12 @@ $ make help
 # and
 $ python setup.py --help
 # for fine tuning and further options
+
+
+Updating top level domains
+--------------------------
+Detection of TLDs is based on Mozilla's public suffix list.
+
+muttils/effective_tld_list.dat
+can be replaced by its latest version:
+curl -O https://publicsuffix.org/list/effective_tld_names.dat
