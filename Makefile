@@ -48,6 +48,10 @@ install-home: build
 	$(PYTHON) setup.py install --home="$(HOME)" --force
 	$(PYTHON) setup.py --description --version
 
+install-user: build
+	$(PYTHON) setup.py install --user
+	$(PYTHON) setup.py --description --version
+
 MANIFEST:
 	$(PYTHON) setup.py --version
 	$(PYTHON) setup.py sdist --manifest-only
