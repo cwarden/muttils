@@ -49,7 +49,7 @@ install-home: build
 	$(PYTHON) setup.py --description --version
 
 install-user: build
-	$(PYTHON) setup.py install --user
+	$(PYTHON) setup.py install --user --force
 	$(PYTHON) setup.py --description --version
 
 MANIFEST:
