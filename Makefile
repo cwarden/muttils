@@ -14,6 +14,7 @@ help:
 	@echo '  all          - build programs'
 	@echo '  install      - install programs to PREFIX ($(PREFIX))'
 	@echo '  install-home - install with setup.py install --home=HOME ($(HOME))'
+	@echo '  install-user - install with setup.py install --user'
 	@echo '  local        - build for inplace usage'
 	@echo '  clean        - remove files created by other targets'
 	@echo '                 (except installed files or dist source tarball)'
