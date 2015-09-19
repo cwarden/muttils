@@ -4,7 +4,7 @@
 # $Id$
 
 import email, email.Errors, email.Iterators, email.Utils
-import os.path, re, shutil, sys, tempfile, urllib
+import os.path, re, shutil, sys, tempfile
 from muttils import pybrowser, ui, util
 
 try:
@@ -83,13 +83,9 @@ class viewhtml(pybrowser.browser):
                 fn = (part.get_filename() or part.get_param('filename') or
                       part.get_param('name', 'prefix_%d' % fc))
                 if part['content-id']:
-                    # safe ascii filename w/o spaces
-                    fn = urllib.unquote(fn)
-                    fn = fn.decode('ascii',
-                                   'replace').encode('ascii', 'replace')
-                    fn = fn.replace(' ', '_').replace('?', '-')
-                    cid = email.Utils.unquote(part['content-id'])
-                    html = html.replace('cid:%s' % cid, fn)
+                    # safe ascii filename: replace it with cid
+                    fn = email.Utils.unquote(part['content-id'])
+                    html = html.replace('"cid:%s"' % fn, "%s" % fn)
                 fpay = part.get_payload(decode=True)
                 if fpay:
                     fp = open(os.path.join(htmldir, fn), 'wb')
