@@ -59,7 +59,7 @@ class browser(object):
                     if not url.startswith('/'):
                         # drop host part (validity of path checked below)
                         url = '/' + url.split('/', 1)[1]
-            if not url.startswith('http://'):
+            if not url.startswith('https://') and not url.startswith('http://'):
                 url = util.absolutepath(url)
                 if not os.path.exists(url):
                     raise PybrowserError('%s: not found' % url)
