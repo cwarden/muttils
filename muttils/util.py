@@ -41,7 +41,7 @@ def version():
 
 def fullversion(proginfo):
     return ('%s (version %s)\n\n'
-            'Copyright (C) 2007-2011 Christian Ebert <blacktrash@gmx.net>\n'
+            'Copyright (C) 2007-2018 Christian Ebert <blacktrash@gmx.net>\n'
             'This is free software. See the source for copying conditions.\n'
             'The Muttils package comes with ABSOLUTELY NO WARRANTY.'
             % (proginfo, version()))
