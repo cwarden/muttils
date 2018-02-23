@@ -25,6 +25,8 @@ class browser(object):
         self.items = items             # urls
         if app is not None:
             self.ui.app = app
+        elif self.ui.app is None:
+            self.ui.app = self.ui.configitem('net', 'app')
         try:
             self.ui.app = webbrowser.get(self.ui.app)
         except webbrowser.Error, inst:

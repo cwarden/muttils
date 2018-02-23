@@ -31,6 +31,9 @@ mailer = mutt
 # default: empty
 ## homepage = http://localhost
 
+# app: browser program
+# default: platform default browser or $BROWSER
+
 # ftpclient: (path to) program used for ftp
 # ftpclient = ftp
 
